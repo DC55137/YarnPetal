@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String?
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  StripeCustomer    StripeCustomer?
+
+}
+
+model Bundle {
+  id           Int           @id @default(autoincrement())
+  name         String @unique
+  description  String
+  price        Float
+  theme        String
+  slug        String @unique
+  stock        Int
+  imageUrl     String // Default image URL for the product
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  products Product[] // Relation to Product for specific animal-themed images
+}
+
+model Animal {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  stock        Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  products Product[] // Relation to Product to link animals with their images in specific bundles
+}
+
+// This model specifically connects animals with products and their themed images.
+model Product {
+  id        Int         @id @default(autoincrement())
+  bundleId Int
+  animalId  Int
+  imageUrl  String // Specific image URL for this animal with this product
+  bundle   Bundle     @relation(fields: [bundleId], references: [id])
+  animal    Animal      @relation(fields: [animalId], references: [id])
+  OrderItem OrderItem[]
+}
+
+model Order {
+  id         Int         @id @default(autoincrement())
+  userId     Int
+  user       User        @relation(fields: [userId], references: [id])
+  total      Float
+  status     String      @default("PENDING")
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id            Int         @id @default(autoincrement())
+  orderId       Int
+  bundleImageId Int // References Product to specify the exact product-animal image combination purchased
+  order         Order       @relation(fields: [orderId], references: [id])
+  bundleImage   Product @relation(fields: [bundleImageId], references: [id])
+}
+
+model StripeCustomer {
+  id               String @id @default(uuid())
+  userId           Int @unique
+  stripeCustomerId String @unique
+  user             User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
