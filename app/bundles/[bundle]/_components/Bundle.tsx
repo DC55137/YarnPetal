@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CurrencyIcon, Globe } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CurrencyIcon, Globe, Loader } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Product, Bundle, Animal, Color } from "@prisma/client";
@@ -29,6 +29,8 @@ type BundleWithProducts = Bundle & {
 export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
   const [selectColor, setSelectColor] = useState(bundle.products[0].color);
   const [selectedProduct, setSelectedProduct] = useState(bundle.products[0]);
+  const [imageLoading, setImageLoading] = useState(true);
+
   const { addToCart } = useCartStore((state) => state);
 
   // find the different colors available in the bundle
@@ -45,12 +47,24 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
     (product) => product.color.id === selectColor.id
   );
 
+  useEffect(() => {
+    const preloaded: { [key: string]: boolean } = {};
+    bundle.products.forEach((product) => {
+      const img = new window.Image();
+      img.src = product.imageUrl;
+      img.onload = () => {
+        preloaded[product.imageUrl] = true;
+      };
+    });
+  }, [bundle.products]);
+
   const changeColor = (color: Color) => {
     setSelectColor(color);
     // filter products by color
     setSelectedProduct(
       bundle.products.filter((product) => product.color.id === color.id)[0]
     );
+    setImageLoading(true);
   };
 
   const pages = [
@@ -91,14 +105,19 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                 ${bundle.price.toFixed(2)}
               </p>
             </div>
+            <h1 className="text-xl font-medium text-gray-900">
+              {selectColor.name}
+            </h1>
           </div>
 
           <div className="mt-8 lg:col-span-7 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mt-0">
             <h2 className="sr-only">Images</h2>
-            <h1 className="text-xl font-medium text-gray-900">
-              {selectColor.name}
-            </h1>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-3 lg:gap-8">
+              {imageLoading && (
+                <Loader className="animate-spin mx-auto my-40" />
+              )}{" "}
+              {/* Display a loading spinner */}
               <Image
                 key={selectedProduct.id}
                 src={selectedProduct.imageUrl}
@@ -106,6 +125,8 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                 className={cn("lg:col-span-2 lg:row-span-2", "rounded-lg")}
                 width={500}
                 height={500}
+                priority
+                onLoadingComplete={() => setImageLoading(false)} // Hide spinner when image loads
               />
             </div>
           </div>
@@ -145,7 +166,10 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                         checked={
                           selectedProduct.animal.name === product.animal.name
                         }
-                        onChange={() => setSelectedProduct(product)}
+                        onChange={() => {
+                          setSelectedProduct(product);
+                          setImageLoading(true);
+                        }}
                         disabled={product.animal.stock === 0}
                         className="sr-only"
                       />
@@ -218,6 +242,8 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
   selectColor,
   changeColor,
 }) => {
+  // if color.name is two colours just select the first one
+
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between">
