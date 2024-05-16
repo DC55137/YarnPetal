@@ -62,7 +62,9 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
     setSelectColor(color);
     // filter products by color
     setSelectedProduct(
-      bundle.products.filter((product) => product.color.id === color.id)[0]
+      bundle.products.filter((product) => product.color.id === color.id)[
+        selectedProduct.animal.id - 1
+      ]
     );
     setImageLoading(true);
   };
@@ -114,9 +116,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
             <h2 className="sr-only">Images</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-3 lg:gap-8">
-              {imageLoading && (
-                <Loader className="animate-spin mx-auto my-40" />
-              )}{" "}
+              {imageLoading && <Loader className="animate-spin mx-auto " />}{" "}
               {/* Display a loading spinner */}
               <Image
                 key={selectedProduct.id}
@@ -126,7 +126,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                 width={500}
                 height={500}
                 priority
-                onLoadingComplete={() => setImageLoading(false)} // Hide spinner when image loads
+                onLoad={() => setImageLoading(false)} // Hide spinner when image loads
               />
             </div>
           </div>
