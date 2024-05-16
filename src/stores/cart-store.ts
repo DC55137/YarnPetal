@@ -12,6 +12,7 @@ export type CartItem = {
   bundleSlug: string;
   bundlePrice: number;
   quantity: number;
+  color: string;
 };
 
 export type CartState = {

@@ -3,10 +3,11 @@ import { Bundle } from "@prisma/client";
 
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
+import { PATH_PAGE } from "@/routes/paths";
 
 const pages = [{ name: "products", href: "/products", current: false }];
 
-export default function Products({
+export default function BundlesCard({
   bundles,
   className,
 }: {
@@ -23,7 +24,7 @@ export default function Products({
             {bundles.map((bundle) => (
               <a
                 key={bundle.id}
-                href={`/products/${bundle.slug}`}
+                href={`${PATH_PAGE.bundles}/${bundle.slug}`}
                 className="group text-sm"
               >
                 <div className="w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75 h-96">
@@ -66,7 +67,7 @@ function Header() {
             Our Curated Collection
           </p>
           <h2 className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-            Products
+            Bundles
           </h2>
           <p className="mt-6 text-lg leading-8 text-gray-600">
             Handcrafted Yarn Bouquets for Every Occasion

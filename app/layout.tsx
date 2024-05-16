@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
-import Navbar from "./(root)/_components/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +19,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(inter.className, "bg-secondary-300")}>
-        <Navbar />
         <Toaster />
         {children}
       </body>

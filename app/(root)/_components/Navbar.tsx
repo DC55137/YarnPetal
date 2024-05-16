@@ -3,17 +3,14 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Cart from "./Cart";
+import MobileSidebar from "./mobile-sidebar";
+import { cn } from "@/lib/utils";
+import { generateNavigation } from "./functions";
 
 export default function Navbar() {
   const pathname = usePathname();
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/products", label: "Products" },
-    { href: "/about", label: "About Us" },
-    { href: "/contact", label: "Contact" },
-    { href: "/faqs", label: "Faqs" },
-  ];
+  const navLinks = generateNavigation(pathname);
 
   const linkClassName = (path: string) =>
     `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium ${
@@ -43,16 +40,20 @@ export default function Navbar() {
                   href={link.href}
                   className={linkClassName(link.href)}
                 >
-                  {link.label}
+                  {link.name}
                 </a>
               ))}
             </div>
           </div>
 
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <a href={"/checkout"} className={linkClassName("/checkout")}>
+          <div className="ml-6 flex items-center gap-2">
+            <a
+              href={"/checkout"}
+              className={cn(linkClassName("/checkout"), "hidden md:block")}
+            >
               {"Checkout"}
             </a>
+            <MobileSidebar />
             <Cart />
             {/* <button
               type="button"

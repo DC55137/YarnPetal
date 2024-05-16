@@ -54,11 +54,18 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                     <div className="min-w-0 flex-1">
                       <h4 className="text-sm">
                         <a
-                          href={`/products/${bundle.bundleSlug}`}
+                          href={`/bundles/${bundle.bundleSlug}`}
                           className="font-medium text-gray-700 hover:text-gray-800 text-xl"
                         >
                           {bundle.bundleName}
                         </a>
+                      </h4>
+
+                      <h4 className="text-base font-medium text-gray-900 hover:text-gray-800 ">
+                        {bundle.color}
+                      </h4>
+                      <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800 ">
+                        {bundle.product.animal.name}
                       </h4>
                     </div>
 

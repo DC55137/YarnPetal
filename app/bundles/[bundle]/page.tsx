@@ -1,26 +1,27 @@
 import React from "react";
-import Product from "./_components/Product";
+import BundlePage from "./_components/Bundle";
 import prisma from "@/lib/prismadb";
 
 export default async function page({
-  params: { product },
+  params: { bundle },
 }: {
-  params: { product: string };
+  params: { bundle: string };
 }) {
-  const bundle = await prisma.bundle.findUnique({
+  const bundleList = await prisma.bundle.findUnique({
     where: {
-      slug: product,
+      slug: bundle,
     },
     include: {
       products: {
         include: {
           animal: true,
+          color: true,
         },
       },
     },
   });
 
-  if (!bundle) {
+  if (!bundleList) {
     return {
       notFound: true,
     };
@@ -28,7 +29,7 @@ export default async function page({
 
   return (
     <div className="bg-white">
-      <Product bundle={bundle} />
+      <BundlePage bundle={bundleList} />
     </div>
   );
 }

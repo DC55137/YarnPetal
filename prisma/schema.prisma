@@ -13,6 +13,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -48,26 +55,39 @@ model Animal {
   products Product[] // Relation to Product to link animals with their images in specific bundles
 }
 
+model Color {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  stock        Int
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  products Product[] // Relation to Product to link colors with their images in specific bundles
+}
+
 // This model specifically connects animals with products and their themed images.
 model Product {
   id        Int         @id @default(autoincrement())
-  bundleId Int
+  bundleId  Int
   animalId  Int
-  imageUrl  String // Specific image URL for this animal with this product
-  bundle   Bundle     @relation(fields: [bundleId], references: [id])
-  animal    Animal      @relation(fields: [animalId], references: [id])
+  colorId   Int
+  imageUrl  String // Specific image URL for this animal with this product and color
+  bundle    Bundle     @relation(fields: [bundleId], references: [id])
+  animal    Animal     @relation(fields: [animalId], references: [id])
+  color     Color      @relation(fields: [colorId], references: [id])
   OrderItem OrderItem[]
 }
 
 model Order {
-  id         Int         @id @default(autoincrement())
-  userId     Int
-  user       User        @relation(fields: [userId], references: [id])
-  total      Float
-  status     String      @default("PENDING")
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  orderItems OrderItem[]
+  id             Int         @id @default(autoincrement())
+  userId         Int
+  user           User        @relation(fields: [userId], references: [id])
+  total          Float
+  status         OrderStatus @default(PENDING)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  orderItems     OrderItem[]
+  shippingAddress String
+  billingAddress  String
 }
 
 model OrderItem {

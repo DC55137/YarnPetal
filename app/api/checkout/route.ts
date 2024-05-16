@@ -8,8 +8,6 @@ import { CartItem } from "@/src/stores/cart-store";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    console.log("body");
-    console.log(body);
     const {
       email,
       phone,
@@ -46,18 +44,22 @@ export async function POST(req: Request) {
         ${bundleNamesQantityAndAnimal} 
       `;
 
-    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "aud",
-          product_data: {
-            name: productName,
+    const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
+      cartItems.map((item) => {
+        const productName = item.product.animal
+          ? `${item.bundleName} - ${item.product.animal.name} - ${item.color} `
+          : item.bundleName;
+        return {
+          quantity: item.quantity,
+          price_data: {
+            currency: "aud",
+            product_data: {
+              name: productName,
+            },
+            unit_amount: Math.round(item.bundlePrice * 100), // Use item price here
           },
-          unit_amount: Math.round(price * 100), // Use finalPrice here
-        },
-      },
-    ];
+        };
+      });
 
     const session = await stripe.checkout.sessions.create({
       line_items,
@@ -65,7 +67,6 @@ export async function POST(req: Request) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/?success=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
       customer_email: email,
-
       metadata: {
         email,
         phone,

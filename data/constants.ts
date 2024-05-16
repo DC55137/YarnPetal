@@ -14,15 +14,15 @@ export const deliveryMethods = [
 
   {
     id: 3,
-    title: "Express Delivery (Gold Coast)",
-    turnaround: "2–3 days",
-    price: 16,
+    title: "Delivery (Gold Coast)",
+    turnaround: "3–4 days",
+    price: 8,
   },
   {
     id: 4,
-    title: "Standard Delivery (Gold Coast)",
-    turnaround: "4–10 days",
-    price: 5,
+    title: "Standard Delivery (Australia Wide)",
+    turnaround: "4–12 days",
+    price: 12,
   },
 ];
 

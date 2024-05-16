@@ -1,3 +1,4 @@
+import { PATH_PAGE } from "@/routes/paths";
 import Image from "next/image";
 
 export default function Hero() {
@@ -55,16 +56,10 @@ export default function Hero() {
                 </p>
                 <div className="mt-10 flex items-center gap-x-6">
                   <a
-                    href="#"
+                    href={PATH_PAGE.bundles}
                     className="rounded-md bg-main-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-main-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-main-600"
                   >
                     Shop Now
-                  </a>
-                  <a
-                    href="#"
-                    className="text-sm font-semibold leading-6 text-gray-900"
-                  >
-                    Learn More <span aria-hidden="true">→</span>
                   </a>
                 </div>
               </div>

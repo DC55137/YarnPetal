@@ -35,6 +35,7 @@ export default function CheckoutMailForm({
   setSelectedDeliveryMethod,
   cart,
 }: CheckoutMailFormProps) {
+  const isAustraliaWide = selectedDeliveryMethod.id === 4;
   const [form, setForm] = useState<MailFormData>({
     firstName: "",
     lastName: "",
@@ -99,7 +100,7 @@ export default function CheckoutMailForm({
               selectedDeliveryMethod={selectedDeliveryMethod}
               setSelectedDeliveryMethod={setSelectedDeliveryMethod}
             />
-            <h2 className="text-lg font-medium text-gray-900">
+            <h2 className="text-lg mt-4 font-medium text-gray-900">
               Contact information
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
@@ -259,6 +260,7 @@ export default function CheckoutMailForm({
                         <input
                           type="text"
                           onChange={handleChange}
+                          value={isAustraliaWide ? form.region : "Gold Coast"}
                           name="city"
                           id="city"
                           autoComplete="address-level2"
@@ -304,9 +306,9 @@ export default function CheckoutMailForm({
                       </label>
                       <div className="mt-1">
                         <input
-                          disabled={true}
+                          disabled={isAustraliaWide ? false : true}
                           onChange={handleChange}
-                          value={"Queensland"}
+                          value={isAustraliaWide ? form.region : "Queensland"}
                           type="text"
                           name="region"
                           id="region"

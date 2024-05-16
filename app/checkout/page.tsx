@@ -1,10 +1,14 @@
 import React from "react";
 import CheckoutClient from "./_components/CheckoutClient";
+import Navbar from "../(root)/_components/Navbar";
 
 export default function page() {
   return (
-    <div>
-      <CheckoutClient />
-    </div>
+    <>
+      <Navbar />
+      <main>
+        <CheckoutClient />
+      </main>
+    </>
   );
 }
