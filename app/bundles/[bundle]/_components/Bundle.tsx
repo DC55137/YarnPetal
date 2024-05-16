@@ -52,6 +52,8 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
     bundle.products.forEach((product) => {
       const img = new window.Image();
       img.src = product.imageUrl;
+      img.height = 500;
+      img.width = 500;
       img.onload = () => {
         preloaded[product.imageUrl] = true;
       };
@@ -93,7 +95,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
   };
 
   return (
-    <div className="pb-16 pt-6 sm:pb-24">
+    <div className="pb-16 pt-6 sm:pb-24 min-h-screen">
       <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
         <Breadcrumb pages={pages} className="mb-4" />
         <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8">
@@ -122,7 +124,10 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                 key={selectedProduct.id}
                 src={selectedProduct.imageUrl}
                 alt={`${selectedProduct.animal.name} - ${bundle.name}`}
-                className={cn("lg:col-span-2 lg:row-span-2", "rounded-lg")}
+                className={cn(
+                  "lg:col-span-2 lg:row-span-2",
+                  imageLoading && "hidden"
+                )}
                 width={500}
                 height={500}
                 priority
