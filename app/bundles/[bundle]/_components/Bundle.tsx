@@ -95,10 +95,10 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
   };
 
   return (
-    <div className="pb-16 pt-6 sm:pb-24 min-h-screen">
+    <div className="py-12  sm:pb-24 min-h-screen">
       <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
         <Breadcrumb pages={pages} className="mb-4" />
-        <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8">
+        <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8 md:mt-20 mt-8">
           <div className="lg:col-span-5 lg:col-start-8">
             <div className="flex justify-between">
               <h1 className="text-xl font-medium text-gray-900">
@@ -110,7 +110,10 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
               </p>
             </div>
             <h1 className="text-xl font-medium text-gray-900">
-              {selectColor.name}
+              Theme:{" "}
+              <span className="text-main-600 font-bold ">
+                {selectColor.name} Theme
+              </span>
             </h1>
           </div>
 
@@ -118,7 +121,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
             <h2 className="sr-only">Images</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 lg:grid-rows-3 lg:gap-8">
-              {imageLoading && <Loader className="animate-spin mx-auto " />}{" "}
+              {imageLoading && <LoadingPlaceholder />}{" "}
               {/* Display a loading spinner */}
               <Image
                 key={selectedProduct.id}
@@ -198,37 +201,6 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                 dangerouslySetInnerHTML={{ __html: bundle.description }}
               />
             </div>
-            {/* <div className="mt-8 border-t border-gray-200 pt-8">
-              <h2 className="text-sm font-medium text-gray-900">
-                Fabric & Care
-              </h2>
-            </div>
-            <section aria-labelledby="policies-heading" className="mt-10">
-              <h2 id="policies-heading" className="sr-only">
-                Our Policies
-              </h2>
-              <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-                {policies.map((policy) => (
-                  <div
-                    key={policy.name}
-                    className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center"
-                  >
-                    <dt>
-                      <policy.icon
-                        className="mx-auto h-6 w-6 flex-shrink-0 text-gray-400"
-                        aria-hidden="true"
-                      />
-                      <span className="mt-4 text-sm font-medium text-gray-900">
-                        {policy.name}
-                      </span>
-                    </dt>
-                    <dd className="mt-1 text-sm text-gray-500">
-                      {policy.description}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section> */}
           </div>
         </div>
       </div>
@@ -284,6 +256,14 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
           </label>
         ))}
       </div>
+    </div>
+  );
+};
+
+const LoadingPlaceholder = () => {
+  return (
+    <div className="animate-pulse flex col-span-2">
+      <div className="rounded-lg bg-gray-300 h-[600px] w-[600px]" />
     </div>
   );
 };

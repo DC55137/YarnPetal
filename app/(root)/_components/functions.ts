@@ -19,6 +19,11 @@ export function generateNavigation(pathname: string): NavigationItem[] {
       href: `${PATH_PAGE.bundles}`,
       current: pathname.startsWith(`${PATH_PAGE.bundles}`),
     },
+    {
+      name: NAV_CONTENT.checkout,
+      href: `${PATH_PAGE.checkout}`,
+      current: pathname.startsWith(`${PATH_PAGE.checkout}`),
+    },
     // {
     //   name: NAV_CONTENT.about,
     //   href: `${PATH_PAGE.about}`,
@@ -39,6 +44,7 @@ type NavContent = {
   bundles: string;
   about: string;
   contact: string;
+  checkout: string;
 };
 
 const NAV_CONTENT: NavContent = {
@@ -46,4 +52,5 @@ const NAV_CONTENT: NavContent = {
   bundles: "Bundles",
   about: "About Us",
   contact: "Contact Us",
+  checkout: "Checkout",
 };

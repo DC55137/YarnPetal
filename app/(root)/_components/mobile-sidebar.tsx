@@ -18,7 +18,7 @@ const MobileSidebar = ({}: {}) => {
       <SheetTrigger
         className={cn(
           "text-black",
-          "pr-4 transition lg:hidden hover:opacity-75"
+          "pr-4 transition md:hidden hover:opacity-75"
         )}
       >
         <Menu />

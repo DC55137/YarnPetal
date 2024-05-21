@@ -4,6 +4,7 @@ import { Bundle } from "@prisma/client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { PATH_PAGE } from "@/routes/paths";
+import { pacifico } from "@/app/fonts";
 
 const pages = [{ name: "products", href: "/products", current: false }];
 
@@ -16,44 +17,41 @@ export default function BundlesCard({
 }) {
   return (
     <div className={cn("bg-white", className)}>
-      <div className="mx-auto max-w-7xl overflow-hidden px-4 sm:px-6 lg:px-8 ">
+      <div className="mx-auto max-w-7xl overflow-hidden px-4 sm:px-6 lg:px-8 pt-12">
         <Breadcrumb pages={pages} />
-        <div className="py-8 sm:py-12">
-          <Header />
-          <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
-            {bundles.map((bundle) => (
-              <a
-                key={bundle.id}
-                href={`${PATH_PAGE.bundles}/${bundle.slug}`}
-                className="group text-sm"
-              >
-                <div className="w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75 h-96">
-                  <Image
-                    src={bundle.imageUrl}
-                    alt={bundle.name}
-                    className="h-full w-full object-cover object-center"
-                    style={{ minHeight: "100%" }}
-                    width={300}
-                    height={300}
-                  />
-                </div>
-                <h3 className="mt-4 font-medium text-gray-900">
-                  {bundle.name}
-                </h3>
-                <p className="italic text-gray-500">
-                  {bundle.stock ? "Available" : "Sold Out"}
-                </p>
-                <p className="mt-2 font-medium text-gray-900">
-                  {bundle.price.toLocaleString("en-AU", {
-                    style: "currency",
-                    currency: "AUD",
-                  })}
-                </p>
-              </a>
-            ))}
-          </div>
+        <Header />
+        <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-8">
+          {bundles.map((bundle) => (
+            <a
+              key={bundle.id}
+              href={`${PATH_PAGE.bundles}/${bundle.slug}`}
+              className="group text-sm"
+            >
+              <div className="w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75 h-96">
+                <Image
+                  src={bundle.imageUrl}
+                  alt={bundle.name}
+                  className="h-full w-full object-cover object-center"
+                  style={{ minHeight: "100%" }}
+                  width={300}
+                  height={300}
+                />
+              </div>
+              <h3 className="mt-4 font-medium text-gray-900">{bundle.name}</h3>
+              <p className="italic text-gray-500">
+                {bundle.stock ? "Available" : "Sold Out"}
+              </p>
+              <p className="mt-2 font-medium text-gray-900">
+                {bundle.price.toLocaleString("en-AU", {
+                  style: "currency",
+                  currency: "AUD",
+                })}
+              </p>
+            </a>
+          ))}
         </div>
       </div>
+      <div className="h-screen"></div>
     </div>
   );
 }
@@ -63,10 +61,12 @@ function Header() {
     <div className="bg-white my-4 ">
       <div className="mx-auto max-w-7xl ">
         <div className="mx-auto max-w-2xl lg:mx-0">
-          <p className="text-base font-semibold leading-7 text-main-600">
-            Our Curated Collection
-          </p>
-          <h2 className="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+          <h2
+            className={cn(
+              "my-4 text-4xl font-bold tracking-tight text-main-500 sm:text-6xl",
+              pacifico.className
+            )}
+          >
             Bundles
           </h2>
           <p className="mt-6 text-lg leading-8 text-gray-600">

@@ -16,4 +16,5 @@ export const PATH_PAGE = {
   bundles: "/bundles",
   about: "/abouts",
   contact: "/contact",
+  checkout: "/checkout",
 };

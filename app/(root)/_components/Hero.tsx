@@ -89,7 +89,7 @@ export default function Hero() {
                   </div>
                   <div className="relative">
                     <Image
-                      src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1713442356/YarnPetals/438255777_18027190406306884_72969111083408261_n_kupega.jpg"
+                      src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1713442356/YarnPetals/434973525_18025930553306884_4182640538013182044_n_ylffgo.jpg"
                       alt=""
                       className="aspect-[2/3] w-full rounded-xl bg-gray-900/5 object-cover shadow-lg"
                       width={396}

@@ -32,11 +32,11 @@ export default function Cart() {
     return (
       <button
         type="button"
-        className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2"
+        className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 hover:cursor-pointer"
       >
         <span className="absolute -inset-1.5" />
         <span className="sr-only">View cart, items</span>
-        <ShoppingBag className="h-6 w-6" aria-hidden="true" />
+        <ShoppingBag className="h-6 w-6 " aria-hidden="true" />
       </button>
     );
   }
@@ -46,10 +46,7 @@ export default function Cart() {
     <div>
       <Sheet>
         <SheetTrigger>
-          <button
-            type="button"
-            className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2"
-          >
+          <div className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 hover:cursor-pointer">
             <span className="absolute -inset-1.5" />
             <span className="sr-only">View cart, {cartCount} items</span>
             <ShoppingBag className="h-6 w-6" aria-hidden="true" />
@@ -58,20 +55,19 @@ export default function Cart() {
                 {cartCount}
               </span>
             )}
-          </button>
+          </div>
         </SheetTrigger>
         <SheetContent>
           <SheetHeader>
             <SheetTitle className="font-medium text-main-600">Cart</SheetTitle>
             <SheetDescription>
-              {cart.length === 0 && (
+              {cart.length === 0 ? (
                 <div className="flex items-center justify-center h-64">
                   <p className="text-lg font-medium text-gray-500">
                     Your cart is empty
                   </p>
                 </div>
-              )}
-              {cart.length > 0 && (
+              ) : (
                 <>
                   <CartContent cart={cart} />
                   <div className="space-y-6 pt-6 text-sm font-medium text-gray-500 px-6">
