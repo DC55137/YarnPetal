@@ -16,7 +16,7 @@ export default function Delivery() {
           <h2
             id="sale-heading"
             className={cn(
-              "text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-8xl my-8",
+              "text-7xl font-bold tracking-tight text-white md:text-8xl my-8",
               pacifico.className
             )}
           >

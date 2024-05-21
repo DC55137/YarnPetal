@@ -11,7 +11,7 @@ export default function Customise() {
           <div className="my-auto mx-auto flex flex-col gap-6">
             <h1
               className={cn(
-                "md:text-8xl font-bold text-main-500 text-center text-7xl",
+                "md:text-8xl font-bold text-main-500 text-center text-7xl my-4",
                 pacifico.className
               )}
             >
