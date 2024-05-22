@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 
 export default function NewHero() {
   return (
-    <div className="relative isolate overflow-hidden">
+    <div className="overflow-hidden">
       <div className="flex w-full flex-col md:flex-row ">
         {/* Left Section with Text */}
-        <div className="md:w-1/2 bg-secondary-500 flex justify-center xl:pl-40 pt-52 text-center">
-          <div className="grow"></div>
-          <div className="xl:max-w-4xl pr-8">
+        <div className="LeftTextSection md:w-1/2 bg-secondary-500 flex justify-center xl:pl-40 pt-52 text-center">
+          <div className="hidden md:flex grow"></div>
+          <div className="xl:max-w-4xl pr-8 grow-0">
             <h1
               className={cn(
                 " font-bold tracking-tight text-6xl lg:text-7xl xl:text-8xl text-accent-900 ",
@@ -33,16 +33,16 @@ export default function NewHero() {
         </div>
 
         {/* Right Section with Image */}
-        <div className="md:w-1/2 bg-main-500 flex items-end justify-start px-8 md:pt-32 pt-8 ">
+        <div className="RightSectionImage md:w-1/2 bg-main-500 flex md:items-end justify-center md:justify-start px-8 md:pt-32 pt-8  ">
           <Image
             src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716271595/YarnPetals/giveGift_nx0xon.png"
             alt="Bouquet image"
             width={500}
             height={500}
-            className="w-auto h-auto align-bottom"
+            className="w-auto h-auto grow-0  mx-auto"
           />
 
-          <div className="grow"></div>
+          <div className="hidden md:flex grow"></div>
         </div>
       </div>
     </div>
