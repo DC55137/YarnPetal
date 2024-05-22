@@ -19,6 +19,15 @@ export default function RootLayout({
       <body className={cn(inter.className, "bg-secondary-500")}>
         <Toaster />
         {children}
+        <footer>
+          <div className="bg-secondary-400">
+            <div className="container mx-auto py-4">
+              <p className="text-center text-accent-900">
+                &copy; 2021 Yarn Petals. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </footer>
       </body>
     </html>
   );

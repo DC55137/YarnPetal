@@ -1,83 +1,99 @@
+import { pacifico } from "@/app/fonts";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
+import React from "react";
 
-const features = [
-  {
-    name: "Three card types",
-    description:
-      "Today, Next, and Someday cards allow you to defer your dreams into the future.",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-feature-08-detail-01.jpg",
-    imageAlt: "Green cardstock box containing white, beige, and brown cards.",
-  },
-  {
-    name: "The perfect mix",
-    description:
-      "Each refill pack contains plenty of cards to last you a month of procrastination.",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-feature-08-detail-02.jpg",
-    imageAlt: "Green cardstock box open with 50 cards inside.",
-  },
-  {
-    name: "Dot grid backs",
-    description:
-      "Flip a card over to doodle during meetings when you should be listening.",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-feature-08-detail-03.jpg",
-    imageAlt:
-      "Detail of white today card, beige next card, and brown someday card with dot grid.",
-  },
-  {
-    name: "Refill packs",
-    description:
-      "Subscribe and save on routine refill packs to keep you productive all year long.",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-feature-08-detail-04.jpg",
-    imageAlt:
-      "Stack of three green cardstock boxes with 3 hole cutouts showing cards inside.",
-  },
-];
-export default function Features() {
+export function Features1() {
   return (
-    <div className="">
-      <div className="mx-auto max-w-2xl px-4 py-24 sm:px-6 sm:py-32 lg:max-w-7xl lg:px-8">
-        <div className="max-w-3xl">
-          <h2 id="features-heading" className="font-medium text-gray-500">
-            Focus
-          </h2>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Simple productivity
-          </p>
-          <p className="mt-4 text-gray-500">
-            Focus allows you to plan 10 daily tasks, while also thinking ahead
-            about what&apos;s next. Forget distracting digital apps and embrace
-            these small, sturdy pieces of paper.
-          </p>
-        </div>
-
-        <div className="mt-11 grid grid-cols-1 items-start gap-x-6 gap-y-16 sm:mt-16 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-8">
-          {features.map((feature) => (
-            <div key={feature.name} className="flex flex-col-reverse">
-              <div className="mt-6">
-                <h3 className="text-sm font-medium text-gray-900">
-                  {feature.name}
-                </h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  {feature.description}
-                </p>
-              </div>
-              <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-lg bg-gray-100">
-                <Image
-                  src={feature.imageSrc}
-                  alt={feature.imageAlt}
-                  className="object-cover object-center"
-                  width={300}
-                  height={300}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
+      <div className="md:container flex flex-col-reverse md:flex-row gap-10 mt-10 md:mt-0">
+        <FeatureImage
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716383052/YarnPetals/FreeHat_bp7kkn.png"
+          alt="Free Hat with purchase"
+        />
+        <FeaturesText
+          header="Free Hat"
+          subHeader="With any bouquet purchase!"
+        />
+      </div>
+      <div className="md:container flex flex-col md:flex-row gap-10 ">
+        <FeaturesText
+          header="Customise Your Bouquet"
+          subHeader="Browse our selection of flowers and create your own bouquet!"
+        />
+        <FeatureImage
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716298927/YarnPetals/DSCF0752_psr0md.jpg"
+          alt="Customise your bouquet"
+        />
       </div>
     </div>
   );
 }
+export function Features2() {
+  return (
+    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
+      <div className="md:container flex flex-col-reverse md:flex-row gap-10 mt-10 md:mt-0">
+        <FeatureImage
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716383646/YarnPetals/Birthdays_eqer04.png"
+          alt="Free Hat with purchase"
+        />
+        <FeaturesText
+          header="Birthdays"
+          subHeader="Celebrate with a bouquet!"
+        />
+      </div>
+      <div className="md:container flex flex-col md:flex-row gap-10 ">
+        <FeaturesText
+          header="Graduations"
+          subHeader="Celebrate with a bouquet!"
+        />
+        <FeatureImage
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716384006/YarnPetals/Graduation_jwc2bd.png"
+          alt="Customise your bouquet"
+        />
+      </div>
+    </div>
+  );
+}
+
+type FeaturesTextProps = {
+  header: string;
+  subHeader: string;
+};
+
+const FeaturesText = ({ header, subHeader }: FeaturesTextProps) => {
+  return (
+    <div className="TextDiv w-1/2 flex justify-center text-center md:text-left mx-auto">
+      <div className="my-auto mx-auto flex flex-col gap-6">
+        <h1
+          className={cn(
+            "md:text-5xl font-bold  text-6xl lg:text-7xl xl:text-8xl text-accent-900",
+            pacifico.className
+          )}
+        >
+          {header}
+        </h1>
+        <p className="text-main-800 md:text-3xl text-2xl">{subHeader}</p>
+      </div>
+    </div>
+  );
+};
+
+type FeatureImageProps = {
+  src: string;
+  alt: string;
+};
+
+const FeatureImage = ({ src, alt }: FeatureImageProps) => {
+  return (
+    <div className="w-1/2 justify-center align-middle mx-auto my-10">
+      <Image
+        src={src}
+        alt={alt}
+        width={500}
+        height={500}
+        className="mx-auto w-auto h-auto align-bottom rounded-3xl"
+      />
+    </div>
+  );
+};
