@@ -46,9 +46,7 @@ const HeroText = () => {
       </p>
       <div className="my-10 flex items-center ">
         <a href="/bundles" className="mx-auto">
-          <Button size="lg" className="py-6">
-            Shop Now{" "}
-          </Button>
+          <Button size="lg">Shop Now </Button>
         </a>
       </div>
     </div>

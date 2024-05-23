@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import Cart from "./Cart";
 import MobileSidebar from "./mobile-sidebar";
 import { cn } from "@/lib/utils";
-import { generateNavigation } from "./functions";
+import { generateNavigation } from "../../../lib/functions";
 import { pacifico } from "@/app/fonts";
-import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -36,20 +36,7 @@ export default function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
-          <div className="flex">
-            <Link className="flex flex-shrink-0 gap-2 items-center" href="/">
-              <Image
-                className="h-12 w-auto"
-                src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716465126/YarnPetals/logo_2_lyaxqd.webp"
-                alt="Your Company"
-                width={50}
-                height={50}
-              />
-              <h1 className={cn(pacifico.className, "text-main-400 text-4xl")}>
-                Yarn Petals
-              </h1>
-            </Link>
-          </div>
+          <Logo />
 
           <div className="ml-6 flex items-center gap-4">
             <div className="md:flex gap-2 hidden">

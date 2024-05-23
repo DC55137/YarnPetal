@@ -29,7 +29,7 @@ export default function CheckoutClient() {
   // Handler to update quantities
 
   return (
-    <div className="bg-gray-50">
+    <div className="">
       <div>
         {selectedDeliveryMethod.id === 1 || selectedDeliveryMethod.id === 2 ? (
           <CheckoutPickUpForm

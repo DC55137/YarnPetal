@@ -6,7 +6,7 @@ import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
-import { generateNavigation } from "./functions";
+import { generateNavigation } from "../../../lib/functions";
 import Logo from "@/components/Logo";
 
 const MobileSidebar = ({}: {}) => {

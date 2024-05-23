@@ -93,7 +93,6 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
               <h1 className="text-xl font-medium text-gray-900">
                 {bundle.name}
               </h1>
-
               <p className="text-xl font-medium text-gray-900">
                 ${bundle.price.toFixed(2)}
               </p>

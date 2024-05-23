@@ -32,7 +32,7 @@ export function Features1() {
 export function Features2() {
   return (
     <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
-      <div className="md:container flex flex-col-reverse md:flex-row gap-10 mt-10 md:mt-0">
+      <div className="md:container flex flex-col-reverse md:flex-row md:gap-10 mt-10 md:mt-0">
         <FeatureImage
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716383646/YarnPetals/Birthdays_eqer04.png"
           alt="Free Hat with purchase"
@@ -42,7 +42,7 @@ export function Features2() {
           subHeader="Celebrate with a bouquet!"
         />
       </div>
-      <div className="md:container flex flex-col md:flex-row gap-10 ">
+      <div className="md:container flex flex-col md:flex-row md:gap-10 ">
         <FeaturesText
           header="Graduations"
           subHeader="Celebrate with a bouquet!"
@@ -65,8 +65,10 @@ const FeaturesText = ({ header, subHeader }: FeaturesTextProps) => {
   return (
     <div className="TextDiv w-1/2 flex justify-center text-center md:text-left mx-auto">
       <div className="my-auto mx-auto flex flex-col gap-6">
-        <h2 className={cn(pacifico.className)}>{header}</h2>
-        <h4 className="text-main-800 ">{subHeader}</h4>
+        <h2 className={cn(pacifico.className, "text-6xl text-center")}>
+          {header}
+        </h2>
+        <h4 className="text-main-800 text-center">{subHeader}</h4>
       </div>
     </div>
   );
@@ -79,7 +81,7 @@ type FeatureImageProps = {
 
 const FeatureImage = ({ src, alt }: FeatureImageProps) => {
   return (
-    <div className="w-1/2 justify-center align-middle mx-auto my-10">
+    <div className="md:w-1/2 justify-center align-middle md:mx-auto my-10 mx-2">
       <Image
         src={src}
         alt={alt}

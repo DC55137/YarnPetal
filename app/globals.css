@@ -8,6 +8,7 @@ html {
 
 h2 {
   font-weight: bold;
+  color: #c66754;
   font-size: 4rem; /* Default to 6xl size */
   @media (min-width: 768px) {
     font-size: 3rem; /* 5xl size */

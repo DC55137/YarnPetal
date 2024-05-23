@@ -24,16 +24,6 @@ export function generateNavigation(pathname: string): NavigationItem[] {
       href: `${PATH_PAGE.checkout}`,
       current: pathname.startsWith(`${PATH_PAGE.checkout}`),
     },
-    // {
-    //   name: NAV_CONTENT.about,
-    //   href: `${PATH_PAGE.about}`,
-    //   current: pathname.startsWith(`${PATH_PAGE.about}`),
-    // },
-    // {
-    //   name: NAV_CONTENT.contact,
-    //   href: `${PATH_PAGE.contact}`,
-    //   current: pathname.startsWith(`${PATH_PAGE.contact}`),
-    // },
   ];
 
   return navigation;
