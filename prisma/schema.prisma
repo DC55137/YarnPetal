@@ -38,7 +38,7 @@ model Bundle {
   description  String
   price        Float
   theme        String
-  slug        String @unique
+  slug        String @unique  
   stock        Int
   imageUrl     String // Default image URL for the product
   createdAt    DateTime      @default(now())
@@ -77,6 +77,18 @@ model Product {
   OrderItem OrderItem[]
 }
 
+model Hat {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  description  String
+  price        Float
+  stock        Int
+  imageUrl     String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orderItems   OrderItem[]
+}
+
 model Order {
   id             Int         @id @default(autoincrement())
   userId         Int
@@ -94,8 +106,14 @@ model OrderItem {
   id            Int         @id @default(autoincrement())
   orderId       Int
   bundleImageId Int // References Product to specify the exact product-animal image combination purchased
+  hatId         Int
   order         Order       @relation(fields: [orderId], references: [id])
   bundleImage   Product @relation(fields: [bundleImageId], references: [id])
+  Hat          Hat      @relation(fields: [hatId], references: [id])      
+  quantity      Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
 }
 
 model StripeCustomer {

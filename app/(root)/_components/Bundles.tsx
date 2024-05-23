@@ -2,68 +2,7 @@ import { pacifico } from "@/app/fonts";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-
-type BundleType = {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  theme: string;
-  slug: string;
-  stock: number;
-  imageUrl: string;
-};
-
-export const bundles: BundleType[] = [
-  {
-    id: 1,
-    name: "Bloom Bundle",
-    description:
-      "Discover the best of Yarn Petals with our Bloom Bundle! Lush, vibrant, and perfect for any setting.",
-    price: 69.0,
-    theme: "Varied",
-    slug: "bloom-bundle",
-    stock: 10,
-    imageUrl:
-      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1713520259/YarnPetals/ProductImage/2%20Bloom%20Bundle%20-%20Green%20Theme/1_Froggie_zhyus0.webp",
-  },
-  {
-    id: 2,
-    name: "Bud Bundle",
-    description:
-      "Cool and calming, our Bud Bundle brings a soothing touch to any space. Perfectly arranged for tranquility.",
-    price: 59.0,
-    theme: "Varied",
-    slug: "bud-bundle",
-    stock: 20,
-    imageUrl:
-      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1713520275/YarnPetals/ProductImage/7%20Bud%20Bundle%20-%20Blue%20Theme/9_Koala_ujdesp.webp",
-  },
-  {
-    id: 3,
-    name: "Leaf Bundle",
-    description:
-      "Add a unique and artistic touch with our Leaf Bundle. Perfect for sophisticated floral arrangements.",
-    price: 49.0,
-    theme: "Varied",
-    slug: "leaf-bundle",
-    stock: 30,
-    imageUrl:
-      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1713520290/YarnPetals/ProductImage/13Bud%20Bundle%20-%20Yellow%20Theme/8_Ted_aqkado.webp",
-  },
-  {
-    id: 4,
-    name: "Sprout Bundle",
-    description:
-      "The perfect start for any flower enthusiast. Grow your passion with the Sprout Bundle.",
-    price: 35.0,
-    theme: "Varied",
-    slug: "sprout-bundle",
-    stock: 40,
-    imageUrl:
-      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1713520290/YarnPetals/ProductImage/13Bud%20Bundle%20-%20Yellow%20Theme/8_Ted_aqkado.webp",
-  },
-];
+import { bundlesNoAnimals as bundles } from "@/data/bundles";
 
 export default function Bundles() {
   return (
@@ -94,7 +33,7 @@ export default function Bundles() {
               <Link href={`/bundles/${bundle.slug}`}>
                 <div className="relative">
                   <Image
-                    className="aspect-[3/2] w-full rounded-2xl object-cover"
+                    className="aspect-[3/2] w-full rounded-2xl object-cover object-top"
                     src={bundle.imageUrl}
                     alt=""
                     width={300}

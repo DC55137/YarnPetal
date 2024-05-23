@@ -28,14 +28,19 @@ export default function Navbar() {
     `;
 
   return (
-    <div className="absolute z-50 w-screen">
+    <div
+      className={cn(
+        "absolute z-50 w-screen",
+        pathname !== "/" && "bg-secondary-500"
+      )}
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between">
           <div className="flex">
             <Link className="flex flex-shrink-0 gap-2 items-center" href="/">
               <Image
                 className="h-12 w-auto"
-                src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1713442449/YarnPetals/Logo1_suunci.png"
+                src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716465126/YarnPetals/logo_2_lyaxqd.webp"
                 alt="Your Company"
                 width={50}
                 height={50}

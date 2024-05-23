@@ -1,26 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CurrencyIcon, Globe, Loader } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Product, Bundle, Animal, Color } from "@prisma/client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { useCartStore } from "@/src/stores/cart-store";
-
-const policies = [
-  {
-    name: "International delivery",
-    icon: Globe,
-    description: "Get your order in 2 years",
-  },
-  {
-    name: "Loyalty rewards",
-    icon: CurrencyIcon,
-    description: "Don't look at other tees",
-  },
-];
+import { pacifico } from "@/app/fonts";
 
 type BundleWithProducts = Bundle & {
   products: (Product & { animal: Animal; color: Color })[];
@@ -29,6 +16,7 @@ type BundleWithProducts = Bundle & {
 export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
   const [selectColor, setSelectColor] = useState(bundle.products[0].color);
   const [selectedProduct, setSelectedProduct] = useState(bundle.products[0]);
+  const [selectedHat, setSelectedHat] = useState("none");
   const [imageLoading, setImageLoading] = useState(true);
 
   const { addToCart } = useCartStore((state) => state);
@@ -91,6 +79,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
       bundlePrice: bundle.price,
       quantity: 1,
       color: selectColor.name,
+      hat: "none",
     });
   };
 
@@ -109,14 +98,15 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                 ${bundle.price.toFixed(2)}
               </p>
             </div>
-            <h1 className="text-xl font-medium text-gray-900">
-              Theme:{" "}
-              <span className="text-main-600 font-bold ">
-                {selectColor.name} Theme
-              </span>
+            <h1
+              className={cn(
+                "text-3xl text-main-600 font-bold",
+                pacifico.className
+              )}
+            >
+              {selectColor.name} Theme
             </h1>
           </div>
-
           <div className="mt-8 lg:col-span-7 lg:col-start-1 lg:row-span-3 lg:row-start-1 lg:mt-0">
             <h2 className="sr-only">Images</h2>
 
@@ -139,7 +129,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
             </div>
           </div>
 
-          <div className="mt-8 lg:col-span-5">
+          <div className="lg:col-span-5">
             <form onSubmit={handleAddToCart}>
               <ColorSelector
                 colors={uniqueColors}
@@ -186,6 +176,10 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
                   ))}
                 </div>
               </div>
+              <HatSelector
+                selectedHat={selectedHat}
+                setSelectedHat={setSelectedHat}
+              />
               <button
                 type="submit"
                 className="mt-8 flex w-full items-center justify-center rounded-md border border-transparent bg-main-600 px-8 py-3 text-base font-medium text-white hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2"
@@ -219,42 +213,34 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
   selectColor,
   changeColor,
 }) => {
-  // if color.name is two colours just select the first one
-
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-gray-900">Color</h2>
+        <h2 className="text-sm font-medium text-gray-900">Theme</h2>
       </div>
-      <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {colors.map((color) => (
-          <label
-            key={color.name}
-            className={`flex items-center justify-center rounded-md border py-3 px-3 text-sm font-medium uppercase sm:flex-1 
-              ${
-                color.stock > 0
-                  ? "cursor-pointer"
-                  : "cursor-not-allowed opacity-25"
-              }
-              ${
-                selectColor.name === color.name
-                  ? "bg-main-600 text-white hover:bg-main-700"
-                  : "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-              }
-            `}
-          >
-            <input
-              type="radio"
-              name="color"
+      <div className="mt-2">
+        <select
+          className="block w-full rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
+          value={selectColor.name}
+          onChange={(e) => {
+            const selectedColor = colors.find(
+              (color) => color.name === e.target.value
+            );
+            if (selectedColor) {
+              changeColor(selectedColor);
+            }
+          }}
+        >
+          {colors.map((color) => (
+            <option
+              key={color.name}
               value={color.name}
-              checked={selectColor.name === color.name}
-              onChange={() => changeColor(color)}
               disabled={color.stock === 0}
-              className="sr-only"
-            />
-            {color.name}
-          </label>
-        ))}
+            >
+              {color.stock > 0 ? color.name : `${color.name} (Out of stock)`}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
@@ -264,6 +250,44 @@ const LoadingPlaceholder = () => {
   return (
     <div className="animate-pulse flex col-span-2">
       <div className="rounded-lg bg-gray-300 h-[600px] w-[600px]" />
+    </div>
+  );
+};
+
+type HatSelectorProps = {
+  selectedHat: string;
+  setSelectedHat: (hat: string) => void;
+};
+
+const HatSelector: React.FC<HatSelectorProps> = ({
+  selectedHat,
+  setSelectedHat,
+}) => {
+  const hatOptions = [
+    { name: "None", value: "none" },
+    { name: "Birthday Hat", value: "birthday" },
+    { name: "Graduation", value: "graduation" },
+    { name: "Ribbon", value: "ribbon" },
+  ];
+
+  return (
+    <div className="mt-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-medium text-gray-900">Hat</h2>
+      </div>
+      <div className="mt-2">
+        <select
+          className="block w-full rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
+          value={selectedHat}
+          onChange={(e) => setSelectedHat(e.target.value)}
+        >
+          {hatOptions.map((hat) => (
+            <option key={hat.value} value={hat.value}>
+              {hat.name}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };

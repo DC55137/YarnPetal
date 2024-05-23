@@ -21,6 +21,8 @@ export default async function page({
     },
   });
 
+  const hatList = await prisma.hat.findMany();
+
   if (!bundleList) {
     return {
       notFound: true,

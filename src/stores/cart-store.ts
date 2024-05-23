@@ -13,6 +13,7 @@ export type CartItem = {
   bundlePrice: number;
   quantity: number;
   color: string;
+  hat: string;
 };
 
 export type CartState = {

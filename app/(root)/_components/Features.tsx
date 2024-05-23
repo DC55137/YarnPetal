@@ -16,14 +16,14 @@ export function Features1() {
           subHeader="With any bouquet purchase!"
         />
       </div>
-      <div className="md:container flex flex-col md:flex-row gap-10 ">
-        <FeaturesText
-          header="Customise Your Bouquet"
-          subHeader="Browse our selection of flowers and create your own bouquet!"
-        />
+      <div className="md:container flex flex-col md:flex-row-reverse gap-10 ">
         <FeatureImage
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716298927/YarnPetals/DSCF0752_psr0md.jpg"
           alt="Customise your bouquet"
+        />
+        <FeaturesText
+          header="Customise Your Bouquet"
+          subHeader="Browse our selection of flowers and create your own bouquet!"
         />
       </div>
     </div>
@@ -65,15 +65,8 @@ const FeaturesText = ({ header, subHeader }: FeaturesTextProps) => {
   return (
     <div className="TextDiv w-1/2 flex justify-center text-center md:text-left mx-auto">
       <div className="my-auto mx-auto flex flex-col gap-6">
-        <h1
-          className={cn(
-            "md:text-5xl font-bold  text-6xl lg:text-7xl xl:text-8xl text-accent-900",
-            pacifico.className
-          )}
-        >
-          {header}
-        </h1>
-        <p className="text-main-800 md:text-3xl text-2xl">{subHeader}</p>
+        <h2 className={cn(pacifico.className)}>{header}</h2>
+        <h4 className="text-main-800 ">{subHeader}</h4>
       </div>
     </div>
   );

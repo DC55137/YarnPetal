@@ -16,7 +16,7 @@ export default function BundlesCard({
   className?: string;
 }) {
   return (
-    <div className={cn("bg-white", className)}>
+    <div className={cn("bg-white pb-32", className)}>
       <div className="mx-auto max-w-7xl overflow-hidden px-4 sm:px-6 lg:px-8 pt-12">
         <Breadcrumb pages={pages} />
         <Header />
@@ -51,7 +51,6 @@ export default function BundlesCard({
           ))}
         </div>
       </div>
-      <div className="h-screen"></div>
     </div>
   );
 }
@@ -63,8 +62,7 @@ function Header() {
         <div className="mx-auto max-w-2xl lg:mx-0">
           <h2
             className={cn(
-              "my-4 text-4xl font-bold tracking-tight text-main-500 sm:text-6xl",
-              pacifico.className
+              "my-4 text-4xl font-bold tracking-tight text-main-500 sm:text-6xl"
             )}
           >
             Bundles

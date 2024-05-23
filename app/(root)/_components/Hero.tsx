@@ -16,7 +16,7 @@ export default function Hero() {
         {/* Right Section with Image */}
         <div className="RightSectionImage md:w-1/2 bg-main-500 flex md:items-end justify-center md:justify-start px-8 md:pt-32 pt-8  ">
           <Image
-            src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716271595/YarnPetals/giveGift_nx0xon.png"
+            src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716462664/YarnPetals/giveGift_atuztq.webp"
             alt="Bouquet image"
             width={500}
             height={500}
