@@ -33,7 +33,7 @@ const TopLine = () => {
 
 const SocialMediaLinks = () => {
   return (
-    <div className="social-media-links flex gap-3 sm:col-span-1 col-span-3 sm:justify-end justify-center">
+    <div className="social-media-links flex gap-3 sm:col-span-1 col-span-3 my-4 sm:my-0 sm:justify-end justify-center">
       <Link href="https://www.instagram.com/yarn.petals.gc/">
         <Instagram />
       </Link>
@@ -60,7 +60,7 @@ const NavLinks = () => {
       ${pathname === path && pathname === "/" && "hidden"}
       `;
   return (
-    <div className="flex gap-2 sm:col-span-1 col-span-3 justify-center">
+    <div className="flex gap-2 sm:col-span-1 col-span-3 justify-center my-4 sm:my-0">
       {navLinks.map((link) => (
         <a
           key={link.href}
@@ -76,7 +76,7 @@ const NavLinks = () => {
 
 const BottomLine = () => {
   return (
-    <div className="bottom-line flex gap-4 mx-auto my-4">
+    <div className="bottom-line flex sm:flex-row flex-col text-center gap-4 mx-auto my-4">
       <p>© 2021 All rights reserved. Designed by Colorlib</p>
       <a href="/privacypolicy">Privacy Policy</a>
       <a href="/termsofservice">Terms of Service</a>

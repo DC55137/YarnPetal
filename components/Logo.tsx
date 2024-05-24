@@ -14,7 +14,9 @@ export default function Logo() {
         width={50}
         height={50}
       />
-      <h1 className={cn(pacifico.className, "text-main-400 text-4xl")}>
+      <h1
+        className={cn(pacifico.className, "text-main-400 sm:text-4xl text-2xl")}
+      >
         Yarn Petals
       </h1>
     </Link>

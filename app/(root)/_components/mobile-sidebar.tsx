@@ -27,7 +27,7 @@ const MobileSidebar = ({}: {}) => {
         <div className="flex flex-col justify-between h-full pb-10 mt-10">
           <Link href="/" className="mx-auto mb-20">
             <span className="sr-only">Steps English Academy</span>
-            <Logo className="h-12 my-auto fill-main-500" />
+            <Logo />
           </Link>
           <div className="flex flex-col">
             {navigation.map((item) => (
