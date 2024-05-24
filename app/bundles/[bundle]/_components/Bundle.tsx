@@ -3,17 +3,24 @@
 import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
-import { Product, Bundle, Animal, Color } from "@prisma/client";
+import { Product, Bundle, Animal, Color, Hat } from "@prisma/client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { useCartStore } from "@/src/stores/cart-store";
 import { pacifico } from "@/app/fonts";
+import { set } from "zod";
 
 type BundleWithProducts = Bundle & {
   products: (Product & { animal: Animal; color: Color })[];
 };
 
-export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
+export default function BundlePage({
+  bundle,
+  hatList,
+}: {
+  bundle: BundleWithProducts;
+  hatList: Hat[];
+}) {
   const [selectColor, setSelectColor] = useState(bundle.products[0].color);
   const [selectedProduct, setSelectedProduct] = useState(bundle.products[0]);
   const [selectedHat, setSelectedHat] = useState("none");
@@ -79,7 +86,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
       bundlePrice: bundle.price,
       quantity: 1,
       color: selectColor.name,
-      hat: "none",
+      hat: selectedHat,
     });
   };
 
@@ -137,7 +144,9 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
               />
               <div className="mt-8">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-medium text-gray-900">Animal</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-1">
+                    Animal
+                  </h2>
                 </div>
 
                 <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -178,6 +187,7 @@ export default function BundlePage({ bundle }: { bundle: BundleWithProducts }) {
               <HatSelector
                 selectedHat={selectedHat}
                 setSelectedHat={setSelectedHat}
+                hatList={hatList}
               />
               <button
                 type="submit"
@@ -215,7 +225,7 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-gray-900">Theme</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">Theme</h2>
       </div>
       <div className="mt-2">
         <select
@@ -256,36 +266,55 @@ const LoadingPlaceholder = () => {
 type HatSelectorProps = {
   selectedHat: string;
   setSelectedHat: (hat: string) => void;
+  hatList: Hat[];
 };
 
 const HatSelector: React.FC<HatSelectorProps> = ({
   selectedHat,
   setSelectedHat,
+  hatList,
 }) => {
-  const hatOptions = [
-    { name: "None", value: "none" },
-    { name: "Birthday Hat", value: "birthday" },
-    { name: "Graduation", value: "graduation" },
-    { name: "Ribbon", value: "ribbon" },
-  ];
+  const outOfStockHats = hatList.filter((hat) => hat.stock === 0);
 
   return (
-    <div className="mt-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-gray-900">Hat</h2>
+    <div className="mt-8 ">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+            Select a Hat
+          </h2>
+          <p className="text-sm text-gray-600">
+            Optional - Add a hat to the animal to suit the occasion
+          </p>
+        </div>
+        <Image
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716475573/YarnPetals/small_uhhwt5.webp"
+          alt="Hat Choices"
+          width={100}
+          height={100}
+          className="rounded-full"
+        />
       </div>
-      <div className="mt-2">
+      <div className="mt-4">
         <select
-          className="block w-full rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
+          className="block w-full rounded-md border border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
           value={selectedHat}
           onChange={(e) => setSelectedHat(e.target.value)}
         >
-          {hatOptions.map((hat) => (
-            <option key={hat.value} value={hat.value}>
-              {hat.name}
+          <option value="none">None</option>
+          {hatList.map((hat) => (
+            <option key={hat.id} value={hat.name} disabled={hat.stock === 0}>
+              {hat.description}
             </option>
           ))}
         </select>
+        {outOfStockHats.length > 0 && (
+          <div className="mt-2 text-sm text-red-600">
+            {outOfStockHats.map((hat) => (
+              <p key={hat.id}>{hat.description} is out of stock</p>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

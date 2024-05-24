@@ -1,12 +1,11 @@
 import { pacifico } from "@/app/fonts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import React from "react";
 
 export default function Delivery() {
   return (
-    <div className="relative overflow-hidden bg-accent-400">
+    <div className="relative overflow-hidden bg-secondary-500">
       {/* Sale */}
       <section
         aria-labelledby="sale-heading"
@@ -16,7 +15,7 @@ export default function Delivery() {
           <h2
             id="sale-heading"
             className={cn(
-              "text-7xl font-bold tracking-tight text-white md:text-8xl my-8",
+              "text-7xl font-bold tracking-tight text-accent-900 md:text-8xl my-8",
               pacifico.className
             )}
           >

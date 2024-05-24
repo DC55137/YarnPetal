@@ -67,9 +67,11 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                       <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800 ">
                         {bundle.product.animal.name}
                       </h4>
-                      <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800 ">
-                        {bundle.hat}
-                      </h4>
+                      {bundle.hat !== "none" && (
+                        <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800 ">
+                          {bundle.hat} hat
+                        </h4>
+                      )}
                     </div>
 
                     <div className="ml-4 flow-root flex-shrink-0">

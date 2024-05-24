@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useRef, useState } from "react";
 import { pacifico } from "@/app/fonts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -5,6 +7,34 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function Display() {
+  const imageRef = useRef(null);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsIntersecting(entry.isIntersecting);
+      },
+      {
+        root: null,
+        rootMargin: "0px",
+        threshold: 0.1,
+      }
+    );
+
+    const currentImageRef = imageRef.current;
+
+    if (currentImageRef) {
+      observer.observe(currentImageRef);
+    }
+
+    return () => {
+      if (currentImageRef) {
+        observer.unobserve(currentImageRef);
+      }
+    };
+  }, [imageRef]);
+
   return (
     <div className="bg-accent-400 py-20">
       <div className="grid grid-cols-2 w-full p-10 container">
@@ -20,11 +50,14 @@ export default function Display() {
           className="md:w-10/12 w-full rounded-2xl"
         />
         <Image
+          ref={imageRef}
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716465935/YarnPetals/IMG_2427_m5xnh0.webp"
           alt="Customise your bouquet"
-          width={500} // Adjust the width as needed
-          height={500} // Adjust the height as needed
-          className="rounded-2xl absolute hidden md:block sm:top-20 right-20 w-3/12"
+          width={500}
+          height={500}
+          className={`rounded-2xl absolute hidden md:block sm:top-20 right-20 w-3/12 ${
+            isIntersecting ? "image-slide-in" : "image-slide-out"
+          }`}
         />
       </div>
     </div>

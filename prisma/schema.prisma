@@ -83,7 +83,6 @@ model Hat {
   description  String
   price        Float
   stock        Int
-  imageUrl     String
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   orderItems   OrderItem[]

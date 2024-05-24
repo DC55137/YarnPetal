@@ -8,7 +8,7 @@ export function Features1() {
     <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
       <div className="md:container flex flex-col-reverse md:flex-row gap-10 mt-10 md:mt-0">
         <FeatureImage
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716383052/YarnPetals/FreeHat_bp7kkn.png"
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474284/YarnPetals/Untitled_Artwork-5_bcfnni.webp"
           alt="Free Hat with purchase"
         />
         <FeaturesText
@@ -18,7 +18,7 @@ export function Features1() {
       </div>
       <div className="md:container flex flex-col md:flex-row-reverse gap-10 ">
         <FeatureImage
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716298927/YarnPetals/DSCF0752_psr0md.jpg"
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474520/YarnPetals/IMG_1883_xlaxzr.webp"
           alt="Customise your bouquet"
         />
         <FeaturesText
@@ -34,7 +34,7 @@ export function Features2() {
     <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
       <div className="md:container flex flex-col-reverse md:flex-row md:gap-10 mt-10 md:mt-0">
         <FeatureImage
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716383646/YarnPetals/Birthdays_eqer04.png"
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474234/YarnPetals/GRADUATION_BUNDLE-2_1024x1024_xz3lal.webp"
           alt="Free Hat with purchase"
         />
         <FeaturesText
@@ -48,7 +48,7 @@ export function Features2() {
           subHeader="Celebrate with a bouquet!"
         />
         <FeatureImage
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716384006/YarnPetals/Graduation_jwc2bd.png"
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474234/YarnPetals/Untitled_design-9_1024x1024_z2hnzc.webp"
           alt="Customise your bouquet"
         />
       </div>
@@ -81,7 +81,7 @@ type FeatureImageProps = {
 
 const FeatureImage = ({ src, alt }: FeatureImageProps) => {
   return (
-    <div className="md:w-1/2 justify-center align-middle md:mx-auto my-10 mx-2">
+    <div className="md:w-1/2 justify-center align-middle md:mx-auto my-10 mx-2 ">
       <Image
         src={src}
         alt={alt}

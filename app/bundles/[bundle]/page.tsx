@@ -31,7 +31,7 @@ export default async function page({
 
   return (
     <div className="bg-white">
-      <BundlePage bundle={bundleList} />
+      <BundlePage bundle={bundleList} hatList={hatList} />
     </div>
   );
 }
