@@ -4,9 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-export default function Logo() {
+export default function Logo({ className }: { className?: string }) {
   return (
-    <Link className="flex gap-2 items-center justify-center" href="/">
+    <Link
+      className={cn("flex gap-2 items-center justify-center", className)}
+      href="/"
+    >
       <Image
         className="h-12 w-auto"
         src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716465126/YarnPetals/logo_2_lyaxqd.webp"
