@@ -9,14 +9,7 @@ export default function Bundles() {
     <div className="py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-2xl lg:mx-0">
-          <h2
-            className={cn(
-              "text-3xl font-bold tracking-tight text-main-500 sm:text-8xl",
-              pacifico.className
-            )}
-          >
-            Our Bundles
-          </h2>
+          <h2 className={cn(pacifico.className)}>Our Bundles</h2>
           <p className="mt-6 text-lg leading-8 text-gray-600">
             Discover the best of Yarn Petals with our curated bundles. Each
             bundle offers a selection of themes based on different colors. Our

@@ -9,7 +9,6 @@ import Delivery from "./_components/Delivery";
 export default function Home() {
   return (
     <>
-      <Navbar />
       <main className="">
         <Hero />
         <Display />

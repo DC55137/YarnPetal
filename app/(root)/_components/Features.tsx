@@ -16,7 +16,7 @@ export function Features1() {
           subHeader="With any bouquet purchase!"
         />
       </div>
-      <div className="md:container flex flex-col md:flex-row-reverse gap-10 ">
+      <div className="md:container flex flex-col-reverse md:flex-row-reverse gap-10 ">
         <FeatureImage
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474520/YarnPetals/IMG_1883_xlaxzr.webp"
           alt="Customise your bouquet"
@@ -31,7 +31,7 @@ export function Features1() {
 }
 export function Features2() {
   return (
-    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
+    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 pb-20">
       <div className="md:container flex flex-col-reverse md:flex-row md:gap-10 mt-10 md:mt-0">
         <FeatureImage
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474234/YarnPetals/GRADUATION_BUNDLE-2_1024x1024_xz3lal.webp"
@@ -65,9 +65,7 @@ const FeaturesText = ({ header, subHeader }: FeaturesTextProps) => {
   return (
     <div className="TextDiv w-1/2 flex justify-center text-center md:text-left mx-auto">
       <div className="my-auto mx-auto flex flex-col gap-6">
-        <h2 className={cn(pacifico.className, "text-6xl text-center")}>
-          {header}
-        </h2>
+        <h2 className={cn(pacifico.className, "text-center")}>{header}</h2>
         <h4 className="text-main-800 text-center">{subHeader}</h4>
       </div>
     </div>

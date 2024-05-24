@@ -88,7 +88,7 @@ export default function Cart() {
                   {/* Shipping to be determined */}
                   <div className="mt-6 px-6">
                     <p className="text-sm text-gray-500">
-                      Shipping costs will be determined during checkout
+                      Free Shipping within the Gold Coast.
                     </p>
                   </div>
                   <div className="mt-16 border-t border-gray-200 py-6 text-right">

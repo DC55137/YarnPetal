@@ -2,12 +2,14 @@
 
 "use client";
 import { deliveryMethodType } from "@/data/constants";
-import { CartItem } from "@/src/stores/cart-store";
+import { CartItem, useCartStore } from "@/src/stores/cart-store";
 import axios from "axios";
 import React, { useState } from "react";
 import { z } from "zod";
 import OrderSummary from "./OrderSummary";
 import DeliveryOptions from "./DeliveryOptions";
+import { orderPayCash } from "@/actions/order-pay-cash";
+import toast from "react-hot-toast";
 
 const pickUpFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -29,6 +31,7 @@ export default function CheckoutPickUpForm({
   setSelectedDeliveryMethod,
   cart,
 }: CheckoutPickUpFormProps) {
+  const { clearCart } = useCartStore((state) => state);
   const [form, setForm] = useState<PickUpFormData>({
     firstName: "",
     lastName: "",
@@ -56,13 +59,33 @@ export default function CheckoutPickUpForm({
         selectedDeliveryMethod.price,
       cartItems: cart,
     };
+    // check selectedDeliveryMethod if it's pay cash or pay online
+
     try {
       pickUpFormSchema.parse(form);
-      const response = await axios.post("/api/checkout", formData);
-      setErrors({}); // Clear all errors on successful submission
-      window.location.assign(response.data.url);
+      if (selectedDeliveryMethod.id === 1) {
+        const userConfirmed = window.confirm(
+          "Please confirm that you will pay cash on pick up"
+        );
+        if (!userConfirmed) return;
+        orderPayCash({ formData })
+          .then((response) => {
+            setErrors({}); // Clear all errors on successful submission
+
+            console.log(response);
+            clearCart();
+            toast.success("Order placed successfully");
+            window.location.assign(`/order-confirmation/${response}`);
+          })
+          .catch((error) => {
+            toast.error(`error: ${error.message}`);
+          });
+      } else {
+        const response = await axios.post("/api/checkout", formData);
+        setErrors({}); // Clear all errors on successful submission
+        window.location.assign(response.data.url);
+      }
     } catch (error) {
-      console.log(error);
       if (error instanceof z.ZodError) {
         const newErrors = error.flatten().fieldErrors;
         const errorMessages: Record<string, string> = {};
