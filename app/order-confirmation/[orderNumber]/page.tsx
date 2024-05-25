@@ -171,17 +171,19 @@ export default async function page({
                 <dt className="font-medium text-gray-900">
                   {deliveryMethod?.title}
                 </dt>
-                <dd className="text-gray-700">{deliveryMethod?.price}</dd>
+                <dd className="text-gray-700">
+                  ${deliveryMethod?.price.toFixed(2)}
+                </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-900">Total</dt>
                 <dd className="text-gray-900">
                   $
-                  {order.orderItems
-                    .reduce((acc, item) => {
+                  {Number(
+                    order.orderItems.reduce((acc, item) => {
                       return acc + item.quantity * item.price;
-                    }, 0)
-                    .toFixed(2) + deliveryMethod?.price}
+                    }, 0) + deliveryMethod!.price
+                  ).toFixed(2)}
                 </dd>
               </div>
             </dl>

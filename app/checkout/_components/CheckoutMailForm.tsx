@@ -273,7 +273,7 @@ export default function CheckoutMailForm({
                         <input
                           type="text"
                           onChange={handleChange}
-                          value={isAustraliaWide ? form.region : "Gold Coast"}
+                          value={isAustraliaWide ? form.city : "Gold Coast"}
                           name="city"
                           id="city"
                           autoComplete="address-level2"
