@@ -104,11 +104,12 @@ model Order {
   updatedAt      DateTime    @updatedAt
   orderItems     OrderItem[]
   paid          Boolean      @default(false)
-  shippingCity   String?
-  shippingState  String?
-  shippingZip    String?
-  shippingCountry String?
-  shippingAddress String?
+  address String? 
+  apartment String? 
+  city String?
+  country String?
+  region String?
+  postalCode String?
 }
 
 model OrderItem {

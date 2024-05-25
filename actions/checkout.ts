@@ -1,15 +1,11 @@
 "use server";
-
+import Stripe from "stripe";
+import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
 import { CartItem } from "@/src/stores/cart-store";
+import { generateOrderNumber } from "@/lib/functions";
 
-function generateOrderNumber() {
-  // Generate a random number between 0 and 2,147,483,647
-  const max = 2147483647;
-  return Math.floor(Math.random() * (max + 1));
-}
-
-type OrderPayCashProps = {
+type checkoutProps = {
   formData: {
     firstName: string;
     lastName: string;
@@ -18,10 +14,16 @@ type OrderPayCashProps = {
     deliveryMethod: string;
     price: number;
     cartItems: CartItem[];
+    address?: string;
+    apartment?: string;
+    city?: string;
+    country?: string;
+    region?: string;
+    postalCode?: string;
   };
 };
 
-export async function orderPayCash({ formData }: OrderPayCashProps) {
+export async function checkout({ formData }: checkoutProps) {
   const {
     firstName,
     lastName,
@@ -30,42 +32,71 @@ export async function orderPayCash({ formData }: OrderPayCashProps) {
     deliveryMethod,
     price,
     cartItems,
+    address,
+    apartment,
+    city,
+    country,
+    region,
+    postalCode,
   } = formData;
 
-  // create a unique order number by checking with the database
-  let orderNumber = generateOrderNumber();
-  let order = await prismadb.order.findFirst({
-    where: { orderNumber },
-  });
-  while (order) {
-    orderNumber = generateOrderNumber();
-    order = await prismadb.order.findUnique({
-      where: { orderNumber },
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
+    cartItems.map((item) => {
+      const productName = item.product.animal
+        ? `${item.bundleName} - ${item.product.animal.name} - ${item.color} `
+        : item.bundleName;
+      return {
+        quantity: item.quantity,
+        price_data: {
+          currency: "aud",
+          product_data: {
+            name: productName,
+          },
+          unit_amount: Math.round(item.bundlePrice * 100), // Use item price here
+        },
+      };
     });
-  }
 
-  order = await prismadb.order.create({
+  // Save order details in the database and generate an order ID
+  const order = await prismadb.order.create({
     data: {
-      orderNumber,
-      firstName,
-      lastName,
+      orderNumber: generateOrderNumber(),
       email,
       phone,
+      firstName,
+      lastName,
       deliveryMethod,
       total: price,
+      address,
+      apartment,
+      city,
+      country,
+      region,
+      postalCode,
       orderItems: {
         create: cartItems.map((item) => ({
           hat: item.hat,
           productId: item.product.id,
-          quantity: item.quantity,
-          price: item.bundlePrice,
           color: item.color,
           bundleImage: item.product.imageUrl,
+          quantity: item.quantity,
+          price: item.bundlePrice,
           bundle: item.bundleName,
         })),
       },
     },
   });
 
-  return order;
+  const session = await stripe.checkout.sessions.create({
+    line_items,
+    mode: "payment",
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/order-confirmation/${order.orderNumber}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
+    customer_email: email,
+    metadata: {
+      orderId: order.id.toString(), // Pass the order ID in the metadata
+    },
+  });
+
+  return { url: session.url };
 }

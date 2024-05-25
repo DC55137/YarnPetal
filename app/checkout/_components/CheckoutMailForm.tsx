@@ -7,7 +7,9 @@ import { z } from "zod";
 import { deliveryMethodType } from "@/data/constants";
 import DeliveryOptions from "./DeliveryOptions";
 import OrderSummary from "./OrderSummary";
-import { CartItem } from "@/src/stores/cart-store";
+import { CartItem, useCartStore } from "@/src/stores/cart-store";
+import { checkout } from "@/actions/checkout";
+import toast from "react-hot-toast";
 
 const mailFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -35,6 +37,8 @@ export default function CheckoutMailForm({
   setSelectedDeliveryMethod,
   cart,
 }: CheckoutMailFormProps) {
+  const { clearCart } = useCartStore((state) => state);
+
   const isAustraliaWide = selectedDeliveryMethod.id === 4;
   const [form, setForm] = useState<MailFormData>({
     firstName: "",
@@ -68,10 +72,19 @@ export default function CheckoutMailForm({
       cartItems: cart,
     };
     try {
-      mailFormSchema.parse(form);
-      const response = await axios.post("/api/checkout", formData);
-      setErrors({}); // Clear all errors on successful submission
-      window.location.assign(response.data.url);
+      checkout({ formData })
+        .then((response) => {
+          if (response.url) {
+            setErrors({}); // Clear all errors on successful submission
+            clearCart();
+            window.location.assign(response.url);
+          } else {
+            toast.error("Error: No URL returned");
+          }
+        })
+        .catch((error) => {
+          toast.error(`error: ${error.message}`);
+        });
     } catch (error) {
       if (error instanceof z.ZodError) {
         const newErrors = error.flatten().fieldErrors;

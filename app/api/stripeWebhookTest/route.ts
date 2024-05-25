@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
-import { generateOrderNumber } from "@/lib/functions";
 import { Resend } from "resend";
 
 export async function POST(req: Request) {
@@ -32,12 +31,14 @@ export async function POST(req: Request) {
       });
     }
 
-    const order = await prismadb.order.findUnique({
-      where: { id: Number(orderId) },
-      include: {
-        orderItems: true,
-      },
-    });
+    const order = // Update the order status to paid
+      await prismadb.order.update({
+        where: { id: Number(orderId) },
+        include: {
+          orderItems: true,
+        },
+        data: { paid: true },
+      });
 
     if (!order) {
       return new NextResponse("Order not found", { status: 404 });
@@ -56,7 +57,13 @@ export async function POST(req: Request) {
             <strong>Last Name:</strong> ${order.lastName}<br />
             <strong>Email:</strong> ${order.email}<br />
             <strong>Phone:</strong> ${order.phone}<br />
-            <strong>Address:</strong> ${order.shippingAddress}<br />
+            <strong>Address:</strong> ${order.address}<br />
+            <strong>Apartment:</strong> ${order.apartment}<br />
+            <strong>City:</strong> ${order.city}<br />
+            <strong>Country:</strong> ${order.country}<br />
+            <strong>Region:</strong> ${order.region}<br />
+            <strong>Postal Code:</strong> ${order.postalCode}<br />
+          
             <strong>Delivery Method:</strong> ${order.deliveryMethod}<br />
             <strong>Price:</strong> ${order.total}<br />
             <strong>Cart Items:</strong> ${order.orderItems.map(

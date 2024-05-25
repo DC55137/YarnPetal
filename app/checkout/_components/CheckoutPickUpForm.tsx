@@ -3,13 +3,13 @@
 "use client";
 import { deliveryMethodType } from "@/data/constants";
 import { CartItem, useCartStore } from "@/src/stores/cart-store";
-import axios from "axios";
 import React, { useState } from "react";
 import { z } from "zod";
 import OrderSummary from "./OrderSummary";
 import DeliveryOptions from "./DeliveryOptions";
 import { orderPayCash } from "@/actions/order-pay-cash";
 import toast from "react-hot-toast";
+import { checkout } from "@/actions/checkout";
 
 const pickUpFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -72,7 +72,6 @@ export default function CheckoutPickUpForm({
           .then((response) => {
             setErrors({}); // Clear all errors on successful submission
 
-            console.log(response);
             clearCart();
             toast.success("Order placed successfully");
             window.location.assign(`/order-confirmation/${response}`);
@@ -81,9 +80,22 @@ export default function CheckoutPickUpForm({
             toast.error(`error: ${error.message}`);
           });
       } else {
-        const response = await axios.post("/api/checkout", formData);
-        setErrors({}); // Clear all errors on successful submission
-        window.location.assign(response.data.url);
+        checkout({ formData })
+          .then((response) => {
+            if (response.url) {
+              setErrors({}); // Clear all errors on successful submission
+              clearCart();
+              window.location.assign(response.url);
+            } else {
+              toast.error("Error: No URL returned");
+            }
+          })
+          .catch((error) => {
+            toast.error(`error: ${error.message}`);
+          });
+        // const response = await axios.post("/api/checkout", formData);
+        // setErrors({}); // Clear all errors on successful submission
+        // window.location.assign(response.data.url);
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
