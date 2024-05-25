@@ -52,7 +52,6 @@ export async function orderPayCash({ formData }: OrderPayCashProps) {
       email,
       phone,
       deliveryMethod,
-      price,
       total: price,
       orderItems: {
         create: cartItems.map((item) => ({
