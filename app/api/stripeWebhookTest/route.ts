@@ -63,7 +63,6 @@ export async function POST(req: Request) {
             <strong>Country:</strong> ${order.country}<br />
             <strong>Region:</strong> ${order.region}<br />
             <strong>Postal Code:</strong> ${order.postalCode}<br />
-          
             <strong>Delivery Method:</strong> ${order.deliveryMethod}<br />
             <strong>Price:</strong> ${order.total}<br />
             <strong>Cart Items:</strong> ${order.orderItems.map(

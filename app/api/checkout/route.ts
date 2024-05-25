@@ -54,7 +54,7 @@ export async function POST(req: Request) {
         phone,
         firstName,
         lastName,
-        shippingAddress: address,
+        address: address,
         deliveryMethod,
         total: price,
         orderItems: {
