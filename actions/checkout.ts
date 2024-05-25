@@ -2,7 +2,12 @@
 
 import prismadb from "@/lib/prismadb";
 import { CartItem } from "@/src/stores/cart-store";
-import { generateOrderNumber } from "@/lib/functions";
+
+function generateOrderNumber() {
+  // Generate a random number between 0 and 2,147,483,647
+  const max = 2147483647;
+  return Math.floor(Math.random() * (max + 1));
+}
 
 type OrderPayCashProps = {
   formData: {
@@ -47,19 +52,21 @@ export async function orderPayCash({ formData }: OrderPayCashProps) {
       email,
       phone,
       deliveryMethod,
+      price,
       total: price,
       orderItems: {
         create: cartItems.map((item) => ({
           hat: item.hat,
           productId: item.product.id,
-          color: item.color,
-          bundleImage: item.product.imageUrl,
           quantity: item.quantity,
           price: item.bundlePrice,
+          color: item.color,
+          bundleImage: item.product.imageUrl,
           bundle: item.bundleName,
         })),
       },
     },
   });
-  return order.orderNumber;
+
+  return order;
 }

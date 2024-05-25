@@ -1,3 +1,9 @@
+export function generateOrderNumber() {
+  // Generate a random number between 0 and 2,147,483,647
+  const max = 2147483647;
+  return Math.floor(Math.random() * (max + 1));
+}
+
 type NavigationItem = {
   name: string;
   href: string;

@@ -90,12 +90,12 @@ model Hat {
 
 model Order {
   id             Int         @id @default(autoincrement())
+  orderNumber   Int       @unique
   userId         Int?
   firstName      String
   lastName       String
   email          String
   phone    String
-  price         Float
   deliveryMethod String
   user           User?        @relation(fields: [userId], references: [id])
   total          Float

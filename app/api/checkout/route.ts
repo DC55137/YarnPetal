@@ -1,9 +1,9 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-
-import prismadb from "@/lib/prismadb";
 import { stripe } from "@/lib/stripe";
+import prismadb from "@/lib/prismadb";
 import { CartItem } from "@/src/stores/cart-store";
+import { generateOrderNumber } from "@/lib/functions";
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       deliveryMethod,
       discountCode,
       price,
-      cartItems, // Include this to accept cart items
+      cartItems,
     } = body as {
       email: string;
       phone: string;
@@ -27,22 +27,8 @@ export async function POST(req: Request) {
       deliveryMethod: string;
       discountCode: string;
       price: number;
-      cartItems: CartItem[]; // Include this to accept cart items
+      cartItems: CartItem[];
     };
-
-    const bundleNamesQantityAndAnimal = cartItems
-      .map((item) => {
-        return `${item.bundleName} x${item.quantity} ${item.product.animal.name}`;
-      })
-      .join(", ");
-
-    const bundleNames = cartItems.map((item) => item.bundleName).join(", ");
-
-    const productName = discountCode
-      ? `credit(s) - Discount: ${discountCode.toUpperCase()} ${discountCode}% off`
-      : `
-        ${bundleNamesQantityAndAnimal} 
-      `;
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
       cartItems.map((item) => {
@@ -61,13 +47,39 @@ export async function POST(req: Request) {
         };
       });
 
+    // Save cart items in the database and generate an order ID
+    const order = await prismadb.order.create({
+      data: {
+        orderNumber: generateOrderNumber(),
+        email,
+        phone,
+        firstName,
+        lastName,
+        shippingAddress: address,
+        deliveryMethod,
+        total: price,
+        orderItems: {
+          create: cartItems.map((item) => ({
+            hat: item.hat,
+            productId: item.product.id,
+            color: item.color,
+            bundleImage: item.product.imageUrl,
+            quantity: item.quantity,
+            price: item.bundlePrice,
+            bundle: item.bundleName,
+          })),
+        },
+      },
+    });
+
     const session = await stripe.checkout.sessions.create({
       line_items,
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/?success=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/order-confirmation/${order.orderNumber}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
       customer_email: email,
       metadata: {
+        orderId: order.id.toString(),
         email,
         phone,
         firstName,
@@ -77,7 +89,6 @@ export async function POST(req: Request) {
         price: price.toString(),
         discountCode: discountCode ? discountCode.toUpperCase() : "",
         discountApplied: discountCode ? "true" : "false",
-        cartItems: bundleNamesQantityAndAnimal, // Store cart items as a JSON string
       },
     });
 
