@@ -127,7 +127,7 @@ export default async function page({
           ))}
 
           <div className="sm:ml-40 sm:pl-6">
-            {order.shippingAddress && (
+            {order.address && (
               <>
                 <h3 className="sr-only">Your information</h3>
                 <h4 className="sr-only">Addresses</h4>
@@ -141,10 +141,9 @@ export default async function page({
                         <span className="block">
                           {order.firstName} {order.lastName}
                         </span>
-                        <span className="block">{order.shippingAddress}</span>
+                        <span className="block">{order.address}</span>
                         <span className="block">
-                          {order.shippingCity}, {order.shippingState}{" "}
-                          {order.shippingZip}
+                          {order.city}, {order.region} {order.postalCode}
                         </span>
                       </address>
                     </dd>
