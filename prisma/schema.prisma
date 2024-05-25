@@ -103,6 +103,7 @@ model Order {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   orderItems     OrderItem[]
+  paid          Boolean      @default(false)
   shippingCity   String?
   shippingState  String?
   shippingZip    String?

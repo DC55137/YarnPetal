@@ -15,7 +15,6 @@ export async function POST(req: Request) {
       lastName,
       address,
       deliveryMethod,
-      discountCode,
       price,
       cartItems,
     } = body as {
@@ -47,7 +46,7 @@ export async function POST(req: Request) {
         };
       });
 
-    // Save cart items in the database and generate an order ID
+    // Save order details in the database and generate an order ID
     const order = await prismadb.order.create({
       data: {
         orderNumber: generateOrderNumber(),
@@ -79,16 +78,7 @@ export async function POST(req: Request) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
       customer_email: email,
       metadata: {
-        orderId: order.id.toString(),
-        email,
-        phone,
-        firstName,
-        lastName,
-        address,
-        deliveryMethod,
-        price: price.toString(),
-        discountCode: discountCode ? discountCode.toUpperCase() : "",
-        discountApplied: discountCode ? "true" : "false",
+        orderId: order.id.toString(), // Pass the order ID in the metadata
       },
     });
 
