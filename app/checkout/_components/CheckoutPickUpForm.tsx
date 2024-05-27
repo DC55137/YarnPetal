@@ -97,11 +97,8 @@ export default function CheckoutPickUpForm({
             }
           })
           .catch((error) => {
-            toast.error(`error: ${error.message}`);
+            toast.error(`error from server: ${error.message}`);
           });
-        // const response = await axios.post("/api/checkout", formData);
-        // setErrors({}); // Clear all errors on successful submission
-        // window.location.assign(response.data.url);
       }
     } catch (error) {
       if (error instanceof z.ZodError) {

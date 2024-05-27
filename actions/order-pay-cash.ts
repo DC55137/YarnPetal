@@ -27,39 +27,45 @@ export async function orderPayCash({ formData }: OrderPayCashProps) {
     cartItems,
   } = formData;
 
-  // create a unique order number by checking with the database
-  let orderNumber = generateOrderNumber();
-  let order = await prismadb.order.findFirst({
-    where: { orderNumber },
-  });
-  while (order) {
-    orderNumber = generateOrderNumber();
-    order = await prismadb.order.findUnique({
+  try {
+    // create a unique order number by checking with the database
+    let orderNumber = generateOrderNumber();
+    let order = await prismadb.order.findFirst({
       where: { orderNumber },
     });
-  }
+    while (order) {
+      orderNumber = generateOrderNumber();
+      order = await prismadb.order.findFirst({
+        where: { orderNumber },
+      });
+    }
 
-  order = await prismadb.order.create({
-    data: {
-      orderNumber,
-      firstName,
-      lastName,
-      email,
-      phone,
-      deliveryMethod,
-      total: price,
-      orderItems: {
-        create: cartItems.map((item) => ({
-          hat: item.hat,
-          productId: item.product.id,
-          color: item.color,
-          bundleImage: item.product.imageUrl,
-          quantity: item.quantity,
-          price: item.bundlePrice,
-          bundle: item.bundleName,
-        })),
+    order = await prismadb.order.create({
+      data: {
+        orderNumber,
+        firstName,
+        lastName,
+        email,
+        phone,
+        deliveryMethod,
+        total: price,
+        orderItems: {
+          create: cartItems.map((item) => ({
+            hat: item.hat,
+            productId: item.product.id,
+            color: item.color,
+            bundleImage: item.product.imageUrl,
+            quantity: item.quantity,
+            price: item.bundlePrice,
+            bundle: item.bundleName,
+          })),
+        },
       },
-    },
-  });
-  return order.orderNumber;
+    });
+
+    return order.orderNumber;
+  } catch (error) {
+    console.error("Error creating order:", error);
+    throw new Error("An error occurred while processing the order");
+  }
 }
