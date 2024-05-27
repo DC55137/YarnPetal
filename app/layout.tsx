@@ -4,7 +4,6 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
 import Footer from "@/components/Footer";
-import Navbar from "./(root)/_components/Navbar";
 
 export const metadata: Metadata = {
   title: "Yarn Petals",
@@ -20,7 +19,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(inter.className, "bg-secondary-500")}>
         <Toaster />
-        <Navbar />
 
         {children}
         <Footer />

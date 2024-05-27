@@ -4,7 +4,7 @@
 import { deliveryMethodType } from "@/data/constants";
 import { CartItem, useCartStore } from "@/src/stores/cart-store";
 import React, { useState } from "react";
-import { z } from "zod";
+import { set, z } from "zod";
 import OrderSummary from "./OrderSummary";
 import DeliveryOptions from "./DeliveryOptions";
 import { orderPayCash } from "@/actions/order-pay-cash";
@@ -40,6 +40,7 @@ export default function CheckoutPickUpForm({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target as {
@@ -51,6 +52,7 @@ export default function CheckoutPickUpForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
     const formData = {
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
@@ -63,15 +65,19 @@ export default function CheckoutPickUpForm({
 
     try {
       pickUpFormSchema.parse(form);
+      if (cart.length === 0) {
+        toast.error("Cart is empty");
+        setLoading(false);
+        return;
+      }
       if (selectedDeliveryMethod.id === 1) {
         const userConfirmed = window.confirm(
-          "Please confirm that you will pay cash on pick up"
+          "Please confirm that you would like to pay cash on pick up"
         );
         if (!userConfirmed) return;
         orderPayCash({ formData })
           .then((response) => {
             setErrors({}); // Clear all errors on successful submission
-
             clearCart();
             toast.success("Order placed successfully");
             window.location.assign(`/order-confirmation/${response}`);
@@ -106,6 +112,7 @@ export default function CheckoutPickUpForm({
           errorMessages[key] = newErrors[key]?.[0] ?? "Unexpected error";
         }
         setErrors(errorMessages);
+        setLoading(false);
       }
     }
   };
@@ -228,13 +235,15 @@ export default function CheckoutPickUpForm({
             <OrderSummary
               cart={cart}
               selectedDeliveryMethod={selectedDeliveryMethod}
+              pickUp={true}
             />
             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
               <button
+                disabled={loading}
                 typeof="submit"
                 className="w-full rounded-md border border-transparent bg-main-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 focus:ring-offset-gray-50"
               >
-                Confirm order
+                {loading ? "Loading..." : "Confirm order"}
               </button>
             </div>
           </div>

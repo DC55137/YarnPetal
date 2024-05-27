@@ -5,8 +5,7 @@ import { usePathname } from "next/navigation";
 import Cart from "./Cart";
 import MobileSidebar from "./mobile-sidebar";
 import { cn } from "@/lib/utils";
-import { generateNavigation } from "../../../lib/functions";
-import { pacifico } from "@/app/fonts";
+import { generateNavigation } from "@/lib/functions";
 import Logo from "@/components/Logo";
 
 export default function Navbar() {
