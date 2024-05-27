@@ -39,7 +39,8 @@ export const useCartStore = create<CartStore>()(
       addToCart: (newItem: CartItem) => {
         set((state) => {
           const cartItemIndex = state.cart.findIndex(
-            (item) => item.product.id === newItem.product.id
+            (item) =>
+              item.product.id === newItem.product.id && item.hat === newItem.hat
           );
           if (cartItemIndex !== -1) {
             // Product already in cart, update the quantity
