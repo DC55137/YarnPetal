@@ -1,4 +1,3 @@
-import Navbar from "./_components/Navbar";
 import Hero from "./_components/Hero";
 import { Features1, Features2 } from "./_components/Features";
 
