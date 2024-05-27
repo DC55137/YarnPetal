@@ -4,7 +4,6 @@ import React from "react";
 export default function Page() {
   return (
     <>
-      <Navbar />
       <div className="container">
         <h2 className="pt-20">Terms of Service</h2>
         <p>
