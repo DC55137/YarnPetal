@@ -1,11 +1,9 @@
 // Privacy Policy Page
 import React from "react";
-import Navbar from "../(root)/_components/Navbar";
 
 export default function page() {
   return (
     <>
-      <Navbar />
       <div className="container">
         <h1 className="pt-20">Privacy Policy</h1>
         <p>

@@ -1,6 +1,5 @@
 // terms of service page
 import React from "react";
-import Navbar from "../(root)/_components/Navbar";
 
 export default function Page() {
   return (
