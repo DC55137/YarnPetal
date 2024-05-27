@@ -8,7 +8,6 @@ import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { useCartStore } from "@/src/stores/cart-store";
 import { pacifico } from "@/app/fonts";
-import { set } from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -24,6 +23,7 @@ export default function BundlePage({
   bundle: BundleWithProducts;
   hatList: Hat[];
 }) {
+  const [loading, setLoading] = useState(false);
   const [selectColor, setSelectColor] = useState(bundle.products[0].color);
   const [selectedProduct, setSelectedProduct] = useState(bundle.products[0]);
   const [selectedHat, setSelectedHat] = useState("none");
@@ -82,7 +82,7 @@ export default function BundlePage({
 
   const handleAddToCart = (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission from reloading the page
-    toast.success("Added to cart");
+    setLoading(true);
     addToCart({
       product: selectedProduct,
       bundleName: bundle.name,
@@ -92,6 +92,10 @@ export default function BundlePage({
       color: selectColor.name,
       hat: selectedHat,
     });
+    toast.success("Added to cart");
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
   };
 
   return (
@@ -193,8 +197,13 @@ export default function BundlePage({
                 setSelectedHat={setSelectedHat}
                 hatList={hatList}
               />
-              <Button className="w-full mt-4" size={"lg"} type="submit">
-                Add to cart
+              <Button
+                disabled={loading}
+                className={cn("w-full mt-4", { "button-added": loading })}
+                size={"lg"}
+                type="submit"
+              >
+                {loading ? "Added" : "Add to cart"}
               </Button>
             </form>
             <Link href="/checkout">

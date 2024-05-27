@@ -137,3 +137,14 @@ h4 {
 .image-slide-out {
   animation: slideOut 1s forwards;
 }
+
+.button-added {
+  background-color: #28a745 !important; /* Green color to indicate success */
+  color: white !important;
+}
+
+.button-added::after {
+  content: "✔"; /* Checkmark */
+  display: inline-block;
+  margin-left: 8px;
+}
