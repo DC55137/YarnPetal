@@ -37,7 +37,7 @@ const SocialMediaLinks = () => {
       <Link href="https://www.instagram.com/yarn.petals.gc/">
         <Instagram />
       </Link>
-      <Link href="https://www.facebook.com/profile.php?id=100093136268573">
+      <Link href="https://www.facebook.com/profile.php?id=61555684613906&mibextid=LQQJ4d">
         <Facebook />
       </Link>
     </div>

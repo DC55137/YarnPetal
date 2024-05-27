@@ -11,6 +11,7 @@ import { pacifico } from "@/app/fonts";
 import { set } from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 type BundleWithProducts = Bundle & {
   products: (Product & { animal: Animal; color: Color })[];
@@ -81,6 +82,7 @@ export default function BundlePage({
 
   const handleAddToCart = (e: React.FormEvent) => {
     e.preventDefault(); // Prevent form submission from reloading the page
+    toast.success("Added to cart");
     addToCart({
       product: selectedProduct,
       bundleName: bundle.name,
