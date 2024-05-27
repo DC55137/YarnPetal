@@ -40,7 +40,7 @@ const MobileSidebar = ({}: {}) => {
                   item.current && "border-main-500 border-b-2 "
                 )}
               >
-                {item.name}
+                <SheetTrigger>{item.name}</SheetTrigger>
               </Link>
             ))}
           </div>
