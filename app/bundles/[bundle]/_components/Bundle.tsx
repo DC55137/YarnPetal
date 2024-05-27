@@ -9,6 +9,8 @@ import Breadcrumb from "@/components/Breadcrumbs";
 import { useCartStore } from "@/src/stores/cart-store";
 import { pacifico } from "@/app/fonts";
 import { set } from "zod";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 type BundleWithProducts = Bundle & {
   products: (Product & { animal: Animal; color: Color })[];
@@ -189,13 +191,15 @@ export default function BundlePage({
                 setSelectedHat={setSelectedHat}
                 hatList={hatList}
               />
-              <button
-                type="submit"
-                className="mt-8 flex w-full items-center justify-center rounded-md border border-transparent bg-main-600 px-8 py-3 text-base font-medium text-white hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2"
-              >
+              <Button className="w-full mt-4" size={"lg"} type="submit">
                 Add to cart
-              </button>
+              </Button>
             </form>
+            <Link href="/checkout">
+              <Button className="w-full mt-4" size={"lg"} variant={"outline"}>
+                Checkout
+              </Button>
+            </Link>
 
             <div className="mt-10">
               <h2 className="text-sm font-medium text-gray-900">Description</h2>
