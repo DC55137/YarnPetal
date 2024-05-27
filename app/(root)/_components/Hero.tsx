@@ -14,7 +14,7 @@ export default function Hero() {
         </div>
 
         {/* Right Section with Image */}
-        <div className="RightSectionImage md:w-1/2 bg-main-500 flex md:items-end justify-center md:justify-start px-8 md:pt-32 pt-8  ">
+        <div className="RightSectionImage md:w-1/2 bg-main-500 flex md:items-end justify-center md:justify-start px-8 md:pt-32 pt-8 grow-0 ">
           <Image
             src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716462664/YarnPetals/giveGift_atuztq.webp"
             alt="Bouquet image"
@@ -32,7 +32,7 @@ export default function Hero() {
 
 const HeroText = () => {
   return (
-    <div className="xl:max-w-4xl pr-8 grow-0">
+    <div className="xl:max-w-4xl md:pr-8 grow-0">
       <h1
         className={cn(
           " font-bold tracking-tight text-6xl lg:text-7xl xl:text-8xl text-accent-900 ",
