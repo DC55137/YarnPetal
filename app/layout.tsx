@@ -18,7 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "bg-secondary-500")}>
+      <body
+        className={cn(inter.className, "bg-secondary-500 min-h-with-footer")}
+      >
         <Toaster />
         <Navbar />
         {children}

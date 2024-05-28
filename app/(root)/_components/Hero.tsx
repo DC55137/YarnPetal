@@ -8,7 +8,7 @@ export default function Hero() {
     <div className="overflow-hidden">
       <div className="flex w-full flex-col md:flex-row ">
         {/* Left Section with Text */}
-        <div className="LeftTextSection md:w-1/2 bg-secondary-500 flex justify-center xl:pl-40 pt-52 text-center">
+        <div className="LeftTextSection md:w-1/2 bg-secondary-500 flex justify-center xl:pl-40 pt-28 md:pt-52 text-center">
           <div className="hidden md:flex grow"></div>
           <HeroText />
         </div>

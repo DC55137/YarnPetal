@@ -45,19 +45,6 @@ export default function BundlePage({
     (product) => product.color.id === selectColor.id
   );
 
-  useEffect(() => {
-    const preloaded: { [key: string]: boolean } = {};
-    bundle.products.forEach((product) => {
-      const img = new window.Image();
-      img.src = product.imageUrl;
-      img.height = 500;
-      img.width = 500;
-      img.onload = () => {
-        preloaded[product.imageUrl] = true;
-      };
-    });
-  }, [bundle.products]);
-
   const changeColor = (color: Color) => {
     setSelectColor(color);
     // filter products by color
@@ -99,7 +86,7 @@ export default function BundlePage({
   };
 
   return (
-    <div className="py-12  sm:pb-24 min-h-screen">
+    <div className="pt-12">
       <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
         <Breadcrumb pages={pages} className="mb-4" />
         <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8 md:mt-20 mt-8">
@@ -199,7 +186,7 @@ export default function BundlePage({
               />
               <Button
                 disabled={loading}
-                className={cn("w-full mt-4", { "button-added": loading })}
+                className={cn("w-full mt-4", loading && "button-added ")}
                 size={"lg"}
                 type="submit"
               >

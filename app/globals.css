@@ -148,3 +148,7 @@ h4 {
   display: inline-block;
   margin-left: 8px;
 }
+
+.min-h-with-footer {
+  min-height: calc(100vh - 180px);
+}
