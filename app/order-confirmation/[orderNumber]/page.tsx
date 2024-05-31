@@ -14,7 +14,9 @@ export default async function page({
     include: {
       orderItems: {
         include: {
-          product: true,
+          bundleTheme: true,
+          animal: true,
+          hat: true,
         },
       },
     },
@@ -38,8 +40,6 @@ export default async function page({
     );
   }
 
-  // findDeliveryMethod(order.deliveryMethod);
-
   const deliveryMethod = deliveryMethods.find(
     (method) => method.title === order.deliveryMethod
   );
@@ -49,7 +49,7 @@ export default async function page({
       <div className="mx-auto max-w-3xl">
         <div className="max-w-xl">
           <h1 className="text-base font-medium text-main-600">Thank you!</h1>
-          {deliveryMethod?.id === 1 || 2 ? (
+          {deliveryMethod?.id === 1 || deliveryMethod?.id === 2 ? (
             <>
               <p className="mt-2 text-4xl font-bold tracking-tight">
                 It&apos;s being prepared!
@@ -92,20 +92,24 @@ export default async function page({
               className="flex space-x-6 border-b border-gray-200 py-10"
             >
               <Image
-                src={product.bundleImage}
-                alt={product.hat}
-                className=" w-20 flex-none   sm:w-40"
+                src={product.bundleTheme.imageBlank}
+                alt={product.bundleTheme.name}
+                className="w-20 flex-none sm:w-40"
                 width={100}
                 height={100}
               />
               <div className="flex flex-auto flex-col">
                 <div>
-                  <h4 className="font-medium text-gray-900">{product.id}</h4>
+                  <h4 className="font-medium text-gray-900">
+                    {product.bundleTheme.name}
+                  </h4>
                   <p className="mt-2 text-sm text-gray-600">
-                    {product.bundle} in {product.color}
+                    {product.animal.name} in {product.bundleTheme.name}
                   </p>
-                  {product.hat !== "none" && (
-                    <p className="mt-2 text-sm text-gray-600">{product.hat}</p>
+                  {product.hat?.name && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      Hat: {product.hat.name}
+                    </p>
                   )}
                 </div>
                 <div className="mt-6 flex flex-1 items-end">
@@ -145,6 +149,7 @@ export default async function page({
                         <span className="block">
                           {order.city}, {order.region} {order.postalCode}
                         </span>
+                        <span className="block">{order.country}</span>
                       </address>
                     </dd>
                   </div>
