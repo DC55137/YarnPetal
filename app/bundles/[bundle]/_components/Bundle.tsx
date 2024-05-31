@@ -58,16 +58,13 @@ export default function BundlePage({
     e.preventDefault();
     setLoading(true);
     addToCart({
-      bundleTheme: bundleThemes.find(
-        (theme) => theme.name === selectedTheme.name
-      )!,
+      bundleTheme: selectedTheme,
       animal: selectedAnimal,
       bundleName: bundle.name,
       bundleSlug: bundle.slug,
       bundlePrice: bundle.price + selectedExtras.length * 10,
       quantity: 1,
-      color: selectedTheme.name,
-      hat: selectedHat.name,
+      hat: selectedHat,
       extras: selectedExtras,
     });
     toast.success("Added to cart");

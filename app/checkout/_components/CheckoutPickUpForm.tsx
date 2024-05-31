@@ -7,7 +7,6 @@ import React, { useState } from "react";
 import { set, z } from "zod";
 import OrderSummary from "./OrderSummary";
 import DeliveryOptions from "./DeliveryOptions";
-import { orderPayCash } from "@/actions/order-pay-cash";
 import toast from "react-hot-toast";
 import { checkout } from "@/actions/checkout";
 
@@ -59,7 +58,7 @@ export default function CheckoutPickUpForm({
       price:
         cart.reduce((acc, item) => acc + item.bundlePrice * item.quantity, 0) +
         selectedDeliveryMethod.price,
-      cartItems: cart,
+      cart: cart,
     };
     // check selectedDeliveryMethod if it's pay cash or pay online
 
@@ -75,7 +74,7 @@ export default function CheckoutPickUpForm({
           "Please confirm that you would like to pay cash on pick up"
         );
         if (!userConfirmed) return;
-        orderPayCash({ formData })
+        checkout({ formData })
           .then((response) => {
             setErrors({}); // Clear all errors on successful submission
             clearCart();

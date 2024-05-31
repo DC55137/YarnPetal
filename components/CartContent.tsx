@@ -47,7 +47,7 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
     index: number,
     bundleThemeId: number,
     animal: Animal,
-    hat: string,
+    hat: Hat,
     newQuantity: number,
     extras: ExtraType[]
   ) => {
@@ -64,10 +64,10 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
           <ul role="list" className="divide-y divide-gray-200">
             {cart.map((bundle, index) => {
               let animalImage = bundle.animal.imageUrl;
-              if (bundle.hat === "birthday") {
+              if (bundle.hat.name === "birthday") {
                 animalImage = bundle.animal.birthdayUrl;
               }
-              if (bundle.hat === "graduation") {
+              if (bundle.hat.name === "graduation") {
                 animalImage = bundle.animal.graduationUrl;
               }
 
@@ -136,14 +136,14 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                         </h4>
 
                         <h4 className="text-base font-medium text-gray-900 hover:text-gray-800 ">
-                          {bundle.color}
+                          {bundle.bundleTheme.name}
                         </h4>
                         <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800 ">
                           {bundle.animal.name}
                         </h4>
-                        {bundle.hat !== "none" && (
+                        {bundle.hat.name !== "none" && (
                           <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800 ">
-                            {bundle.hat} hat
+                            {bundle.hat.name} hat
                           </h4>
                         )}
                         {bundle.extras.length > 0 && (

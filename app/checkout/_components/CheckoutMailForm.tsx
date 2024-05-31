@@ -1,7 +1,7 @@
 // Code: CheckoutMailForm component
 
 "use client";
-import axios from "axios";
+
 import React, { useState } from "react";
 import { z } from "zod";
 import { deliveryMethodType } from "@/data/constants";
@@ -69,7 +69,7 @@ export default function CheckoutMailForm({
       price:
         cart.reduce((acc, item) => acc + item.bundlePrice * item.quantity, 0) +
         selectedDeliveryMethod.price,
-      cartItems: cart,
+      cart: cart,
     };
     try {
       checkout({ formData })

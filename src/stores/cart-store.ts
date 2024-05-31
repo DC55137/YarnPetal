@@ -32,8 +32,7 @@ export type CartItem = {
   bundleSlug: string;
   bundlePrice: number;
   quantity: number;
-  color: string;
-  hat: string;
+  hat: Hat;
   extras: ExtraType[];
 };
 
@@ -47,14 +46,14 @@ export type CartActions = {
   removeFromCart: (
     bundleThemeId: number,
     animal: Animal,
-    hat: string,
+    hat: Hat,
     extras: ExtraType[]
   ) => void;
   updateCartItem: (bundleThemeId: number, newProduct: CartItem) => void;
   changeQuantity: (
     bundleThemeId: number,
     animal: Animal,
-    hat: string,
+    hat: Hat,
     quantity: number,
     extras: ExtraType[]
   ) => void;
@@ -94,7 +93,7 @@ export const useCartStore = create<CartStore>()(
       removeFromCart: (
         bundleThemeId: number,
         animal: Animal,
-        hat: string,
+        hat: Hat,
         extras: ExtraType[]
       ) => {
         set((state) => {
@@ -121,7 +120,7 @@ export const useCartStore = create<CartStore>()(
       changeQuantity: (
         bundleThemeId: number,
         animal: Animal,
-        hat: string,
+        hat: Hat,
         quantity: number,
         extras: ExtraType[]
       ) =>

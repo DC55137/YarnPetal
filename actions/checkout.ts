@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
 import { CartItem } from "@/src/stores/cart-store";
 import { generateOrderNumber } from "@/lib/functions";
+import { Prisma } from "@prisma/client"; // Import Prisma namespace for types
 
 type checkoutProps = {
   formData: {
@@ -13,7 +14,7 @@ type checkoutProps = {
     phone: string;
     deliveryMethod: string;
     price: number;
-    cartItems: CartItem[];
+    cart: CartItem[];
     address?: string;
     apartment?: string;
     city?: string;
@@ -31,7 +32,7 @@ export async function checkout({ formData }: checkoutProps) {
     phone,
     deliveryMethod,
     price,
-    cartItems,
+    cart,
     address,
     apartment,
     city,
@@ -40,10 +41,10 @@ export async function checkout({ formData }: checkoutProps) {
     postalCode,
   } = formData;
 
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
-    cartItems.map((item) => {
+  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.map(
+    (item) => {
       const productName = item.bundleTheme.name
-        ? `${item.bundleName} - ${item.animal.name} - ${item.color} `
+        ? `${item.bundleName} - ${item.animal.name} - ${item.bundleTheme.name} `
         : item.bundleName;
       return {
         quantity: item.quantity,
@@ -55,7 +56,8 @@ export async function checkout({ formData }: checkoutProps) {
           unit_amount: Math.round(item.bundlePrice * 100), // Use item price here
         },
       };
-    });
+    }
+  );
 
   // Save order details in the database and generate an order ID
   const order = await prismadb.order.create({
@@ -74,18 +76,20 @@ export async function checkout({ formData }: checkoutProps) {
       region,
       postalCode,
       orderItems: {
-        create: cartItems.map((item) => ({
-          hat: item.hat,
-          productId: item.product.id,
-          color: item.color,
-          bundleImage: item.product.imageUrl,
+        create: cart.map((item) => ({
+          bundleTheme: { connect: { id: item.bundleTheme.id } },
+          animal: { connect: { id: item.animal.id } },
+          hat: item.hat ? { connect: { id: item.hat.id } } : undefined,
           quantity: item.quantity,
+          extras: item.extras as Prisma.InputJsonValue, // Cast to InputJsonValue
           price: item.bundlePrice,
-          bundle: item.bundleName,
         })),
       },
     },
   });
+  if (deliveryMethod === "Pick Up (PAY CASH)") {
+    return { url: "none", orderNumber: order.orderNumber };
+  }
 
   const session = await stripe.checkout.sessions.create({
     line_items,
@@ -98,5 +102,5 @@ export async function checkout({ formData }: checkoutProps) {
     },
   });
 
-  return { url: session.url };
+  return { url: session.url, orderNumber: order.orderNumber };
 }

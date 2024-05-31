@@ -99,7 +99,6 @@ model Flower{
   imageUrl     String 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  orderItems OrderItem[]
 }
 
 model Order {
@@ -127,25 +126,22 @@ model Order {
 }
 
 model OrderItem {
-  id            Int         @id @default(autoincrement())
-  orderId       Int
-  order         Order       @relation(fields: [orderId], references: [id])
-  hatId         Int
-  hat           Hat        @relation(fields: [hatId], references: [id])
-  Flower        Flower[]
-  animalId      Int
-  animal        Animal      @relation(fields: [animalId], references: [id])
-  productId     Int
-  color         String
-  bundle        String
-  bundleImage   String
-  price         Float
-  quantity      Int
-  bundleThemeId Int
-  bundleTheme   BundleTheme @relation(fields: [bundleThemeId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             Int         @id @default(autoincrement())
+  orderId        Int
+  order          Order       @relation(fields: [orderId], references: [id])
+  bundleThemeId  Int
+  bundleTheme    BundleTheme @relation(fields: [bundleThemeId], references: [id])
+  animalId       Int
+  animal         Animal      @relation(fields: [animalId], references: [id])
+  hatId          Int?
+  hat            Hat?        @relation(fields: [hatId], references: [id])
+  quantity       Int
+  extras         Json
+  price          Float
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 }
+
 
 model StripeCustomer {
   id               String @id @default(uuid())
