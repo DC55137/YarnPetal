@@ -42,8 +42,8 @@ export async function checkout({ formData }: checkoutProps) {
 
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] =
     cartItems.map((item) => {
-      const productName = item.product.animal
-        ? `${item.bundleName} - ${item.product.animal.name} - ${item.color} `
+      const productName = item.bundleTheme.name
+        ? `${item.bundleName} - ${item.animal.name} - ${item.color} `
         : item.bundleName;
       return {
         quantity: item.quantity,

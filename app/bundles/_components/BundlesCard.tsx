@@ -4,7 +4,6 @@ import { Bundle } from "@prisma/client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { PATH_PAGE } from "@/routes/paths";
-import { pacifico } from "@/app/fonts";
 
 const pages = [{ name: "products", href: "/products", current: false }];
 
@@ -16,7 +15,7 @@ export default function BundlesCard({
   className?: string;
 }) {
   return (
-    <div className={cn("bg-white pb-32", className)}>
+    <div className={cn("pb-32", className)}>
       <div className="mx-auto max-w-7xl overflow-hidden px-4 sm:px-6 lg:px-8 pt-12">
         <Breadcrumb pages={pages} />
         <Header />
@@ -27,11 +26,11 @@ export default function BundlesCard({
               href={`${PATH_PAGE.bundles}/${bundle.slug}`}
               className="group text-sm"
             >
-              <div className="w-full overflow-hidden rounded-lg bg-gray-100 group-hover:opacity-75 h-96">
+              <div className="w-full overflow-hidden rounded-lg  group-hover:opacity-75 h-96">
                 <Image
                   src={bundle.imageUrl}
                   alt={bundle.name}
-                  className="h-full w-full object-cover object-center"
+                  className="h-full w-full object-cover object-top "
                   style={{ minHeight: "100%" }}
                   width={300}
                   height={300}
@@ -57,7 +56,7 @@ export default function BundlesCard({
 
 function Header() {
   return (
-    <div className="bg-white my-4 ">
+    <div className=" my-4 ">
       <div className="mx-auto max-w-7xl ">
         <div className="mx-auto max-w-2xl lg:mx-0">
           <h2

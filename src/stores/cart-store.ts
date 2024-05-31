@@ -1,19 +1,40 @@
 "use client";
 
-import { Animal, Product } from "@prisma/client";
+import { Animal, BundleTheme, Flower, Hat } from "@prisma/client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type ProductWithAnimal = Product & { animal: Animal };
+const areExtrasEqual = (
+  extras1: ExtraType[],
+  extras2: ExtraType[]
+): boolean => {
+  if (extras1.length !== extras2.length) return false;
+  return extras1.every((extra1, index) => {
+    const extra2 = extras2[index];
+    return (
+      extra1.type === extra2.type &&
+      extra1.item.id === extra2.item.id &&
+      extra1.hat?.id === extra2.hat?.id
+    );
+  });
+};
+
+type ExtraType = {
+  type: "animal" | "flower";
+  item: Animal | Flower;
+  hat?: Hat;
+};
 
 export type CartItem = {
-  product: ProductWithAnimal;
+  bundleTheme: BundleTheme;
+  animal: Animal;
   bundleName: string;
   bundleSlug: string;
   bundlePrice: number;
   quantity: number;
   color: string;
   hat: string;
+  extras: ExtraType[];
 };
 
 export type CartState = {
@@ -22,10 +43,21 @@ export type CartState = {
 
 export type CartActions = {
   setCart: (cart: CartItem[]) => void;
-  addToCart: (product: CartItem) => void;
-  removeFromCart: (productId: number) => void;
-  updateCartItem: (productId: number, newProduct: CartItem) => void;
-  changeQuantity: (productId: number, quantity: number) => void;
+  addToCart: (bundleTheme: CartItem) => void;
+  removeFromCart: (
+    bundleThemeId: number,
+    animal: Animal,
+    hat: string,
+    extras: ExtraType[]
+  ) => void;
+  updateCartItem: (bundleThemeId: number, newProduct: CartItem) => void;
+  changeQuantity: (
+    bundleThemeId: number,
+    animal: Animal,
+    hat: string,
+    quantity: number,
+    extras: ExtraType[]
+  ) => void;
   clearCart: () => void;
 };
 
@@ -40,7 +72,10 @@ export const useCartStore = create<CartStore>()(
         set((state) => {
           const cartItemIndex = state.cart.findIndex(
             (item) =>
-              item.product.id === newItem.product.id && item.hat === newItem.hat
+              item.bundleTheme.id === newItem.bundleTheme.id &&
+              item.hat === newItem.hat &&
+              item.animal.id === newItem.animal.id &&
+              areExtrasEqual(item.extras, newItem.extras)
           );
           if (cartItemIndex !== -1) {
             // Product already in cart, update the quantity
@@ -56,38 +91,55 @@ export const useCartStore = create<CartStore>()(
           }
         });
       },
-      removeFromCart: (productId: number) => {
+      removeFromCart: (
+        bundleThemeId: number,
+        animal: Animal,
+        hat: string,
+        extras: ExtraType[]
+      ) => {
         set((state) => {
           const cartItemIndex = state.cart.findIndex(
-            (item) => item.product.id === productId
+            (item) =>
+              item.bundleTheme.id === bundleThemeId &&
+              item.hat === hat &&
+              item.animal.id === animal.id &&
+              areExtrasEqual(item.extras, extras)
           );
-          if (cartItemIndex !== -1 && state.cart[cartItemIndex].quantity > 1) {
-            // Reduce the quantity
-            let updatedCart = [...state.cart];
-            updatedCart[cartItemIndex] = {
-              ...updatedCart[cartItemIndex],
-              quantity: updatedCart[cartItemIndex].quantity - 1,
-            };
-            return { cart: updatedCart };
-          } else {
-            // Remove the item entirely
-            return {
-              cart: state.cart.filter((item) => item.product.id !== productId),
-            };
-          }
+
+          // Remove the item entirely
+          return {
+            cart: state.cart.filter(
+              (item) =>
+                item.bundleTheme.id !== bundleThemeId ||
+                item.hat !== hat ||
+                item.animal.id !== animal.id ||
+                !areExtrasEqual(item.extras, extras)
+            ),
+          };
         });
       },
-      changeQuantity: (productId, quantity) =>
+      changeQuantity: (
+        bundleThemeId: number,
+        animal: Animal,
+        hat: string,
+        quantity: number,
+        extras: ExtraType[]
+      ) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.product.id === productId ? { ...item, quantity } : item
+            item.bundleTheme.id === bundleThemeId &&
+            item.hat === hat &&
+            item.animal.id === animal.id &&
+            areExtrasEqual(item.extras, extras)
+              ? { ...item, quantity }
+              : item
           ),
         })),
-      updateCartItem: (productId, newProduct) =>
+      updateCartItem: (bundleThemeId, newProduct) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.product.id === productId
-              ? { ...item, product: newProduct.product }
+            item.bundleTheme.id === bundleThemeId
+              ? { ...item, bundleTheme: newProduct.bundleTheme }
               : item
           ),
         })),

@@ -1,4 +1,4 @@
-type BundleType = {
+export type BundleType = {
   id: number;
   name: string;
   description: string;

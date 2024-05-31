@@ -43,7 +43,37 @@ model Bundle {
   imageUrl     String // Default image URL for the product
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  products Product[] // Relation to Product for specific animal-themed images
+  BundleTheme BundleTheme[]
+}
+
+model BundleTheme {
+  id           Int           @id @default(autoincrement())
+  name         String        
+  stock        Int
+  imageFront     String // Default image URL for the theme  
+  imageBlank    String // Default image URL for the theme
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  bundleId      Int
+  Bundle        Bundle    @relation(fields: [bundleId], references: [id])
+  orderItems    OrderItem[]
+  animalLocationX Float @default(0)
+  animalLocationY Float @default(0)
+  animalWidth     Float @default(1)
+  animalRotation     Float @default(0)
+}
+
+
+model Hat {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique
+  description  String
+  price        Float
+  stock        Int
+  imageUrl     String        @default("https://res.cloudinary.com/dx3x3t5mz/image/upload/v1626820134/animal-hats/animal-hat-1.jpg")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orderItems OrderItem[]
 }
 
 model Animal {
@@ -52,40 +82,24 @@ model Animal {
   stock        Int
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
-  products Product[] // Relation to Product to link animals with their images in specific bundles
+  widthFactor Float           
+  xlocation    Float           
+  imageUrl     String // Default image URL for the animal
+  graduationUrl String
+  birthdayUrl String
+  orderItems   OrderItem[]
 }
 
-model Color {
+model Flower{
   id           Int           @id @default(autoincrement())
   name         String        @unique
-  stock        Int
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  products Product[] // Relation to Product to link colors with their images in specific bundles
-
-}
-
-// This model specifically connects animals with products and their themed images.
-model Product {
-  id        Int         @id @default(autoincrement())
-  bundleId  Int
-  animalId  Int
-  colorId   Int
-  imageUrl  String // Specific image URL for this animal with this product and color
-  bundle    Bundle     @relation(fields: [bundleId], references: [id])
-  animal    Animal     @relation(fields: [animalId], references: [id])
-  color     Color      @relation(fields: [colorId], references: [id])
-  orderItems OrderItem[]
-}
-
-model Hat {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  description  String
+  description  String         @default("1 x")
   price        Float
   stock        Int
+  imageUrl     String 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  orderItems OrderItem[]
 }
 
 model Order {
@@ -95,7 +109,7 @@ model Order {
   firstName      String
   lastName       String
   email          String
-  phone    String
+  phone           String
   deliveryMethod String
   user           User?        @relation(fields: [userId], references: [id])
   total          Float
@@ -104,26 +118,31 @@ model Order {
   updatedAt      DateTime    @updatedAt
   orderItems     OrderItem[]
   paid          Boolean      @default(false)
-  address String? 
-  apartment String? 
-  city String?
-  country String?
-  region String?
-  postalCode String?
+  address       String? 
+  apartment     String? 
+  city          String?
+  country       String?
+  region        String?
+  postalCode    String?
 }
 
 model OrderItem {
   id            Int         @id @default(autoincrement())
   orderId       Int
-  hat         String
-  productId     Int
-  color       String
-  bundle       String
-  bundleImage String
-  price     Float
-  quantity      Int
-  product       Product     @relation(fields: [productId], references: [id])  
   order         Order       @relation(fields: [orderId], references: [id])
+  hatId         Int
+  hat           Hat        @relation(fields: [hatId], references: [id])
+  Flower        Flower[]
+  animalId      Int
+  animal        Animal      @relation(fields: [animalId], references: [id])
+  productId     Int
+  color         String
+  bundle        String
+  bundleImage   String
+  price         Float
+  quantity      Int
+  bundleThemeId Int
+  bundleTheme   BundleTheme @relation(fields: [bundleThemeId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }

@@ -150,5 +150,5 @@ h4 {
 }
 
 .min-h-with-footer {
-  min-height: calc(100vh - 180px);
+  min-height: calc(100svh - 180px);
 }
