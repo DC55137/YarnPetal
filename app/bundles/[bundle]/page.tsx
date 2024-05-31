@@ -50,7 +50,6 @@ export default async function page({
   return (
     <div className="bg-white">
       <BundlePage
-        bundles={bundlesNoAnimals}
         bundle={bundleFull}
         hatList={hatList}
         bundleThemes={bundleThemes}
