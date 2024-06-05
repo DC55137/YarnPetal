@@ -52,7 +52,7 @@ export const bundles: BundleType[] = [
     name: "Sprout Bundle",
     description:
       "The perfect start for any flower enthusiast. Grow your passion with the Sprout Bundle.",
-    price: 0.5,
+    price: 35.0,
     size: "Small",
 
     slug: "sprout-bundle",
