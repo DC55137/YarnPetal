@@ -9,6 +9,7 @@ import OrderSummary from "./OrderSummary";
 import { CartItem, useCartStore } from "@/src/stores/cart-store";
 import { checkout } from "@/actions/checkout";
 import toast from "react-hot-toast";
+import { Loader } from "lucide-react";
 
 const availablePostCodes = [
   4207, 4211, 4215, 4219, 4223, 4227, 4212, 4216, 4220, 4224, 4228, 4209, 4217,
@@ -406,10 +407,19 @@ export default function CheckoutMailForm({
             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
               <button
                 disabled={loading}
-                typeof="submit"
-                className="w-full rounded-md border border-transparent bg-main-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                type="submit"
+                className={`w-full rounded-md border border-transparent bg-main-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 focus:ring-offset-gray-50 ${
+                  loading ? "cursor-not-allowed opacity-50 animate-pulse" : ""
+                }`}
               >
-                {loading ? "Loading..." : "Confirm order"}
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader size={20} className="animate-spin " />
+                    <span className="ml-2">Loading...</span>
+                  </div>
+                ) : (
+                  "Confirm order"
+                )}
               </button>
             </div>
           </div>

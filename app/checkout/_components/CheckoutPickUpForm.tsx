@@ -1,14 +1,13 @@
-// Code: CheckoutPickUpForm component
-
 "use client";
 import { deliveryMethodType } from "@/data/constants";
-import { CartItem, useCartStore } from "@/src/stores/cart-store";
+import { CartItem } from "@/src/stores/cart-store";
 import React, { useState } from "react";
 import { z } from "zod";
 import OrderSummary from "./OrderSummary";
 import DeliveryOptions from "./DeliveryOptions";
 import toast from "react-hot-toast";
 import { checkout } from "@/actions/checkout";
+import { Loader } from "lucide-react";
 
 const pickUpFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -59,7 +58,6 @@ export default function CheckoutPickUpForm({
         selectedDeliveryMethod.price,
       cart: cart,
     };
-    // check selectedDeliveryMethod if it's pay cash or pay online
 
     try {
       pickUpFormSchema.parse(form);
@@ -72,7 +70,10 @@ export default function CheckoutPickUpForm({
         const userConfirmed = window.confirm(
           "Please confirm that you would like to pay cash on pick up"
         );
-        if (!userConfirmed) return;
+        if (!userConfirmed) {
+          setLoading(false);
+          return;
+        }
         checkout({ formData })
           .then((response) => {
             setErrors({}); // Clear all errors on successful submission
@@ -82,7 +83,8 @@ export default function CheckoutPickUpForm({
             );
           })
           .catch((error) => {
-            toast.error(`error: ${error.message}`);
+            toast.error(`Error: ${error.message}`);
+            setLoading(false);
           });
       } else {
         checkout({ formData })
@@ -96,7 +98,8 @@ export default function CheckoutPickUpForm({
             }
           })
           .catch((error) => {
-            toast.error(`error from server: ${error.message}`);
+            toast.error(`Error from server: ${error.message}`);
+            setLoading(false);
           });
       }
     } catch (error) {
@@ -104,7 +107,6 @@ export default function CheckoutPickUpForm({
         const newErrors = error.flatten().fieldErrors;
         const errorMessages: Record<string, string> = {};
         for (const key in newErrors) {
-          // Use optional chaining and nullish coalescing to safely handle potentially undefined arrays
           errorMessages[key] = newErrors[key]?.[0] ?? "Unexpected error";
         }
         setErrors(errorMessages);
@@ -122,8 +124,6 @@ export default function CheckoutPickUpForm({
         <h2 className="sr-only">Checkout</h2>
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
           <div>
-            {" "}
-            {/* This div should contain everything that isn't OrderSummary */}
             <DeliveryOptions
               selectedDeliveryMethod={selectedDeliveryMethod}
               setSelectedDeliveryMethod={setSelectedDeliveryMethod}
@@ -147,6 +147,7 @@ export default function CheckoutPickUpForm({
                     name="firstName"
                     autoComplete="given-name"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.firstName && (
                     <p className="text-red-500 text-xs italic">
@@ -171,6 +172,7 @@ export default function CheckoutPickUpForm({
                     name="lastName"
                     autoComplete="family-name"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.lastName && (
                     <p className="text-red-500 text-xs italic">
@@ -194,6 +196,7 @@ export default function CheckoutPickUpForm({
                     name="email"
                     autoComplete="email"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.email && (
                     <p className="text-red-500 text-xs italic">
@@ -217,6 +220,7 @@ export default function CheckoutPickUpForm({
                     id="phone"
                     autoComplete="tel"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-xs italic">
@@ -246,10 +250,19 @@ export default function CheckoutPickUpForm({
             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
               <button
                 disabled={loading}
-                typeof="submit"
-                className="w-full rounded-md border border-transparent bg-main-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 focus:ring-offset-gray-50"
+                type="submit"
+                className={`w-full rounded-md border border-transparent bg-main-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 focus:ring-offset-gray-50 ${
+                  loading ? "cursor-not-allowed opacity-50 animate-pulse" : ""
+                }`}
               >
-                {loading ? "Loading..." : "Confirm order"}
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <Loader size={20} className="animate-spin " />
+                    <span className="ml-2">Loading...</span>
+                  </div>
+                ) : (
+                  "Confirm order"
+                )}
               </button>
             </div>
           </div>
