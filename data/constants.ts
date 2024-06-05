@@ -9,7 +9,7 @@ export const deliveryMethods = [
     id: 2,
     title: "Pick Up (PAY ONLINE)",
     turnaround: "1–2 days",
-    price: 2,
+    price: 0.5,
   },
 
   {
