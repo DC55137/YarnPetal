@@ -25,6 +25,48 @@ type checkoutProps = {
   };
 };
 
+async function adjustStock(cart: CartItem[]) {
+  for (const item of cart) {
+    await prismadb.bundleTheme.update({
+      where: { id: item.bundleTheme.id },
+      data: { stock: { decrement: item.quantity } },
+    });
+
+    await prismadb.animal.update({
+      where: { id: item.animal.id },
+      data: { stock: { decrement: item.quantity } },
+    });
+
+    if (item.hat) {
+      await prismadb.hat.update({
+        where: { id: item.hat.id },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    for (const extra of item.extras) {
+      if (extra.type === "flower") {
+        await prismadb.flower.update({
+          where: { id: extra.item.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      } else if (extra.type === "animal") {
+        await prismadb.animal.update({
+          where: { id: extra.item.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+      // Decrement stock for extra animal's hat if exists
+      if (extra.hat) {
+        await prismadb.hat.update({
+          where: { id: extra.hat.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+    }
+  }
+}
+
 export async function checkout({ formData }: checkoutProps) {
   const {
     firstName,
@@ -99,6 +141,7 @@ export async function checkout({ formData }: checkoutProps) {
   });
 
   if (deliveryMethod === "Pick Up (PAY CASH)") {
+    await adjustStock(cart);
     const resendApiKey = process.env.RESEND_API_KEY;
     const resend = new Resend(resendApiKey);
     await resend.emails.send({

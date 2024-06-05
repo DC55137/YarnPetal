@@ -5,6 +5,57 @@ import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
 import { Resend } from "resend";
 
+async function adjustStock(orderItems: any[]) {
+  for (const item of orderItems) {
+    // Decrement stock for bundle theme
+    await prismadb.bundleTheme.update({
+      where: { id: item.bundleTheme.id },
+      data: { stock: { decrement: item.quantity } },
+    });
+
+    // Decrement stock for animal
+    await prismadb.animal.update({
+      where: { id: item.animal.id },
+      data: { stock: { decrement: item.quantity } },
+    });
+
+    // Decrement stock for hat if present
+    if (item.hat) {
+      await prismadb.hat.update({
+        where: { id: item.hat.id },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Process extras
+    const extras = item.extras as Array<{
+      type: string;
+      item: { id: number };
+      hat?: { id: number };
+    }>;
+    for (const extra of extras) {
+      if (extra.type === "flower") {
+        await prismadb.flower.update({
+          where: { id: extra.item.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      } else if (extra.type === "animal") {
+        await prismadb.animal.update({
+          where: { id: extra.item.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+
+      if (extra.hat) {
+        await prismadb.hat.update({
+          where: { id: extra.hat.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+    }
+  }
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = headers().get("Stripe-Signature") as string;
@@ -48,6 +99,9 @@ export async function POST(req: Request) {
     if (!order) {
       return new NextResponse("Order not found", { status: 404 });
     }
+
+    // Adjust stock
+    await adjustStock(order.orderItems);
 
     // Send an email confirming the purchase
     const resendApiKey = process.env.RESEND_API_KEY;
