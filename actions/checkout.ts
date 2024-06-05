@@ -25,48 +25,6 @@ type checkoutProps = {
   };
 };
 
-async function adjustStock(cart: CartItem[]) {
-  for (const item of cart) {
-    await prismadb.bundleTheme.update({
-      where: { id: item.bundleTheme.id },
-      data: { stock: { decrement: item.quantity } },
-    });
-
-    await prismadb.animal.update({
-      where: { id: item.animal.id },
-      data: { stock: { decrement: item.quantity } },
-    });
-
-    if (item.hat) {
-      await prismadb.hat.update({
-        where: { id: item.hat.id },
-        data: { stock: { decrement: item.quantity } },
-      });
-    }
-
-    for (const extra of item.extras) {
-      if (extra.type === "flower") {
-        await prismadb.flower.update({
-          where: { id: extra.item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      } else if (extra.type === "animal") {
-        await prismadb.animal.update({
-          where: { id: extra.item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-      // Decrement stock for extra animal's hat if exists
-      if (extra.hat) {
-        await prismadb.hat.update({
-          where: { id: extra.hat.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-    }
-  }
-}
-
 export async function checkout({ formData }: checkoutProps) {
   const {
     firstName,
@@ -140,9 +98,6 @@ export async function checkout({ formData }: checkoutProps) {
     },
   });
 
-  // Adjust stock
-  await adjustStock(cart);
-
   if (deliveryMethod === "Pick Up (PAY CASH)") {
     const resendApiKey = process.env.RESEND_API_KEY;
     const resend = new Resend(resendApiKey);
@@ -204,7 +159,7 @@ export async function checkout({ formData }: checkoutProps) {
     line_items,
     mode: "payment",
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/order-confirmation/${order.orderNumber}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?canceled=true`,
     customer_email: email,
     metadata: {
       orderId: order.id.toString(), // Pass the order ID in the metadata

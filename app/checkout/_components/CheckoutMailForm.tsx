@@ -44,7 +44,6 @@ export default function CheckoutMailForm({
   setSelectedDeliveryMethod,
   cart,
 }: CheckoutMailFormProps) {
-  const { clearCart } = useCartStore((state) => state);
   const [loading, setLoading] = useState(false);
 
   const isAustraliaWide = selectedDeliveryMethod.id === 4;
@@ -102,9 +101,16 @@ export default function CheckoutMailForm({
       checkout({ formData })
         .then((response) => {
           if (response.url) {
-            setErrors({}); // Clear all errors on successful submission
-            clearCart();
-            window.location.assign(response.url);
+            // Check if url is cancelled=true
+            if (response.url.includes("cancelled=true")) {
+              toast.error("Payment canceled");
+              setLoading(false);
+              return;
+            } else {
+              setErrors({}); // Clear all errors on successful submission
+
+              window.location.assign(response.url);
+            }
           } else {
             toast.error("Error: No URL returned");
             setLoading(false);

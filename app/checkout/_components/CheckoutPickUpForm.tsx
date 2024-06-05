@@ -4,7 +4,7 @@
 import { deliveryMethodType } from "@/data/constants";
 import { CartItem, useCartStore } from "@/src/stores/cart-store";
 import React, { useState } from "react";
-import { set, z } from "zod";
+import { z } from "zod";
 import OrderSummary from "./OrderSummary";
 import DeliveryOptions from "./DeliveryOptions";
 import toast from "react-hot-toast";
@@ -30,7 +30,6 @@ export default function CheckoutPickUpForm({
   setSelectedDeliveryMethod,
   cart,
 }: CheckoutPickUpFormProps) {
-  const { clearCart } = useCartStore((state) => state);
   const [form, setForm] = useState<PickUpFormData>({
     firstName: "",
     lastName: "",
@@ -77,7 +76,6 @@ export default function CheckoutPickUpForm({
         checkout({ formData })
           .then((response) => {
             setErrors({}); // Clear all errors on successful submission
-            clearCart();
             toast.success("Order placed successfully");
             window.location.assign(
               `/order-confirmation/${response.orderNumber}`
@@ -91,7 +89,6 @@ export default function CheckoutPickUpForm({
           .then((response) => {
             if (response.url) {
               setErrors({}); // Clear all errors on successful submission
-              clearCart();
               window.location.assign(response.url);
             } else {
               toast.error("Error: No URL returned");

@@ -4,6 +4,7 @@ import prisma from "@/lib/prismadb";
 import OrderSearch from "@/components/OrderSearch";
 import { deliveryMethods } from "@/data/constants";
 import { Animal, Flower, Hat } from "@prisma/client";
+import ResetCart from "./_components/ResetCart";
 
 interface Extra {
   type: "animal" | "flower";
@@ -59,6 +60,7 @@ export default async function page({
 
   return (
     <main className="bg-white px-4 pb-24 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:py-32">
+      <ResetCart />
       <div className="mx-auto max-w-3xl">
         <div className="max-w-xl">
           <h1 className="text-base font-medium text-main-600">Thank you!</h1>
