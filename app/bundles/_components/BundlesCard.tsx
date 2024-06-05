@@ -4,6 +4,7 @@ import { Bundle } from "@prisma/client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { PATH_PAGE } from "@/routes/paths";
+import { pacifico } from "@/app/fonts";
 
 const pages = [{ name: "products", href: "/products", current: false }];
 
@@ -26,26 +27,38 @@ export default function BundlesCard({
               href={`${PATH_PAGE.bundles}/${bundle.slug}`}
               className="group text-sm"
             >
-              <div className="w-full overflow-hidden rounded-lg  group-hover:opacity-75 h-96">
+              <div className="relative w-full overflow-hidden rounded-lg shadow-lg h-96">
                 <Image
                   src={bundle.imageUrl}
                   alt={bundle.name}
-                  className="h-full w-full object-cover object-top "
+                  className="h-full w-full object-cover object-top transition-transform duration-200 group-hover:scale-105"
                   style={{ minHeight: "100%" }}
                   width={300}
                   height={300}
                 />
+                {bundle.stock === 0 && (
+                  <div className="absolute top-0 left-0 bg-red-600 text-white text-xs uppercase font-bold px-2 py-1">
+                    Sold Out
+                  </div>
+                )}
               </div>
-              <h3 className="mt-4 font-medium text-gray-900">{bundle.name}</h3>
-              <p className="italic text-gray-500">
-                {bundle.stock ? "Available" : "Sold Out"}
-              </p>
-              <p className="mt-2 font-medium text-gray-900">
-                {bundle.price.toLocaleString("en-AU", {
-                  style: "currency",
-                  currency: "AUD",
-                })}
-              </p>
+              <div className="mt-4 flex flex-col items-start">
+                <h3
+                  className={cn(pacifico.className, "text-2xl text-main-500")}
+                >
+                  {bundle.name}
+                </h3>
+                <p className="font-medium text-lg text-gray-900">
+                  {bundle.price.toLocaleString("en-AU", {
+                    style: "currency",
+                    currency: "AUD",
+                  })}
+                </p>
+                <p className="text-gray-500 mt-2">{bundle.size}</p>
+                {bundle.stock > 0 && (
+                  <p className="text-green-600 mt-1">Available</p>
+                )}
+              </div>
             </a>
           ))}
         </div>

@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import { Plus, Trash } from "lucide-react";
 
+type BundleThemeWithFlowers = BundleTheme & { flowers: Flower[] };
+
 type ExtraType = {
   type: "animal" | "flower";
   item: Animal | Flower;
@@ -30,7 +32,7 @@ export default function BundlePage({
   animals,
 }: {
   bundle: BundleType;
-  bundleThemes: BundleTheme[];
+  bundleThemes: BundleThemeWithFlowers[];
   hatList: Hat[];
   flowers: Flower[];
   animals: Animal[];
@@ -119,7 +121,7 @@ export default function BundlePage({
           </h2>
         </div>
         <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8 mt-8">
-          <div className="mt-8 lg:col-span-7 lg:row-span-3 lg:mt-0 lg:px-10">
+          <div className="mt-8 lg:col-span-7 lg:row-span-3 lg:mt-8 lg:px-10">
             <h2 className="sr-only">Images</h2>
             <ImageDisplay
               currentBundleTheme={currentBundleTheme}
@@ -213,7 +215,7 @@ function ImageDisplay({
   setImageLoading,
   selectedHat,
 }: {
-  currentBundleTheme: BundleTheme;
+  currentBundleTheme: BundleThemeWithFlowers;
   selectedAnimal: Animal;
   imageLoading: boolean;
   setImageLoading: (loading: boolean) => void;
@@ -394,9 +396,9 @@ function AnimalSelector({
   );
 }
 type ColorSelectorProps = {
-  bundleThemes: BundleTheme[];
-  selectedTheme: BundleTheme;
-  setSelectedTheme: (theme: BundleTheme) => void;
+  bundleThemes: BundleThemeWithFlowers[];
+  selectedTheme: BundleThemeWithFlowers;
+  setSelectedTheme: (theme: BundleThemeWithFlowers) => void;
   setLoading: (loading: boolean) => void;
 };
 
@@ -406,12 +408,16 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
   setSelectedTheme,
   setLoading,
 }) => {
+  const flowersList = selectedTheme.flowers.map((flower) => flower.name);
+  const flowersListString = flowersList.join(", ");
+
   return (
     <div className="mt-8">
-      <div className="flex items-center justify-between">
+      <div className="">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">
           Theme ({selectedTheme.name})
         </h2>
+        <p className="text-sm text-gray-500">{flowersListString}</p>
       </div>
       <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-6">
         {bundleThemes.map((theme) => (
@@ -568,76 +574,88 @@ function ExtraSelector({
   };
 
   return (
-    <div className="flex flex-col mt-4 border-2 p-4">
-      <div className="flex justify-between items-center w-full">
-        <Image
-          src={
-            type === "animal"
-              ? getHatUrl(item as Animal, hat?.name || "none")
-              : (item as Flower).imageUrl
-          }
-          alt="Extra"
-          width={50}
-          height={50}
-          className="rounded-md"
-        />
-        <Button
-          size={"sm"}
-          variant={"outline"}
-          onClick={() => removeExtra(index)}
-          type="button"
-        >
-          <Trash size={20} />
-        </Button>
-      </div>
-      <div className="flex items-center space-x-4 w-full mt-2">
-        <select
-          value={type}
-          onChange={handleTypeChange}
-          className="block w-1/3 rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
-        >
-          <option value="animal">Animal</option>
-          <option value="flower">Flower</option>
-        </select>
-        <select
-          value={item.id}
-          onChange={handleItemChange}
-          className="block w-1/3 rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
-        >
-          {type === "animal"
-            ? animals.map((animal) => (
-                <option
-                  key={animal.id}
-                  value={animal.id}
-                  disabled={animal.stock === 0}
-                >
-                  {animal.name} {animal.stock === 0 ? "(Out of stock)" : ""}
-                </option>
-              ))
-            : flowers.map((flower) => (
-                <option
-                  key={flower.id}
-                  value={flower.id}
-                  disabled={flower.stock === 0}
-                >
-                  {flower.name} {flower.stock === 0 ? "(Out of stock)" : ""}
-                </option>
-              ))}
-        </select>
-        {type === "animal" && (
+    <div className="flex flex-row border-2 p-4">
+      <Image
+        src={
+          type === "animal"
+            ? getHatUrl(item as Animal, hat?.name || "none")
+            : (item as Flower).imageUrl
+        }
+        alt="Extra"
+        width={100}
+        height={100}
+        className="rounded-md w-24"
+      />
+      <div className="flex flex-col grow justify-between">
+        <div className="flex flex-row grow">
+          <p className="mt-auto pl-2">
+            {type === "animal"
+              ? (item as Animal).name
+              : (item as Flower).description}
+            {hat ? ` with ${hat.description}` : ""}
+          </p>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => removeExtra(index)}
+            type="button"
+            className="w-12 ml-auto"
+          >
+            <Trash size={20} />
+          </Button>
+        </div>
+
+        <div className="flex items-center space-x-4 w-full mt-2">
           <select
-            value={hat?.id ?? ""}
-            onChange={handleHatChange}
+            value={type}
+            onChange={handleTypeChange}
             className="block w-1/3 rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
           >
-            <option value="">No Hat</option>
-            {hats.map((hat) => (
-              <option key={hat.id} value={hat.id} disabled={hat.stock === 0}>
-                {hat.description} {hat.stock === 0 ? "(Out of stock)" : ""}
-              </option>
-            ))}
+            <option value="animal">Animal</option>
+            <option value="flower">Flower</option>
           </select>
-        )}
+          <select
+            value={item.id}
+            onChange={handleItemChange}
+            className={cn(
+              "block rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm",
+              type === "animal" ? "w-1/3" : "w-2/3"
+            )}
+          >
+            {type === "animal"
+              ? animals.map((animal) => (
+                  <option
+                    key={animal.id}
+                    value={animal.id}
+                    disabled={animal.stock === 0}
+                  >
+                    {animal.name} {animal.stock === 0 ? "(Out of stock)" : ""}
+                  </option>
+                ))
+              : flowers.map((flower) => (
+                  <option
+                    key={flower.id}
+                    value={flower.id}
+                    disabled={flower.stock === 0}
+                  >
+                    {flower.name} {flower.stock === 0 ? "(Out of stock)" : ""}
+                  </option>
+                ))}
+          </select>
+          {type === "animal" && (
+            <select
+              value={hat?.id ?? ""}
+              onChange={handleHatChange}
+              className="block w-1/3 rounded-md border-gray-300 py-2 px-3 text-base focus:border-main-500 focus:outline-none focus:ring-main-500 sm:text-sm"
+            >
+              {hats.map((hat) => (
+                <option key={hat.id} value={hat.id} disabled={hat.stock === 0}>
+                  {hat.description} {hat.stock === 0 ? "(Out of stock)" : ""}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
     </div>
   );

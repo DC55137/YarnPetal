@@ -1,10 +1,10 @@
 import React from "react";
 import BundlePage from "./_components/Bundle";
 import prisma from "@/lib/prismadb";
-import { bundlesNoAnimals } from "@/data/bundles";
+import { bundles } from "@/data/bundles";
 
 function getBundleIdBySlug(slug: string) {
-  const bundle = bundlesNoAnimals.find((bundle) => bundle.slug === slug);
+  const bundle = bundles.find((bundle) => bundle.slug === slug);
   return bundle;
 }
 
@@ -24,6 +24,9 @@ export default async function page({
   const bundleThemes = await prisma.bundleTheme.findMany({
     where: {
       bundleId: bundleFull.id,
+    },
+    include: {
+      flowers: true,
     },
     orderBy: {
       id: "asc",

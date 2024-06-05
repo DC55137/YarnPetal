@@ -1,5 +1,4 @@
 // Code: CheckoutMailForm component
-
 "use client";
 
 import React, { useState } from "react";
@@ -11,6 +10,11 @@ import { CartItem, useCartStore } from "@/src/stores/cart-store";
 import { checkout } from "@/actions/checkout";
 import toast from "react-hot-toast";
 
+const availablePostCodes = [
+  4207, 4211, 4215, 4219, 4223, 4227, 4212, 4216, 4220, 4224, 4228, 4209, 4217,
+  4221, 4225, 4230, 4214, 4218, 4222, 4226,
+];
+
 const mailFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -21,7 +25,10 @@ const mailFormSchema = z.object({
   city: z.string().min(1, "City is required"),
   country: z.string().min(1, "Country is required"),
   region: z.string().min(1, "Region is required"),
-  postalCode: z.string().min(1, "Postal code is required"),
+  postalCode: z
+    .string()
+    .min(1, "Postal code is required")
+    .refine((val) => /^[0-9]+$/.test(val), "Postal code must be numeric"),
 });
 
 type MailFormData = z.infer<typeof mailFormSchema>;
@@ -38,6 +45,7 @@ export default function CheckoutMailForm({
   cart,
 }: CheckoutMailFormProps) {
   const { clearCart } = useCartStore((state) => state);
+  const [loading, setLoading] = useState(false);
 
   const isAustraliaWide = selectedDeliveryMethod.id === 4;
   const [form, setForm] = useState<MailFormData>({
@@ -63,6 +71,25 @@ export default function CheckoutMailForm({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+
+    if (cart.length === 0) {
+      toast.error("Cart is empty");
+      setLoading(false);
+      return;
+    }
+    if (
+      !isAustraliaWide &&
+      !availablePostCodes.includes(Number(form.postalCode))
+    ) {
+      setErrors({
+        ...errors,
+        postalCode: "Change delivery method or enter a valid postal code",
+      });
+      toast.error("Change delivery method or enter a valid postal code");
+      return;
+    }
+
     const formData = {
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
@@ -80,10 +107,12 @@ export default function CheckoutMailForm({
             window.location.assign(response.url);
           } else {
             toast.error("Error: No URL returned");
+            setLoading(false);
           }
         })
         .catch((error) => {
           toast.error(`error: ${error.message}`);
+          setLoading(false);
         });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -94,6 +123,7 @@ export default function CheckoutMailForm({
           errorMessages[key] = newErrors[key]?.[0] ?? "Unexpected error";
         }
         setErrors(errorMessages);
+        setLoading(false);
       }
     }
   };
@@ -350,9 +380,9 @@ export default function CheckoutMailForm({
                           autoComplete="postal-code"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
                         />
-                        {errors.postCode && (
+                        {errors.postalCode && (
                           <p className="text-red-500 text-xs italic">
-                            {errors.postCode}
+                            {errors.postalCode}
                           </p>
                         )}
                       </div>
@@ -369,10 +399,11 @@ export default function CheckoutMailForm({
             />
             <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
               <button
+                disabled={loading}
                 typeof="submit"
                 className="w-full rounded-md border border-transparent bg-main-600 px-4 py-3 text-base font-medium text-white shadow-sm hover:bg-main-700 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 focus:ring-offset-gray-50"
               >
-                Confirm order
+                {loading ? "Loading..." : "Confirm order"}
               </button>
             </div>
           </div>

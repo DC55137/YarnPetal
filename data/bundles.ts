@@ -3,20 +3,20 @@ export type BundleType = {
   name: string;
   description: string;
   price: number;
-  theme: string;
   slug: string;
+  size: string;
   stock: number;
   imageUrl: string;
 };
 
-export const bundlesNoAnimals: BundleType[] = [
+export const bundles: BundleType[] = [
   {
     id: 1,
     name: "Bloom Bundle",
     description:
       "Discover the best of Yarn Petals with our Bloom Bundle! Lush, vibrant, and perfect for any setting.",
+    size: "Extra Large",
     price: 69.0,
-    theme: "Varied",
     slug: "bloom-bundle",
     stock: 10,
     imageUrl:
@@ -28,7 +28,7 @@ export const bundlesNoAnimals: BundleType[] = [
     description:
       "Cool and calming, our Bud Bundle brings a soothing touch to any space. Perfectly arranged for tranquility.",
     price: 59.0,
-    theme: "Varied",
+    size: "Large",
     slug: "bud-bundle",
     stock: 20,
     imageUrl:
@@ -40,7 +40,8 @@ export const bundlesNoAnimals: BundleType[] = [
     description:
       "Add a unique and artistic touch with our Leaf Bundle. Perfect for sophisticated floral arrangements.",
     price: 49.0,
-    theme: "Varied",
+    size: "meduim",
+
     slug: "leaf-bundle",
     stock: 30,
     imageUrl:
@@ -52,26 +53,11 @@ export const bundlesNoAnimals: BundleType[] = [
     description:
       "The perfect start for any flower enthusiast. Grow your passion with the Sprout Bundle.",
     price: 35.0,
-    theme: "Varied",
+    size: "Small",
+
     slug: "sprout-bundle",
     stock: 40,
     imageUrl:
       "https://res.cloudinary.com/dddxwdp7v/image/upload/v1716461808/YarnPetals/sprout_h26j4s.webp",
-  },
-];
-
-export const bundles: BundleType[] = [
-  ...bundlesNoAnimals,
-  {
-    id: 5,
-    name: "Animal Flowers Add on only for Bloom/Bud Bundle",
-    description:
-      "Enhance your Bloom or Bud bundle with adorable animal-shaped flowers. A charming addition!",
-    price: 8.0,
-    theme: "Animal Add-on",
-    slug: "add-on",
-    stock: 150,
-    imageUrl:
-      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1713520264/YarnPetals/ProductImage/1%20Animal%20Flower%20Add%20on/AnimalList_lvqdod.webp",
   },
 ];

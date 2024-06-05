@@ -79,7 +79,9 @@ export default function CheckoutPickUpForm({
             setErrors({}); // Clear all errors on successful submission
             clearCart();
             toast.success("Order placed successfully");
-            window.location.assign(`/order-confirmation/${response}`);
+            window.location.assign(
+              `/order-confirmation/${response.orderNumber}`
+            );
           })
           .catch((error) => {
             toast.error(`error: ${error.message}`);
@@ -93,6 +95,7 @@ export default function CheckoutPickUpForm({
               window.location.assign(response.url);
             } else {
               toast.error("Error: No URL returned");
+              setLoading(false);
             }
           })
           .catch((error) => {
@@ -225,6 +228,16 @@ export default function CheckoutPickUpForm({
                   )}
                 </div>
               </div>
+            </div>
+            <div>
+              <h2 className="text-lg mt-4 font-medium text-gray-900 my-4">
+                Pick up confirmation
+              </h2>
+              <p>
+                Yarn Petals will contact you to confirm your order and pick up
+                time. Please ensure that the contact information provided is
+                correct. Thank you!
+              </p>
             </div>
           </div>
           <div className="mt-10 lg:mt-0">

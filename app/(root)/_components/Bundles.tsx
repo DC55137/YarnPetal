@@ -2,7 +2,7 @@ import { pacifico } from "@/app/fonts";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { bundlesNoAnimals as bundles } from "@/data/bundles";
+import { bundles } from "@/data/bundles";
 
 export default function Bundles() {
   return (

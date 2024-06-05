@@ -37,8 +37,8 @@ model Bundle {
   name         String @unique
   description  String
   price        Float
-  theme        String
   slug        String @unique  
+  size         String   @default("Small")
   stock        Int
   imageUrl     String // Default image URL for the product
   createdAt    DateTime      @default(now())
@@ -48,6 +48,7 @@ model Bundle {
 
 model BundleTheme {
   id           Int           @id @default(autoincrement())
+  bundleName  String      @default("Bloom Bundle")
   name         String        
   stock        Int
   imageFront     String // Default image URL for the theme  
@@ -61,6 +62,7 @@ model BundleTheme {
   animalLocationY Float @default(0)
   animalWidth     Float @default(1)
   animalRotation     Float @default(0)
+  flowers        Flower[] @relation("BundleThemeFlowers")
 }
 
 
@@ -99,6 +101,7 @@ model Flower{
   imageUrl     String 
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  bundleThemes BundleTheme[] @relation("BundleThemeFlowers")
 }
 
 model Order {
@@ -133,8 +136,8 @@ model OrderItem {
   bundleTheme    BundleTheme @relation(fields: [bundleThemeId], references: [id])
   animalId       Int
   animal         Animal      @relation(fields: [animalId], references: [id])
-  hatId          Int?
-  hat            Hat?        @relation(fields: [hatId], references: [id])
+  hatId          Int
+  hat            Hat        @relation(fields: [hatId], references: [id])
   quantity       Int
   extras         Json
   price          Float
