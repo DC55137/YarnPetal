@@ -111,7 +111,7 @@ export default function CustomiseBouquet() {
       case 1:
         return "76%";
       case 2:
-        return "73%";
+        return "70%";
       default:
         return "73%";
     }

@@ -3,35 +3,19 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import React from "react";
 
-export function Features1() {
+export function Features() {
   return (
-    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 py-20">
+    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 pb-20">
       <div className="md:container flex flex-col-reverse md:flex-row gap-10 mt-10 md:mt-0">
-        <FeatureImage
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474284/YarnPetals/Untitled_Artwork-5_bcfnni.webp"
-          alt="Free Hat with purchase"
-        />
         <FeaturesText
           header="Free Hat"
           subHeader="With any bouquet purchase!"
         />
-      </div>
-      <div className="md:container flex flex-col-reverse md:flex-row-reverse gap-10 ">
-        <FeatureImage
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474520/YarnPetals/IMG_1883_xlaxzr.webp"
-          alt="Customise your bouquet"
-        />
-        <FeaturesText
-          header="Customise Your Bouquet"
-          subHeader="Browse our selection of flowers and create your own bouquet!"
+        <FeatureImage2
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474284/YarnPetals/Untitled_Artwork-5_bcfnni.webp"
+          alt="Free Hat with purchase"
         />
       </div>
-    </div>
-  );
-}
-export function Features2() {
-  return (
-    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 pb-20">
       <div className="md:container flex flex-col-reverse md:flex-row md:gap-10 mt-10 md:mt-0">
         <FeatureImage
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474234/YarnPetals/GRADUATION_BUNDLE-2_1024x1024_xz3lal.webp"
@@ -86,6 +70,19 @@ const FeatureImage = ({ src, alt }: FeatureImageProps) => {
         width={500}
         height={500}
         className="mx-auto w-auto h-auto align-bottom rounded-3xl"
+      />
+    </div>
+  );
+};
+const FeatureImage2 = ({ src, alt }: FeatureImageProps) => {
+  return (
+    <div className="md:w-1/2 justify-center align-middle md:mx-auto my-10 mx-2 ">
+      <Image
+        src={src}
+        alt={alt}
+        width={500}
+        height={500}
+        className="mx-auto w-auto h-auto align-bottom rounded-3xl px-28"
       />
     </div>
   );
