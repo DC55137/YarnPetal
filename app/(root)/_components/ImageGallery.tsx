@@ -4,6 +4,8 @@ import { useInView } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { pacifico } from "@/app/fonts";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 // prettier-ignore
 const images = [
@@ -102,7 +104,7 @@ function ImageWrapper({ imgSrc, alt, className, ...props }: ImageWrapperProps) {
   return (
     <div
       className={cn(
-        "animate-fade-in rounded-lg bg-white p-6 opacity-0 shadow-xl",
+        "animate-fade-in rounded-lg bg-white p-1 opacity-0 shadow-xl",
         className
       )}
       style={{ animationDelay }}
@@ -127,20 +129,20 @@ function ImageGrid() {
   return (
     <div
       ref={containerRef}
-      className="relative -mx-4 mt-16 grid h-[49rem] max-h-[150vh] grid-cols-1 items-start gap-8 overflow-hidden px-4 sm:mt-20 md:grid-cols-2 lg:grid-cols-3"
+      className="relative -mx-4 mt-16 grid h-[60rem] max-h-[250vh] grid-cols-1 items-start gap-2 overflow-hidden px-4 sm:mt-20 md:grid-cols-2 lg:grid-cols-3"
     >
       {isInView ? (
         <>
-          <ImageColumn images={columns[0]} msPerPixel={10} />
+          <ImageColumn images={columns[0]} msPerPixel={8} />
           <ImageColumn
             images={columns[1]}
             className="hidden md:block"
-            msPerPixel={15}
+            msPerPixel={12}
           />
           <ImageColumn
             images={columns[2]}
             className="hidden md:block"
-            msPerPixel={10}
+            msPerPixel={8}
           />
         </>
       ) : null}
@@ -156,7 +158,16 @@ export function ImageGallery() {
       <h2 className={cn("text-main-600 text-center mb-6", pacifico.className)}>
         Image Gallery
       </h2>
+      <p className="md:px-32 sm:px-10 mb-10 text-lg text-center">
+        Here are some of the beautiful bouquets we have created for our
+        customers. We hope you enjoy them as much as we do!
+      </p>
       <ImageGrid />
+      <div className="mt-10 mx-4 justify-end flex">
+        <Link href="/bundles">
+          <Button>Shop Bundles</Button>
+        </Link>
+      </div>
     </div>
   );
 }
