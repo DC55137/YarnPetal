@@ -46,8 +46,27 @@ export default function CustomiseBouquet() {
   const [currentBouquetIndex, setCurrentBouquetIndex] = useState(0);
   const [isSliding, setIsSliding] = useState(false);
   const [isBouquetSliding, setIsBouquetSliding] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = [
+        ...animalList.map((animal) =>
+          fetch(animal.src).then((res) => res.blob())
+        ),
+        ...bouquetList.map((bouquet) =>
+          fetch(bouquet.srcBack).then((res) => res.blob())
+        ),
+        ...bouquetList.map((bouquet) =>
+          fetch(bouquet.srcFront).then((res) => res.blob())
+        ),
+      ];
+      await Promise.all(imagePromises);
+      setImagesLoaded(true);
+    };
+
+    preloadImages();
+
     const interval = setInterval(() => {
       setIsSliding(true);
       setTimeout(() => {
@@ -71,6 +90,36 @@ export default function CustomiseBouquet() {
     return () => clearInterval(interval);
   }, [currentAnimalIndex]);
 
+  const getRightPosition = (bouquetIndex: number) => {
+    switch (bouquetIndex) {
+      case 0:
+        return "calc(40% - 50px)";
+      case 1:
+        return "calc(40% - 20px)";
+      case 2:
+        return "calc(40% - 15px)";
+      default:
+        return "calc(40% - 50px)";
+    }
+  };
+
+  const getBottomPosition = (bouquetIndex: number) => {
+    switch (bouquetIndex) {
+      case 0:
+        return "74%";
+      case 1:
+        return "76%";
+      case 2:
+        return "73%";
+      default:
+        return "73%";
+    }
+  };
+
+  if (!imagesLoaded) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="bg-accent-400 py-4">
       <div className="custom-bouquet-container mx-auto p-4 md:p-8">
@@ -84,9 +133,9 @@ export default function CustomiseBouquet() {
               key={index}
               src={bouquet.srcBack}
               alt="Bouquet Back"
-              layout="fill"
-              objectFit="contain"
-              className={`absolute z-10 transition-transform duration-1000 ease-in-out ${
+              fill={true}
+              priority
+              className={`absolute z-10 transition-transform object-contain duration-1000 ease-in-out ${
                 index === currentBouquetIndex
                   ? isBouquetSliding
                     ? "slide-out"
@@ -100,9 +149,9 @@ export default function CustomiseBouquet() {
               key={index}
               src={animal.src}
               alt={animal.alt}
-              layout="intrinsic"
               width={400}
               height={400}
+              priority
               className={`absolute z-20 w-24 sm:w-40 md:w-44 lg:w-56 transition-transform duration-1000 ease-in-out ${
                 index === currentAnimalIndex
                   ? isSliding
@@ -111,8 +160,8 @@ export default function CustomiseBouquet() {
                   : "hidden"
               }`}
               style={{
-                bottom: "73%",
-                right: "calc(40% - 50px)",
+                bottom: getBottomPosition(currentBouquetIndex),
+                right: getRightPosition(currentBouquetIndex),
               }}
             />
           ))}
@@ -121,9 +170,9 @@ export default function CustomiseBouquet() {
               key={index}
               src={bouquet.srcFront}
               alt="Bouquet Front"
-              layout="fill"
-              objectFit="contain"
-              className={`absolute z-30 transition-transform duration-1000 ease-in-out ${
+              fill={true}
+              priority
+              className={`absolute z-30 transition-transform object-contain duration-1000 ease-in-out ${
                 index === currentBouquetIndex
                   ? isBouquetSliding
                     ? "slide-out"
