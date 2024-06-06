@@ -41,12 +41,13 @@ const HeroText = () => {
       >
         Crochet Bouquets
       </h1>
-      <p className="mt-10 text-3xl leading-8 text-accent-900 max-w-xl mx-auto">
-        Craft Timeless Memories and lighten up someone&apos;s day.
+      <p className="mt-10 text-xl leading-8 text-accent-900 max-w-xl mx-auto">
+        Create something special for your loved ones. Our crochet bouquets are
+        made with love and care. Customise your bouquet to suit your needs.
       </p>
       <div className="my-10 flex items-center ">
         <a href="/bundles" className="mx-auto">
-          <Button size="lg">Shop Now </Button>
+          <Button>Shop Now </Button>
         </a>
       </div>
     </div>

@@ -204,6 +204,7 @@ export async function checkout({ formData }: checkoutProps) {
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/order-confirmation/${order.orderNumber}`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?canceled=true`,
     customer_email: email,
+
     metadata: {
       orderId: order.id.toString(), // Pass the order ID in the metadata
     },

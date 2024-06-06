@@ -9,19 +9,19 @@ html {
 h2 {
   font-weight: bold;
   color: #c66754;
-  font-size: 4rem; /* Default to 6xl size */
+  font-size: 3rem; /* Default to 6xl size */
   @media (min-width: 768px) {
     font-size: 3rem; /* 5xl size */
   }
 
   /* Large screens */
   @media (min-width: 1024px) {
-    font-size: 5rem; /* 7xl size */
+    font-size: 3.5rem; /* 7xl size */
   }
 
   /* Extra-large screens */
   @media (min-width: 1280px) {
-    font-size: 6rem; /* 8xl size */
+    font-size: 4rem; /* 8xl size */
   }
 }
 
