@@ -6,7 +6,7 @@ import React from "react";
 export function Features() {
   return (
     <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 pb-20">
-      <div className="md:container flex flex-col-reverse md:flex-row gap-10 mt-10 md:mt-0">
+      <div className="md:container flex flex-col md:flex-row gap-2 mt-10 md:mt-0">
         <FeaturesText
           header="Free Hat"
           subHeader="With any bouquet purchase!"
@@ -16,7 +16,7 @@ export function Features() {
           alt="Free Hat with purchase"
         />
       </div>
-      <div className="md:container flex flex-col-reverse md:flex-row md:gap-10 mt-10 md:mt-0">
+      <div className="md:container flex flex-col-reverse md:flex-row md:gap-10">
         <FeatureImage
           src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716474234/YarnPetals/GRADUATION_BUNDLE-2_1024x1024_xz3lal.webp"
           alt="Free Hat with purchase"
@@ -47,8 +47,8 @@ type FeaturesTextProps = {
 
 const FeaturesText = ({ header, subHeader }: FeaturesTextProps) => {
   return (
-    <div className="TextDiv w-1/2 flex justify-center text-center md:text-left mx-auto">
-      <div className="my-auto mx-auto flex flex-col gap-6">
+    <div className="md:w-1/2 flex justify-center text-center md:text-left mx-auto">
+      <div className="my-auto mx-auto flex flex-col sm:gap-6">
         <h2 className={cn(pacifico.className, "text-center")}>{header}</h2>
         <h4 className="text-main-800 text-center">{subHeader}</h4>
       </div>
@@ -82,7 +82,7 @@ const FeatureImage2 = ({ src, alt }: FeatureImageProps) => {
         alt={alt}
         width={500}
         height={500}
-        className="mx-auto w-auto h-auto align-bottom rounded-3xl px-28"
+        className="mx-auto w-auto h-auto align-bottom rounded-3xl sm:px-28 px-6"
       />
     </div>
   );
