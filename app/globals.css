@@ -152,3 +152,48 @@ h4 {
 .min-h-with-footer {
   min-height: calc(100svh - 180px);
 }
+.custom-bouquet-container {
+  max-width: 1200px;
+}
+
+@media (min-width: 640px) {
+  .custom-bouquet-container .relative {
+    height: 600px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .custom-bouquet-container .relative {
+    height: 800px;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-in {
+  animation: slideIn 1s forwards;
+}
+
+.slide-out {
+  animation: slideOut 1s forwards;
+}
