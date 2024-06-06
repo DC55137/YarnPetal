@@ -27,7 +27,7 @@ export default function BundlesCard({
               href={`${PATH_PAGE.bundles}/${bundle.slug}`}
               className="group text-sm"
             >
-              <div className="relative w-full overflow-hidden rounded-lg shadow-lg h-96">
+              <div className="relative w-full overflow-visible h-96">
                 <Image
                   src={bundle.imageUrl}
                   alt={bundle.name}
