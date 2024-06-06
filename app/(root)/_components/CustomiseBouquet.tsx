@@ -72,8 +72,8 @@ export default function CustomiseBouquet() {
   }, [currentAnimalIndex]);
 
   return (
-    <div className="bg-accent-400">
-      <div className="custom-bouquet-container mx-auto p-4 md:p-8py-20">
+    <div className="bg-accent-400 py-4">
+      <div className="custom-bouquet-container mx-auto p-4 md:p-8">
         <div className="grid grid-cols-2 w-full p-10 container">
           <DisplayHeading />
           <DisplayInfo />
