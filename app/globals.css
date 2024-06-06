@@ -152,6 +152,8 @@ h4 {
 .min-h-with-footer {
   min-height: calc(100svh - 180px);
 }
+
+/* Custom CSS for Bouquet Slider Layout */
 .custom-bouquet-container {
   max-width: 1200px;
 }
@@ -196,4 +198,33 @@ h4 {
 
 .slide-out {
   animation: slideOut 1s forwards;
+}
+
+/* Custom CSS for Masonry Layout */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s forwards;
+}
+
+.animate-marquee {
+  animation: marquee var(--marquee-duration) linear infinite;
 }

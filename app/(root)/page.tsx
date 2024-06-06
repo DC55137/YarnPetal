@@ -3,6 +3,7 @@ import { Features } from "./_components/Features";
 
 import Bundles from "./_components/Bundles";
 import CustomiseBouquet from "./_components/CustomiseBouquet";
+import ImageGallery from "./_components/ImageGallery";
 
 export default function Home() {
   return (
@@ -11,7 +12,7 @@ export default function Home() {
         <Hero />
         {/* <Display /> */}
         <CustomiseBouquet />
-        <Bundles />
+        <ImageGallery />
         <Features />
       </main>
     </>
