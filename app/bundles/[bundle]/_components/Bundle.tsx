@@ -24,6 +24,14 @@ function cal(value: number) {
   return value;
 }
 
+const isOutOfStock = (theme: BundleThemeWithFlowers) => {
+  if (theme.stock === 0) return true;
+  for (const flower of theme.flowers) {
+    if (flower.stock === 0) return true;
+  }
+  return false;
+};
+
 export default function BundlePage({
   bundle,
   hatList,
@@ -38,8 +46,12 @@ export default function BundlePage({
   animals: Animal[];
 }) {
   const [loading, setLoading] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState(bundleThemes[0]);
-  const [selectedAnimal, setSelectedAnimal] = useState(animals[0]);
+  const [selectedTheme, setSelectedTheme] = useState(
+    bundleThemes.find((t) => !isOutOfStock(t)) || bundleThemes[0]
+  );
+  const [selectedAnimal, setSelectedAnimal] = useState(
+    animals.find((a) => a.stock > 0) || animals[0]
+  );
   const [selectedHat, setSelectedHat] = useState(hatList[0]);
   const [imageLoading, setImageLoading] = useState(false);
   const [animalImageLoading, setAnimalImageLoading] = useState(false);
@@ -261,12 +273,20 @@ export default function BundlePage({
               </Button>
 
               <Button
-                disabled={loading}
-                className={cn("w-full mt-4", loading && "button-added")}
+                disabled={loading || isOutOfStock(selectedTheme)}
+                className={cn(
+                  "w-full mt-4",
+                  loading && "button-added",
+                  isOutOfStock(selectedTheme) && "opacity-50 cursor-not-allowed"
+                )}
                 size={"lg"}
                 type="submit"
               >
-                {loading ? "Adding..." : "Add to cart"}
+                {loading
+                  ? "Adding..."
+                  : isOutOfStock(selectedTheme)
+                  ? "Out of Stock"
+                  : "Add to cart"}
               </Button>
             </form>
 
@@ -509,40 +529,44 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
         <p className="text-sm text-gray-500">{flowersListString}</p>
       </div>
       <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-6">
-        {bundleThemes.map((theme) => (
-          <label
-            key={theme.name}
-            className={`flex items-center justify-center rounded-full border py-3 px-3 text-sm font-medium uppercase sm:flex-1 
+        {bundleThemes.map((theme) => {
+          return (
+            <label
+              key={theme.name}
+              className={`flex items-center justify-center rounded-full border py-3 px-3 text-sm font-medium uppercase sm:flex-1 
           ${
-            theme.stock > 0 ? "cursor-pointer" : "cursor-not-allowed opacity-25"
+            !isOutOfStock(theme)
+              ? "cursor-pointer"
+              : "cursor-not-allowed opacity-25"
           }
           ${
             selectedTheme.name === theme.name
               ? "bg-main-600 text-white hover:bg-main-700"
               : "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
           }`}
-          >
-            <input
-              type="radio"
-              name="theme"
-              value={theme.name}
-              checked={selectedTheme.name === theme.name}
-              onChange={() => {
-                setLoading(true);
-                setSelectedTheme(theme);
-              }}
-              disabled={theme.stock === 0}
-              className="sr-only"
-            />
-            <Image
-              src={theme.imageBlank} // Ensure each theme has an `imageUrl` field
-              alt={theme.name}
-              width={100}
-              height={100}
-              className="rounded-md"
-            />
-          </label>
-        ))}
+            >
+              <input
+                type="radio"
+                name="theme"
+                value={theme.name}
+                checked={selectedTheme.name === theme.name}
+                onChange={() => {
+                  setLoading(true);
+                  setSelectedTheme(theme);
+                }}
+                disabled={isOutOfStock(theme)}
+                className="sr-only"
+              />
+              <Image
+                src={theme.imageBlank} // Ensure each theme has an `imageUrl` field
+                alt={theme.name}
+                width={100}
+                height={100}
+                className="rounded-md"
+              />
+            </label>
+          );
+        })}
       </div>
     </div>
   );
