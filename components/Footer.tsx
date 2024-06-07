@@ -1,8 +1,5 @@
 "use client";
 
-import { pacifico } from "@/app/fonts";
-import { cn } from "@/lib/utils";
-import Image from "next/image";
 import React from "react";
 import Logo from "./Logo";
 import { generateNavigation } from "@/lib/functions";

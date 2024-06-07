@@ -24,13 +24,27 @@ type checkoutProps = {
     postalCode?: string;
   };
 };
-
 async function adjustStock(cart: CartItem[]) {
   for (const item of cart) {
     await prismadb.bundleTheme.update({
       where: { id: item.bundleTheme.id },
       data: { stock: { decrement: item.quantity } },
     });
+
+    // Adjust stock for flowers in the bundleTheme
+    const bundleThemeFlowers = await prismadb.bundleTheme.findUnique({
+      where: { id: item.bundleTheme.id },
+      select: { flowers: true },
+    });
+
+    if (bundleThemeFlowers && bundleThemeFlowers.flowers) {
+      for (const flower of bundleThemeFlowers.flowers) {
+        await prismadb.flower.update({
+          where: { id: flower.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+    }
 
     await prismadb.animal.update({
       where: { id: item.animal.id },

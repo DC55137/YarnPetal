@@ -13,6 +13,21 @@ async function adjustStock(orderItems: any[]) {
       data: { stock: { decrement: item.quantity } },
     });
 
+    // Decrement stock for flowers in the bundle theme
+    const bundleThemeFlowers = await prismadb.bundleTheme.findUnique({
+      where: { id: item.bundleTheme.id },
+      select: { flowers: true },
+    });
+
+    if (bundleThemeFlowers && bundleThemeFlowers.flowers) {
+      for (const flower of bundleThemeFlowers.flowers) {
+        await prismadb.flower.update({
+          where: { id: flower.id },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+    }
+
     // Decrement stock for animal
     await prismadb.animal.update({
       where: { id: item.animal.id },

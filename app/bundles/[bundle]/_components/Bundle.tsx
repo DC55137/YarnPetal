@@ -109,7 +109,7 @@ export default function BundlePage({
     };
 
     preloadImages();
-  }, []);
+  }, [animals, bundleThemes, flowers]);
 
   if (!imagesLoaded) {
     return (
