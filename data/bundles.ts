@@ -19,7 +19,8 @@ export const bundles: BundleType[] = [
     price: 69.0,
     slug: "bloom-bundle",
     stock: 10,
-    imageUrl: "/Bundles/Bloom.webp",
+    imageUrl:
+      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1716461811/YarnPetals/Bloom_rr2gbn.webp",
   },
   {
     id: 2,
@@ -30,7 +31,8 @@ export const bundles: BundleType[] = [
     size: "Large",
     slug: "bud-bundle",
     stock: 20,
-    imageUrl: "/Bundles/Bud.webp",
+    imageUrl:
+      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1716461807/YarnPetals/Bud_iu6oe7.webp",
   },
   {
     id: 3,
@@ -42,7 +44,8 @@ export const bundles: BundleType[] = [
 
     slug: "leaf-bundle",
     stock: 30,
-    imageUrl: "/Bundles/Leaf.webp",
+    imageUrl:
+      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1716461807/YarnPetals/leaf_eicdcq.webp",
   },
   {
     id: 4,
@@ -54,6 +57,7 @@ export const bundles: BundleType[] = [
 
     slug: "sprout-bundle",
     stock: 40,
-    imageUrl: "/Bundles/Sprout.webp",
+    imageUrl:
+      "https://res.cloudinary.com/dddxwdp7v/image/upload/v1716461808/YarnPetals/sprout_h26j4s.webp",
   },
 ];

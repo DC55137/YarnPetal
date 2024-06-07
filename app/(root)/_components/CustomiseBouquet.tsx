@@ -70,22 +70,27 @@ export default function CustomiseBouquet() {
 
     const interval = setInterval(() => {
       setIsSliding(true);
+      setIsBouquetSliding(true);
       setTimeout(() => {
         setCurrentAnimalIndex((prevIndex) =>
           prevIndex === animalList.length - 1 ? 0 : prevIndex + 1
         );
+        setCurrentBouquetIndex((prevIndex) =>
+          prevIndex === bouquetList.length - 1 ? 0 : prevIndex + 1
+        );
+        setIsBouquetSliding(false);
         setIsSliding(false);
       }, 1000); // Duration of slide-out animation
 
-      if ((currentAnimalIndex + 1) % 2 === 0) {
-        setIsBouquetSliding(true);
-        setTimeout(() => {
-          setCurrentBouquetIndex((prevIndex) =>
-            prevIndex === bouquetList.length - 1 ? 0 : prevIndex + 1
-          );
-          setIsBouquetSliding(false);
-        }, 1000); // Duration of bouquet slide-out animation
-      }
+      // if ((currentAnimalIndex + 1) % 2 === 0) {
+      //   setIsBouquetSliding(true);
+      //   setTimeout(() => {
+      //     setCurrentBouquetIndex((prevIndex) =>
+      //       prevIndex === bouquetList.length - 1 ? 0 : prevIndex + 1
+      //     );
+      //     setIsBouquetSliding(false);
+      //   }, 1000); // Duration of bouquet slide-out animation
+      // }
     }, 3000); // Change slide every 3 seconds
 
     return () => clearInterval(interval);
@@ -119,7 +124,7 @@ export default function CustomiseBouquet() {
 
   if (!imagesLoaded) {
     return (
-      <div className="bg-accent-400 h-[800px]">
+      <div className="bg-accent-400 h-[800px] overflow-hidden">
         <div className="grid grid-cols-2 w-full p-10 container">
           <DisplayHeading />
           <DisplayInfo />
@@ -138,7 +143,7 @@ export default function CustomiseBouquet() {
           <DisplayHeading />
           <DisplayInfo />
         </div>
-        <div className="relative h-[400px] md:h-[600px] lg:h-[800px] overflow-visible isolate">
+        <div className="relative h-[400px] md:h-[600px] lg:h-[800px] overflow-hidden sm:overflow-visible isolate">
           {bouquetList.map((bouquet, index) => (
             <Image
               key={index}

@@ -84,7 +84,7 @@ const FeatureImage2 = ({ src, alt }: FeatureImageProps) => {
         alt={alt}
         width={500}
         height={500}
-        className="mx-auto w-auto h-auto align-bottom rounded-3xl lg:px-28 sm:px-16"
+        className="mx-auto w-auto h-auto align-bottom rounded-3xl lg:px-28 px-16"
       />
     </div>
   );

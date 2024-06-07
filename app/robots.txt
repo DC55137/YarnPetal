@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /_not-found
+Allow: /
+
+Sitemap: https://www.yarnpetalsgc.com/sitemap.xml

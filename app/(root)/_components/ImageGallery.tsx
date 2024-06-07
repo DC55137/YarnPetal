@@ -129,7 +129,7 @@ function ImageGrid() {
   return (
     <div
       ref={containerRef}
-      className="relative -mx-4 mt-16 grid h-[60rem] max-h-[250vh] grid-cols-1 items-start gap-2 overflow-hidden px-4 sm:mt-20 md:grid-cols-2 lg:grid-cols-3"
+      className="relative sm:-mx-4 mt-16 grid h-[49rem] max-h-[150vh] grid-cols-1 items-start gap-2 overflow-hidden px-4 sm:mt-20 md:grid-cols-2 lg:grid-cols-3"
     >
       {isInView ? (
         <>
@@ -155,13 +155,10 @@ function ImageGrid() {
 export function ImageGallery() {
   return (
     <div className="relative max-w-5xl mx-auto pb-40 pt-20">
-      <h2 className={cn("text-main-600 text-center mb-6", pacifico.className)}>
-        Image Gallery
-      </h2>
-      <p className="md:px-32 sm:px-10 mb-10 text-lg text-center">
-        Here are some of the beautiful bouquets we have created for our
-        customers. We hope you enjoy them as much as we do!
-      </p>
+      <div className="grid grid-cols-2 w-full p-10 container">
+        <DisplayHeading />
+        <DisplayInfo />
+      </div>
       <ImageGrid />
       <div className="mt-10 mx-4 justify-end flex">
         <Link href="/bundles">
@@ -173,3 +170,23 @@ export function ImageGallery() {
 }
 
 export default ImageGallery;
+
+const DisplayHeading = () => {
+  return (
+    <div className="col-span-2 md:col-span-1 md:px-10">
+      <h4 className="text-secondary-900">Share the love.</h4>
+      <h2 className={cn(pacifico.className, "text-main-600")}>Image Gallery</h2>
+    </div>
+  );
+};
+
+const DisplayInfo = () => {
+  return (
+    <div className="col-span-2 md:col-span-1 md:px-10">
+      <p className="mb-10 text-lg text-balance">
+        Here are some of the beautiful bouquets we have created for our
+        customers. We hope you enjoy them as much as we do!
+      </p>
+    </div>
+  );
+};
