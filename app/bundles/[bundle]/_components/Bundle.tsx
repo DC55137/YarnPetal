@@ -449,7 +449,6 @@ function AnimalSelector({
               value={animal.name}
               checked={selectedAnimal.name === animal.name}
               onChange={() => {
-                setImageLoading(true);
                 setSelectedAnimal(animal);
               }}
               disabled={animal.stock === 0}
