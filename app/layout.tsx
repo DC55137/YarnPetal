@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.yarnpetalsgc.com"),
@@ -43,6 +44,8 @@ export default function RootLayout({
         <Toaster />
         <Navbar />
         {children}
+        <Analytics />
+
         <Footer />
       </body>
     </html>
