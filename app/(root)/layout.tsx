@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import React from "react";
 
+import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Yarn Petals | Home",
   description: "Beautiful floral arrangements for any occasion.",

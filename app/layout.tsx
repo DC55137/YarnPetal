@@ -7,8 +7,6 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "Yarn Petals",
-  description: "Beautiful floral arrangements for any occasion.",
   metadataBase: new URL("https://www.yarnpetalsgc.com"),
   openGraph: {
     title: "Timeless Yarn Bouquets | Yarn Petals",
