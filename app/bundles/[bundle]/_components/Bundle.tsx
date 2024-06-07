@@ -322,7 +322,8 @@ function ImageDisplay({
             src={currentBundleTheme.imageBlank}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-center object-cover w-full z-0 overflow-visible"
+              "absolute object-center object-cover w-full z-0 overflow-visible",
+              imageLoading && "hidden"
             )}
             fill={true}
             priority
@@ -332,7 +333,7 @@ function ImageDisplay({
           <Image
             src={hatUrl}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute z-10")}
+            className={cn("absolute z-10", imageLoading && "hidden")}
             style={{
               bottom: `${currentBundleTheme.animalLocationY}px`,
               left: `${currentBundleTheme.animalLocationX}%`,
@@ -350,7 +351,8 @@ function ImageDisplay({
             src={currentBundleTheme.imageFront}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-center object-cover w-full h-full z-20"
+              "absolute object-center object-cover w-full h-full z-20",
+              imageLoading && "hidden"
             )}
             fill={true}
             priority
@@ -359,11 +361,15 @@ function ImageDisplay({
         </div>
       </div>
       <div className="relative h-[600px] max-h-[600px] min-h-[600px] object-contain sm:hidden">
+        {imageLoading && <LoadingPlaceholder />}
         <div className="relative w-full h-full overflow-visible">
           <Image
             src={currentBundleTheme.imageBlank}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute object-top object-cover w-full z-0")}
+            className={cn(
+              "absolute object-top object-cover w-full z-0",
+              imageLoading && "hidden"
+            )}
             fill={true}
             priority
             onLoad={() => setImageLoading(false)}
@@ -372,7 +378,7 @@ function ImageDisplay({
           <Image
             src={hatUrl}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute z-10")}
+            className={cn("absolute z-10", imageLoading && "hidden")}
             style={{
               bottom: `${cal(currentBundleTheme.animalLocationY - 80)}px`,
               left: `${currentBundleTheme.animalLocationX}%`,
@@ -390,7 +396,8 @@ function ImageDisplay({
             src={currentBundleTheme.imageFront}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-top object-cover w-full h-full z-20"
+              "absolute object-top object-cover w-full h-full z-20",
+              imageLoading && "hidden"
             )}
             fill={true}
             priority
@@ -528,8 +535,7 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
 const LoadingPlaceholder = () => {
   return (
     <div className="animate-pulse flex col-span-1">
-      <div className="rounded-lg bg-gray-300 h-[600px] w-[600px] hidden sm:block" />
-      <div className="rounded-lg bg-gray-300 h-[300px] w-[200px] sm:hidden" />
+      <div className="bg-gray-200 h-96 w-full rounded-lg" />
     </div>
   );
 };
