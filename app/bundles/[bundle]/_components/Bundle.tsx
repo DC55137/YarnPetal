@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Animal, Hat, BundleTheme, Flower } from "@prisma/client";
 import { BundleType } from "@/data/bundles";
@@ -10,7 +10,7 @@ import { useCartStore } from "@/src/stores/cart-store";
 import { pacifico } from "@/app/fonts";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-import { Plus, Trash } from "lucide-react";
+import { Loader, Plus, Trash } from "lucide-react";
 
 type BundleThemeWithFlowers = BundleTheme & { flowers: Flower[] };
 
@@ -44,6 +44,79 @@ export default function BundlePage({
   const [imageLoading, setImageLoading] = useState(false);
   const [selectedExtras, setSelectedExtras] = useState<ExtraType[]>([]);
   const { addToCart } = useCartStore((state) => state);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
+
+  useEffect(() => {
+    const preloadImages = async () => {
+      try {
+        const imagePromises = [
+          ...flowers.map((flower) =>
+            fetch(flower.imageUrl).then((res) => {
+              if (!res.ok)
+                throw new Error(`Failed to fetch ${flower.imageUrl}`);
+              return res.blob();
+            })
+          ),
+          ...bundleThemes
+            .map((bundleTheme) =>
+              Promise.all([
+                fetch(bundleTheme.imageBlank).then((res) => {
+                  if (!res.ok)
+                    throw new Error(
+                      `Failed to fetch ${bundleTheme.imageBlank}`
+                    );
+                  return res.blob();
+                }),
+                fetch(bundleTheme.imageFront).then((res) => {
+                  if (!res.ok)
+                    throw new Error(
+                      `Failed to fetch ${bundleTheme.imageFront}`
+                    );
+                  return res.blob();
+                }),
+              ])
+            )
+            .flat(),
+          ...animals.map((animal) =>
+            fetch(animal.imageUrl).then((res) => {
+              if (!res.ok)
+                throw new Error(`Failed to fetch ${animal.imageUrl}`);
+              return res.blob();
+            })
+          ),
+          ...animals.map((animal) =>
+            fetch(animal.birthdayUrl).then((res) => {
+              if (!res.ok)
+                throw new Error(`Failed to fetch ${animal.imageUrl}`);
+              return res.blob();
+            })
+          ),
+          ...animals.map((animal) =>
+            fetch(animal.graduationUrl).then((res) => {
+              if (!res.ok)
+                throw new Error(`Failed to fetch ${animal.imageUrl}`);
+              return res.blob();
+            })
+          ),
+        ];
+
+        await Promise.allSettled(imagePromises);
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error("Image preloading failed", error);
+      }
+    };
+
+    preloadImages();
+  }, []);
+
+  if (!imagesLoaded) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader className="w-20 animate-spin mx-auto" />
+      </div>
+    );
+  }
 
   const pages = [
     {
@@ -288,7 +361,6 @@ function ImageDisplay({
         </div>
       </div>
       <div className="relative h-[600px] max-h-[600px] min-h-[600px] object-contain sm:hidden">
-        {imageLoading && <LoadingPlaceholder />}
         <div className="relative w-full h-full overflow-visible">
           <Image
             src={currentBundleTheme.imageBlank}

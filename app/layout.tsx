@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.yarnpetalsgc.com"),
   openGraph: {
     title: "Timeless Yarn Bouquets | Yarn Petals",
+    siteName: "Yarn Petals",
     description:
       "At Yarn Petals, we craft eco-friendly, allergy-friendly yarn bouquets that create lasting memories. Celebrate life's special moments with our high-quality, sustainable floral arrangements.",
     type: "website",
