@@ -326,8 +326,8 @@ function ImageDisplay({
       <div className="relative h-[700px] object-contain overflow-visible sm:block hidden">
         <div className="relative w-full h-full overflow-visible">
           {imageLoading && (
-            <div className="w-full h-full">
-              <Loader className="w-20 animate-spin mx-auto" />
+            <div className="w-full h-full flex flex-col justify-center">
+              <Loader className="w-20 animate-spin mx-auto " />
             </div>
           )}
           <Image
