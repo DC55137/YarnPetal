@@ -42,6 +42,7 @@ export default function BundlePage({
   const [selectedAnimal, setSelectedAnimal] = useState(animals[0]);
   const [selectedHat, setSelectedHat] = useState(hatList[0]);
   const [imageLoading, setImageLoading] = useState(false);
+  const [animalImageLoading, setAnimalImageLoading] = useState(false);
   const [selectedExtras, setSelectedExtras] = useState<ExtraType[]>([]);
   const { addToCart } = useCartStore((state) => state);
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -202,6 +203,8 @@ export default function BundlePage({
               imageLoading={imageLoading}
               setImageLoading={setImageLoading}
               selectedHat={selectedHat}
+              setAnimalImageLoading={setAnimalImageLoading}
+              animalImageLoading={animalImageLoading}
             />
           </div>
 
@@ -217,7 +220,7 @@ export default function BundlePage({
                 animals={animals}
                 selectedAnimal={selectedAnimal}
                 setSelectedAnimal={setSelectedAnimal}
-                setImageLoading={setImageLoading}
+                setAnimalImageLoading={setAnimalImageLoading}
               />
               <HatSelector
                 selectedHat={selectedHat}
@@ -287,12 +290,16 @@ function ImageDisplay({
   imageLoading,
   setImageLoading,
   selectedHat,
+  setAnimalImageLoading,
+  animalImageLoading,
 }: {
   currentBundleTheme: BundleThemeWithFlowers;
   selectedAnimal: Animal;
   imageLoading: boolean;
   setImageLoading: (loading: boolean) => void;
   selectedHat: Hat;
+  setAnimalImageLoading: (loading: boolean) => void;
+  animalImageLoading: boolean;
 }) {
   const getHatUrlAndWidth = (hatName: string) => {
     let hatUrl = "";
@@ -333,7 +340,7 @@ function ImageDisplay({
           <Image
             src={hatUrl}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute z-10", imageLoading && "hidden")}
+            className={cn("absolute z-10", animalImageLoading && "hidden")}
             style={{
               bottom: `${currentBundleTheme.animalLocationY}px`,
               left: `${currentBundleTheme.animalLocationX}%`,
@@ -343,7 +350,7 @@ function ImageDisplay({
             }}
             width={200}
             height={200}
-            onLoad={() => setImageLoading(false)}
+            onLoad={() => setAnimalImageLoading(false)}
             quality={40}
           />
 
@@ -372,13 +379,13 @@ function ImageDisplay({
             )}
             fill={true}
             priority
-            onLoad={() => setImageLoading(false)}
+            onLoad={() => setAnimalImageLoading(false)}
           />
 
           <Image
             src={hatUrl}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute z-10", imageLoading && "hidden")}
+            className={cn("absolute z-10", animalImageLoading && "hidden")}
             style={{
               bottom: `${cal(currentBundleTheme.animalLocationY - 80)}px`,
               left: `${currentBundleTheme.animalLocationX}%`,
@@ -413,12 +420,12 @@ function AnimalSelector({
   animals,
   selectedAnimal,
   setSelectedAnimal,
-  setImageLoading,
+  setAnimalImageLoading,
 }: {
   animals: Animal[];
   selectedAnimal: Animal;
   setSelectedAnimal: (animal: Animal) => void;
-  setImageLoading: (loading: boolean) => void;
+  setAnimalImageLoading: (loading: boolean) => void;
 }) {
   return (
     <div className="mt-8">
@@ -450,6 +457,7 @@ function AnimalSelector({
               checked={selectedAnimal.name === animal.name}
               onChange={() => {
                 setSelectedAnimal(animal);
+                setAnimalImageLoading(true);
               }}
               disabled={animal.stock === 0}
               className="sr-only"
