@@ -325,6 +325,11 @@ function ImageDisplay({
     <>
       <div className="relative h-[700px] object-contain overflow-visible sm:block hidden">
         <div className="relative w-full h-full overflow-visible">
+          {imageLoading && (
+            <div className="w-full h-full">
+              <Loader className="w-20 animate-spin mx-auto" />
+            </div>
+          )}
           <Image
             src={currentBundleTheme.imageBlank}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
@@ -368,8 +373,12 @@ function ImageDisplay({
         </div>
       </div>
       <div className="relative h-[600px] max-h-[600px] min-h-[600px] object-contain sm:hidden">
-        {imageLoading && <LoadingPlaceholder />}
         <div className="relative w-full h-full overflow-visible">
+          {imageLoading && (
+            <div className="w-full h-full">
+              <Loader className="w-20 animate-spin mx-auto" />
+            </div>
+          )}
           <Image
             src={currentBundleTheme.imageBlank}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
@@ -535,14 +544,6 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
           </label>
         ))}
       </div>
-    </div>
-  );
-};
-
-const LoadingPlaceholder = () => {
-  return (
-    <div className="animate-pulse flex col-span-1">
-      <div className="bg-gray-200 h-96 w-full rounded-lg" />
     </div>
   );
 };
