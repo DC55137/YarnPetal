@@ -322,8 +322,7 @@ function ImageDisplay({
             src={currentBundleTheme.imageBlank}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-center object-cover w-full z-0 overflow-visible",
-              imageLoading && "hidden"
+              "absolute object-center object-cover w-full z-0 overflow-visible"
             )}
             fill={true}
             priority
@@ -333,7 +332,7 @@ function ImageDisplay({
           <Image
             src={hatUrl}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute z-10", imageLoading && "hidden")}
+            className={cn("absolute z-10")}
             style={{
               bottom: `${currentBundleTheme.animalLocationY}px`,
               left: `${currentBundleTheme.animalLocationX}%`,
@@ -351,8 +350,7 @@ function ImageDisplay({
             src={currentBundleTheme.imageFront}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-center object-cover w-full h-full z-20",
-              imageLoading && "hidden"
+              "absolute object-center object-cover w-full h-full z-20"
             )}
             fill={true}
             priority
@@ -365,10 +363,7 @@ function ImageDisplay({
           <Image
             src={currentBundleTheme.imageBlank}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn(
-              "absolute object-top object-cover w-full z-0",
-              imageLoading && "hidden"
-            )}
+            className={cn("absolute object-top object-cover w-full z-0")}
             fill={true}
             priority
             onLoad={() => setImageLoading(false)}
@@ -377,7 +372,7 @@ function ImageDisplay({
           <Image
             src={hatUrl}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
-            className={cn("absolute z-10", imageLoading && "hidden")}
+            className={cn("absolute z-10")}
             style={{
               bottom: `${cal(currentBundleTheme.animalLocationY - 80)}px`,
               left: `${currentBundleTheme.animalLocationX}%`,
@@ -395,8 +390,7 @@ function ImageDisplay({
             src={currentBundleTheme.imageFront}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-top object-cover w-full h-full z-20",
-              imageLoading && "hidden"
+              "absolute object-top object-cover w-full h-full z-20"
             )}
             fill={true}
             priority
