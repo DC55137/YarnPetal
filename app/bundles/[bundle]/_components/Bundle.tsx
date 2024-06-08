@@ -57,79 +57,6 @@ export default function BundlePage({
   const [animalImageLoading, setAnimalImageLoading] = useState(false);
   const [selectedExtras, setSelectedExtras] = useState<ExtraType[]>([]);
   const { addToCart } = useCartStore((state) => state);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-
-  useEffect(() => {
-    const preloadImages = async () => {
-      try {
-        const imagePromises = [
-          ...flowers.map((flower) =>
-            fetch(flower.imageUrl).then((res) => {
-              if (!res.ok)
-                throw new Error(`Failed to fetch ${flower.imageUrl}`);
-              return res.blob();
-            })
-          ),
-          ...bundleThemes
-            .map((bundleTheme) =>
-              Promise.all([
-                fetch(bundleTheme.imageBlank).then((res) => {
-                  if (!res.ok)
-                    throw new Error(
-                      `Failed to fetch ${bundleTheme.imageBlank}`
-                    );
-                  return res.blob();
-                }),
-                fetch(bundleTheme.imageFront).then((res) => {
-                  if (!res.ok)
-                    throw new Error(
-                      `Failed to fetch ${bundleTheme.imageFront}`
-                    );
-                  return res.blob();
-                }),
-              ])
-            )
-            .flat(),
-          ...animals.map((animal) =>
-            fetch(animal.imageUrl).then((res) => {
-              if (!res.ok)
-                throw new Error(`Failed to fetch ${animal.imageUrl}`);
-              return res.blob();
-            })
-          ),
-          ...animals.map((animal) =>
-            fetch(animal.birthdayUrl).then((res) => {
-              if (!res.ok)
-                throw new Error(`Failed to fetch ${animal.imageUrl}`);
-              return res.blob();
-            })
-          ),
-          ...animals.map((animal) =>
-            fetch(animal.graduationUrl).then((res) => {
-              if (!res.ok)
-                throw new Error(`Failed to fetch ${animal.imageUrl}`);
-              return res.blob();
-            })
-          ),
-        ];
-
-        await Promise.allSettled(imagePromises);
-        setImagesLoaded(true);
-      } catch (error) {
-        console.error("Image preloading failed", error);
-      }
-    };
-
-    preloadImages();
-  }, [animals, bundleThemes, flowers]);
-
-  if (!imagesLoaded) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="w-20 animate-spin mx-auto" />
-      </div>
-    );
-  }
 
   const pages = [
     {
@@ -357,7 +284,8 @@ function ImageDisplay({
               "absolute object-center object-cover w-full z-0 overflow-visible",
               imageLoading && "hidden"
             )}
-            fill={true}
+            width={800}
+            height={800}
             priority
             onLoad={() => setImageLoading(false)}
           />
@@ -383,10 +311,11 @@ function ImageDisplay({
             src={currentBundleTheme.imageFront}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-center object-cover w-full h-full z-20",
+              "absolute object-center object-cover w-full z-20 overflow-visible",
               imageLoading && "hidden"
             )}
-            fill={true}
+            width={800}
+            height={800}
             priority
             onLoad={() => setImageLoading(false)}
           />
@@ -432,7 +361,7 @@ function ImageDisplay({
             src={currentBundleTheme.imageFront}
             alt={`${selectedAnimal.name} - ${currentBundleTheme.name}`}
             className={cn(
-              "absolute object-top object-cover w-full h-full z-20",
+              "absolute object-top object-cover w-full z-20",
               imageLoading && "hidden"
             )}
             fill={true}
@@ -524,7 +453,8 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
     <div className="mt-8">
       <div className="">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">
-          Theme ({selectedTheme.name})
+          Theme ({selectedTheme.name}){" "}
+          {isOutOfStock(selectedTheme) && "- Out of stock"}
         </h2>
         <p className="text-sm text-gray-500">{flowersListString}</p>
       </div>
@@ -560,8 +490,8 @@ const ColorSelector: React.FC<ColorSelectorProps> = ({
               <Image
                 src={theme.imageBlank} // Ensure each theme has an `imageUrl` field
                 alt={theme.name}
-                width={100}
-                height={100}
+                width={800}
+                height={800}
                 className="rounded-md"
               />
             </label>
