@@ -139,30 +139,68 @@ export async function POST(req: Request) {
       <h2>Items Purchased</h2>
       <ul>
         ${order.orderItems
-          .map(
-            (item) => `
-          <li>
-            <strong>Color:</strong> ${item.color.name} <br />
-            <strong>Size:</strong> ${item.size.size} <br />
-            <strong>Flowers:</strong> ${item.flowers
+          .map((item) => {
+            // Get all small flowers
+            const smallFlowers = item.flowers
+              .filter((f) => f.flower.flowerType === "SMALL")
               .map((f) => f.flower.name)
-              .join(", ")} <br />
-            ${
-              item.animal
-                ? `<strong>Animal:</strong> ${item.animal.name} <br />`
-                : ""
-            }
-            ${item.hat ? `<strong>Hat:</strong> ${item.hat.name} <br />` : ""}
-            <strong>Quantity:</strong> ${item.quantity} <br />
-            <strong>Price:</strong> $${item.price.toFixed(2)} <br />
-            <img src="${item.color.imageBack}" alt="${
+              .join(", ");
+
+            // Get all main flowers
+            const mainFlowers = item.flowers
+              .filter((f) => f.flower.flowerType === "MAIN")
+              .map((f) => f.flower.name)
+              .join(", ");
+
+            return `
+            <li style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+              <h3 style="margin: 0 0 10px 0;">${item.color.name} Bundle (${
+              item.size.size
+            })</h3>
+              
+              ${
+                smallFlowers
+                  ? `
+                <strong>Small Flowers:</strong> ${smallFlowers}<br />
+              `
+                  : ""
+              }
+              
+              ${
+                mainFlowers
+                  ? `
+                <strong>Main Flowers:</strong> ${mainFlowers}<br />
+              `
+                  : ""
+              }
+              
+              ${
+                item.animal
+                  ? `
+                <strong>Animal:</strong> ${item.animal.name}
+                ${item.hat ? ` with ${item.hat.name} hat` : ""}<br />
+              `
+                  : ""
+              }
+              
+              <div style="margin-top: 10px;">
+                <strong>Quantity:</strong> ${item.quantity}<br />
+                <strong>Price:</strong> $${item.price.toFixed(2)}<br />
+              </div>
+              
+              <div style="margin-top: 10px;">
+                <img src="${item.color.imageBack}" alt="${
               item.color.name
-            }" width="100" />
-          </li>
-        `
-          )
+            }" width="100" style="border-radius: 5px;" />
+              </div>
+            </li>
+          `;
+          })
           .join("")}
       </ul>
+      <p style="color: #666; font-size: 14px; margin-top: 20px;">
+        Thank you for your purchase! If you have any questions about your order, please don't hesitate to contact us.
+      </p>
       `,
     });
 

@@ -156,9 +156,7 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
               <p className="text-sm font-medium text-gray-900">
                 ${totalPrice.toFixed(2)}
               </p>
-              <p className="text-xs text-gray-500">
-                ${item.size.price.toFixed(2)} add-ons
-              </p>
+              <p className="text-xs text-gray-500">$0.00 add-ons</p>
             </div>
           </div>
         </div>
@@ -210,10 +208,7 @@ export default function Cart() {
   const { cart, changeQuantity, removeFromCart } = cartStore;
   const cartCount = cart.length;
   const cartTotal = cart.reduce((total, item) => {
-    const additionalCost =
-      item.animals.reduce((sum, animal) => sum + animal.animal.price, 0) +
-      (item.hat?.price || 0);
-    return total + (item.size.price + additionalCost) * item.quantity;
+    return total + item.size.price * item.quantity;
   }, 0);
 
   return (

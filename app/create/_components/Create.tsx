@@ -600,7 +600,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
         <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8">
           {/* Sticky Image Display */}
-          <div className="lg:col-span-6 lg:row-span-3">
+          <div className="lg:col-span-5 lg:row-span-3">
             <div className="lg:sticky lg:top-4">
               <ImageDisplay
                 selectedColor={selectedColor}
@@ -626,7 +626,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
           </div>
 
           {/* Selection Form */}
-          <div className="lg:col-span-6 mt-8 lg:mt-0 bg-white p-6 rounded-lg shadow-2xl">
+          <div className="lg:col-span-7 mt-8 lg:mt-0 bg-white p-6 rounded-lg shadow-2xl">
             {/* Size Selector */}
             <div className="mt-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">

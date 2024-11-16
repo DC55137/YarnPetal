@@ -15,7 +15,7 @@ export const deliveryMethods = [
   {
     id: 3,
     title: "Delivery (Gold Coast)",
-    turnaround: "3–4 days",
+    turnaround: "2–4 days",
     price: 10,
   },
   {
