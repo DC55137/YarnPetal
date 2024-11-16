@@ -1,7 +1,6 @@
 import Hero from "./_components/Hero";
 import { Features } from "./_components/Features";
 
-import Bundles from "./_components/Bundles";
 import CustomiseBouquet from "./_components/CustomiseBouquet";
 import ImageGallery from "./_components/ImageGallery";
 
