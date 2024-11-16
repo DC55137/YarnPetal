@@ -9,20 +9,20 @@ export const deliveryMethods = [
     id: 2,
     title: "Pick Up (PAY ONLINE)",
     turnaround: "1–2 days",
-    price: 2,
+    price: 5,
   },
 
   {
     id: 3,
     title: "Delivery (Gold Coast)",
     turnaround: "3–4 days",
-    price: 8,
+    price: 10,
   },
   {
     id: 4,
     title: "Standard Delivery (Australia Wide)",
     turnaround: "4–12 days",
-    price: 12,
+    price: 20,
   },
 ];
 

@@ -7,66 +7,18 @@ import { Resend } from "resend";
 
 async function adjustStock(orderItems: any[]) {
   for (const item of orderItems) {
-    // Decrement stock for bundle theme
-    await prismadb.bundleTheme.update({
-      where: { id: item.bundleTheme.id },
+    // Adjust color stock
+    await prismadb.color.update({
+      where: { id: item.colorId },
       data: { stock: { decrement: item.quantity } },
     });
 
-    // Decrement stock for flowers in the bundle theme
-    const bundleThemeFlowers = await prismadb.bundleTheme.findUnique({
-      where: { id: item.bundleTheme.id },
-      select: { flowers: true },
-    });
-
-    if (bundleThemeFlowers && bundleThemeFlowers.flowers) {
-      for (const flower of bundleThemeFlowers.flowers) {
-        await prismadb.flower.update({
-          where: { id: flower.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-    }
-
-    // Decrement stock for animal
-    await prismadb.animal.update({
-      where: { id: item.animal.id },
-      data: { stock: { decrement: item.quantity } },
-    });
-
-    // Decrement stock for hat if present
-    if (item.hat) {
-      await prismadb.hat.update({
-        where: { id: item.hat.id },
+    // Adjust flower stock
+    for (const flowerSelection of item.flowers) {
+      await prismadb.flower.update({
+        where: { id: flowerSelection.flower.id },
         data: { stock: { decrement: item.quantity } },
       });
-    }
-
-    // Process extras
-    const extras = item.extras as Array<{
-      type: string;
-      item: { id: number };
-      hat?: { id: number };
-    }>;
-    for (const extra of extras) {
-      if (extra.type === "flower") {
-        await prismadb.flower.update({
-          where: { id: extra.item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      } else if (extra.type === "animal") {
-        await prismadb.animal.update({
-          where: { id: extra.item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-
-      if (extra.hat) {
-        await prismadb.hat.update({
-          where: { id: extra.hat.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
     }
   }
 }
@@ -102,9 +54,13 @@ export async function POST(req: Request) {
       include: {
         orderItems: {
           include: {
-            bundleTheme: true,
-            animal: true,
-            hat: true,
+            color: true,
+            size: true,
+            flowers: {
+              include: {
+                flower: true,
+              },
+            },
           },
         },
       },
@@ -118,7 +74,7 @@ export async function POST(req: Request) {
     // Adjust stock
     await adjustStock(order.orderItems);
 
-    // Send an email confirming the purchase
+    // Send confirmation email
     const resendApiKey = process.env.RESEND_API_KEY;
     const resend = new Resend(resendApiKey);
     await resend.emails.send({
@@ -129,55 +85,62 @@ export async function POST(req: Request) {
       <h1>Purchase Made</h1>
       <p>by ${order.firstName} ${order.lastName},</p>
       <p>We are excited to confirm your order. Below are the details of your purchase:</p>
-            <strong>Price:</strong> ${order.total}<br />
-            <h2>Order Summary</h2>
-            <ul>
-              <li><strong>Order ID:</strong> ${order.id}</li>
-              <li><strong>Order Date:</strong> ${new Date(
-                order.createdAt
-              ).toLocaleDateString()}</li>
-              <li><strong>Delivery Method:</strong> ${order.deliveryMethod}</li>
-              <li><strong>Total Price:</strong> $${order.total.toFixed(2)}</li>
-            </ul>
-            <h2>Customer Information</h2>
-            <ul>
-              <li><strong>Email:</strong> ${order.email}</li>
-              <li><strong>Phone:</strong> ${order.phone}</li>
-              <li><strong>Address:</strong> ${order.address}, ${
-        order.apartment
-      }, ${order.city}, ${order.region}, ${order.postalCode}, ${
-        order.country
-      }</li>
-            </ul>
-            <h2>Items Purchased</h2>
-            <ul>
-              ${order.orderItems
-                .map(
-                  (item) => `
-                <li>
-                  <strong>Bundle Theme:</strong> ${item.bundleTheme.name} <br />
-                  <strong>Animal:</strong> ${item.animal.name} <br />
-                  <strong>Hat:</strong> ${
-                    item.hat ? item.hat.name : "No hat"
-                  } <br />
-                  <strong>Quantity:</strong> ${item.quantity} <br />
-                  <strong>Price:</strong> $${item.price.toFixed(2)} <br />
-                  <img src="${item.bundleTheme.imageBlank}" alt="${
-                    item.bundleTheme.name
-                  }" width="100" />
-                </li>
-              `
-                )
-                .join("")}
-            </ul>
-              `,
+      <h2>Order Summary</h2>
+      <ul>
+        <li><strong>Order ID:</strong> ${order.id}</li>
+        <li><strong>Order Number:</strong> ${order.orderNumber}</li>
+        <li><strong>Order Date:</strong> ${new Date(
+          order.createdAt
+        ).toLocaleDateString()}</li>
+        <li><strong>Delivery Method:</strong> ${order.deliveryMethod}</li>
+        <li><strong>Total Price:</strong> $${order.total.toFixed(2)}</li>
+      </ul>
+      <h2>Customer Information</h2>
+      <ul>
+        <li><strong>Email:</strong> ${order.email}</li>
+        <li><strong>Phone:</strong> ${order.phone}</li>
+        ${
+          order.address
+            ? `
+        <li><strong>Address:</strong> ${order.address}
+          ${order.apartment ? `, ${order.apartment}` : ""}
+          ${order.city ? `, ${order.city}` : ""}
+          ${order.region ? `, ${order.region}` : ""}
+          ${order.postalCode ? `, ${order.postalCode}` : ""}
+          ${order.country ? `, ${order.country}` : ""}
+        </li>
+        `
+            : ""
+        }
+      </ul>
+      <h2>Items Purchased</h2>
+      <ul>
+        ${order.orderItems
+          .map(
+            (item) => `
+          <li>
+            <strong>Color:</strong> ${item.color.name} <br />
+            <strong>Size:</strong> ${item.size.size} <br />
+            <strong>Flowers:</strong> ${item.flowers
+              .map((f) => f.flower.name)
+              .join(", ")} <br />
+            <strong>Quantity:</strong> ${item.quantity} <br />
+            <strong>Price:</strong> $${item.price.toFixed(2)} <br />
+            <img src="${item.color.imageBack}" alt="${
+              item.color.name
+            }" width="100" />
+          </li>
+        `
+          )
+          .join("")}
+      </ul>
+      `,
     });
 
     return new NextResponse(null, { status: 200 });
-  } else {
-    return new NextResponse(
-      `Webhook Error: Unhandled event type ${event.type}`,
-      { status: 200 }
-    );
   }
+
+  return new NextResponse(`Webhook Error: Unhandled event type ${event.type}`, {
+    status: 200,
+  });
 }

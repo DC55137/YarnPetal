@@ -49,7 +49,7 @@ const OrderSummary = ({
               $
               {(
                 cart.reduce(
-                  (acc, item) => acc + item.bundlePrice * item.quantity,
+                  (acc, item) => acc + item.price * item.quantity,
                   0
                 ) + selectedDeliveryMethod.price
               ).toFixed(2)}
@@ -69,7 +69,7 @@ const PickUpLocationMap = () => {
       <div className="flex flex-col gap-2 grow-0">
         <MapPin size={24} />
         <p className="">Pick Up</p>
-        <p>3029 The Blvd, Carrara QLD 4211</p>
+        <p>Batchworth </p>
 
         <Link
           href={

@@ -5,6 +5,14 @@
 html {
 }
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 h2 {
   font-weight: bold;
   color: #c66754;

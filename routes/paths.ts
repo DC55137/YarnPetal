@@ -13,6 +13,7 @@ export const PATH_AUTH = {};
 
 export const PATH_PAGE = {
   root: "/",
+  create: "/create",
   bundles: "/bundles",
   about: "/abouts",
   contact: "/contact",

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { z } from "zod";
+import { set, z } from "zod";
 import { deliveryMethodType } from "@/data/constants";
 import DeliveryOptions from "./DeliveryOptions";
 import OrderSummary from "./OrderSummary";
@@ -84,9 +84,10 @@ export default function CheckoutMailForm({
     ) {
       setErrors({
         ...errors,
-        postalCode: "Change delivery method or enter a valid postal code",
+        postalCode: "Only deliveries within the Gold Coast area",
       });
-      toast.error("Change delivery method or enter a valid postal code");
+      setLoading(false);
+      toast.error("Only deliveries within the Gold Coast area");
       return;
     }
 
@@ -94,7 +95,7 @@ export default function CheckoutMailForm({
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
       price:
-        cart.reduce((acc, item) => acc + item.bundlePrice * item.quantity, 0) +
+        cart.reduce((acc, item) => acc + item.price * item.quantity, 0) +
         selectedDeliveryMethod.price,
       cart: cart,
     };

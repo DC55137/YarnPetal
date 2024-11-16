@@ -1,62 +1,80 @@
 "use client";
 
-import { Animal, BundleTheme, Flower, Hat } from "@prisma/client";
+import { Animal, Color, Flower, Hat, Size } from "@prisma/client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const areExtrasEqual = (
-  extras1: ExtraType[],
-  extras2: ExtraType[]
-): boolean => {
-  if (extras1.length !== extras2.length) return false;
-  return extras1.every((extra1, index) => {
-    const extra2 = extras2[index];
-    return (
-      extra1.type === extra2.type &&
-      extra1.item.id === extra2.item.id &&
-      extra1.hat?.id === extra2.hat?.id
-    );
-  });
+// Types for selected items
+export type SelectedFlowerItem = {
+  flower: Flower;
+  position: number;
 };
 
-type ExtraType = {
-  type: "animal" | "flower";
-  item: Animal | Flower;
-  hat?: Hat;
-};
+// Extended interfaces
+interface AnimalWithHat extends SelectedAnimalItem {
+  hat: Hat | null;
+}
 
-export type CartItem = {
-  bundleTheme: BundleTheme;
+export type SelectedAnimalItem = {
   animal: Animal;
-  bundleName: string;
-  bundleSlug: string;
-  bundlePrice: number;
-  quantity: number;
-  hat: Hat;
-  extras: ExtraType[];
+  position: number;
 };
 
+// Type for cart item
+export interface CartItem {
+  size: Size;
+  color: Color;
+  flowers: SelectedFlowerItem[];
+  animals: AnimalWithHat[]; // Updated to include hat information
+  price: number;
+  quantity: number;
+  hat: Hat | null; // Make this optional or remove it if you no longer need it
+}
+
+// Cart state type
 export type CartState = {
   cart: CartItem[];
 };
 
+// Helper function to compare selected items
+const areSelectedItemsEqual = (
+  items1: SelectedFlowerItem[] | SelectedAnimalItem[],
+  items2: SelectedFlowerItem[] | SelectedAnimalItem[]
+): boolean => {
+  if (items1.length !== items2.length) return false;
+  return items1.every((item1, index) => {
+    const item2 = items2[index];
+    if ("flower" in item1 && "flower" in item2) {
+      return (
+        item1.flower.id === item2.flower.id && item1.position === item2.position
+      );
+    }
+    if ("animal" in item1 && "animal" in item2) {
+      return (
+        item1.animal.id === item2.animal.id && item1.position === item2.position
+      );
+    }
+    return false;
+  });
+};
+
+// Helper function to check if two cart items are the same
+const areCartItemsEqual = (item1: CartItem, item2: CartItem): boolean => {
+  return (
+    item1.size.id === item2.size.id &&
+    item1.color.id === item2.color.id &&
+    item1.hat?.id === item2.hat?.id &&
+    areSelectedItemsEqual(item1.flowers, item2.flowers) &&
+    areSelectedItemsEqual(item1.animals, item2.animals)
+  );
+};
+
 export type CartActions = {
   setCart: (cart: CartItem[]) => void;
-  addToCart: (bundleTheme: CartItem) => void;
-  removeFromCart: (
-    bundleThemeId: number,
-    animal: Animal,
-    hat: Hat,
-    extras: ExtraType[]
-  ) => void;
-  updateCartItem: (bundleThemeId: number, newProduct: CartItem) => void;
-  changeQuantity: (
-    bundleThemeId: number,
-    animal: Animal,
-    hat: Hat,
-    quantity: number,
-    extras: ExtraType[]
-  ) => void;
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (itemToRemove: CartItem) => void;
+  updateCartItem: (oldItem: CartItem, newItem: CartItem) => void;
+  changeQuantity: (item: CartItem, quantity: number) => void;
   clearCart: () => void;
 };
 
@@ -66,82 +84,56 @@ export const useCartStore = create<CartStore>()(
   persist(
     (set) => ({
       cart: [],
+
       setCart: (cart) => set({ cart }),
+
       addToCart: (newItem: CartItem) => {
         set((state) => {
-          const cartItemIndex = state.cart.findIndex(
-            (item) =>
-              item.bundleTheme.id === newItem.bundleTheme.id &&
-              item.hat === newItem.hat &&
-              item.animal.id === newItem.animal.id &&
-              areExtrasEqual(item.extras, newItem.extras)
+          const existingItemIndex = state.cart.findIndex((item) =>
+            areCartItemsEqual(item, newItem)
           );
-          if (cartItemIndex !== -1) {
-            // Product already in cart, update the quantity
-            let updatedCart = [...state.cart];
-            updatedCart[cartItemIndex] = {
-              ...updatedCart[cartItemIndex],
-              quantity: updatedCart[cartItemIndex].quantity + 1,
+
+          if (existingItemIndex !== -1) {
+            // Update quantity if item exists
+            const updatedCart = [...state.cart];
+            updatedCart[existingItemIndex] = {
+              ...updatedCart[existingItemIndex],
+              quantity: updatedCart[existingItemIndex].quantity + 1,
             };
             return { cart: updatedCart };
           } else {
-            // Product not in cart, add new item
+            // Add new item
             return { cart: [...state.cart, { ...newItem, quantity: 1 }] };
           }
         });
       },
-      removeFromCart: (
-        bundleThemeId: number,
-        animal: Animal,
-        hat: Hat,
-        extras: ExtraType[]
-      ) => {
-        set((state) => {
-          const cartItemIndex = state.cart.findIndex(
-            (item) =>
-              item.bundleTheme.id === bundleThemeId &&
-              item.hat === hat &&
-              item.animal.id === animal.id &&
-              areExtrasEqual(item.extras, extras)
-          );
 
-          // Remove the item entirely
-          return {
-            cart: state.cart.filter(
-              (item) =>
-                item.bundleTheme.id !== bundleThemeId ||
-                item.hat !== hat ||
-                item.animal.id !== animal.id ||
-                !areExtrasEqual(item.extras, extras)
-            ),
-          };
-        });
+      removeFromCart: (itemToRemove: CartItem) => {
+        set((state) => ({
+          cart: state.cart.filter(
+            (item) => !areCartItemsEqual(item, itemToRemove)
+          ),
+        }));
       },
-      changeQuantity: (
-        bundleThemeId: number,
-        animal: Animal,
-        hat: Hat,
-        quantity: number,
-        extras: ExtraType[]
-      ) =>
+
+      changeQuantity: (item: CartItem, quantity: number) => {
+        set((state) => ({
+          cart: state.cart.map((cartItem) =>
+            areCartItemsEqual(cartItem, item)
+              ? { ...cartItem, quantity }
+              : cartItem
+          ),
+        }));
+      },
+
+      updateCartItem: (oldItem: CartItem, newItem: CartItem) => {
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.bundleTheme.id === bundleThemeId &&
-            item.hat === hat &&
-            item.animal.id === animal.id &&
-            areExtrasEqual(item.extras, extras)
-              ? { ...item, quantity }
-              : item
+            areCartItemsEqual(item, oldItem) ? newItem : item
           ),
-        })),
-      updateCartItem: (bundleThemeId, newProduct) =>
-        set((state) => ({
-          cart: state.cart.map((item) =>
-            item.bundleTheme.id === bundleThemeId
-              ? { ...item, bundleTheme: newProduct.bundleTheme }
-              : item
-          ),
-        })),
+        }));
+      },
+
       clearCart: () => set({ cart: [] }),
     }),
     { name: "cart-storage" }

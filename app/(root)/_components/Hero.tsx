@@ -2,13 +2,14 @@ import Image from "next/image";
 import { pacifico } from "@/app/fonts";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import Logo from "@/components/LogoHeader";
 
 export default function Hero() {
   return (
     <div className="overflow-hidden">
       <div className="flex w-full flex-col md:flex-row ">
         {/* Left Section with Text */}
-        <div className="LeftTextSection md:w-1/2 bg-secondary-500 flex justify-center xl:pl-40 pt-28 md:pt-52 text-center">
+        <div className="LeftTextSection md:w-1/2 bg-secondary-500 flex justify-center xl:pl-40 pt-28 md:pt-28 text-center">
           <div className="hidden md:flex grow"></div>
           <HeroText />
         </div>
@@ -33,20 +34,9 @@ export default function Hero() {
 const HeroText = () => {
   return (
     <div className="xl:max-w-4xl md:pr-8 grow-0">
-      <h1
-        className={cn(
-          " font-bold tracking-tight text-6xl lg:text-7xl xl:text-8xl text-accent-900 ",
-          pacifico.className
-        )}
-      >
-        Crochet Bouquets
-      </h1>
-      <p className="mt-10 text-xl leading-8 text-accent-900 max-w-xl mx-auto">
-        Create something special for your loved ones. Our crochet bouquets are
-        made with love and care. Customise your bouquet to suit your needs.
-      </p>
-      <div className="my-10 flex items-center ">
-        <a href="/bundles" className="mx-auto">
+      <Logo className="mx-auto w-[500px] " />
+      <div className="mb-10 -mt-10 flex items-center ">
+        <a href="/create" className="mx-auto">
           <Button>Shop Now </Button>
         </a>
       </div>

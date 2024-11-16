@@ -3,14 +3,8 @@ import Image from "next/image";
 import prisma from "@/lib/prismadb";
 import OrderSearch from "@/components/OrderSearch";
 import { deliveryMethods } from "@/data/constants";
-import { Animal, Flower, Hat } from "@prisma/client";
+import { FlowerType } from "@prisma/client";
 import ResetCart from "./_components/ResetCart";
-
-interface Extra {
-  type: "animal" | "flower";
-  item: Animal | Flower;
-  hat?: Hat;
-}
 
 export default async function page({
   params: { orderNumber },
@@ -22,9 +16,13 @@ export default async function page({
     include: {
       orderItems: {
         include: {
-          bundleTheme: true,
-          animal: true,
-          hat: true,
+          color: true,
+          size: true,
+          flowers: {
+            include: {
+              flower: true,
+            },
+          },
         },
       },
     },
@@ -51,12 +49,6 @@ export default async function page({
   const deliveryMethod = deliveryMethods.find(
     (method) => method.title === order.deliveryMethod
   );
-
-  const getHatUrl = (animal: Animal, hatName: string) => {
-    if (hatName === "birthday") return animal.birthdayUrl;
-    if (hatName === "graduation") return animal.graduationUrl;
-    return animal.imageUrl;
-  };
 
   return (
     <main className="bg-white px-4 pb-24 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:py-32">
@@ -93,7 +85,7 @@ export default async function page({
 
         <section
           aria-labelledby="order-heading"
-          className="mt-10 border-t border-gray-200 "
+          className="mt-10 border-t border-gray-200"
         >
           <div className="">
             <h2 id="order-heading" className="sr-only">
@@ -101,100 +93,95 @@ export default async function page({
             </h2>
             <h3 className="sr-only">Items</h3>
             <ul role="list" className="divide-y divide-gray-200">
-              {order.orderItems.map((bundle, index) => {
-                const extras: Extra[] = bundle.extras as unknown as Extra[];
+              {order.orderItems.map((item, index) => {
+                const smallFlowers = item.flowers.filter(
+                  (f) => f.flower.flowerType === FlowerType.SMALL
+                );
+                const mainFlowers = item.flowers.filter(
+                  (f) => f.flower.flowerType === FlowerType.MAIN
+                );
 
                 return (
                   <li key={index} className="flex px-4 py-6 relative">
-                    <div className="flex-shrink-0">
-                      <Image
-                        src={getHatUrl(bundle.animal, bundle.hat.name)}
-                        alt={bundle.id.toString()}
-                        className="w-8 rounded-md mx-auto"
-                        width={80}
-                        height={80}
-                      />
-                      <Image
-                        src={bundle.bundleTheme.imageBlank}
-                        alt={bundle.id.toString()}
-                        className="w-20 rounded-md"
-                        width={80}
-                        height={80}
-                      />
-                      {extras.length > 0 && (
-                        <div className="flex flex-wrap max-w-14 mx-auto mt-2">
-                          {extras.map((extra, index) => {
-                            const previewUrl =
-                              extra.type === "animal"
-                                ? getHatUrl(
-                                    extra.item as Animal,
-                                    extra.hat?.name || "none"
-                                  )
-                                : (extra.item as Flower).imageUrl;
-                            return (
-                              <div
-                                key={index}
-                                className="flex flex-col items-center"
-                              >
-                                <Image
-                                  src={previewUrl}
-                                  alt={`${
-                                    extra.type === "animal"
-                                      ? (extra.item as Animal).name
-                                      : (extra.item as Flower).name
-                                  } preview`}
-                                  width={20}
-                                  height={20}
-                                  className="rounded-md"
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                    <div className="flex-shrink-0 space-y-4">
+                      {/* Color Preview */}
+                      <div className="relative w-24 aspect-square rounded-lg overflow-hidden">
+                        <Image
+                          src={item.color.imageBack}
+                          alt={item.color.name}
+                          className="object-cover"
+                          fill
+                          sizes="(max-width: 768px) 96px, 96px"
+                        />
+                      </div>
+
+                      {/* Selected Items Preview */}
+                      <div className="grid grid-cols-4 gap-1 max-w-[96px]">
+                        {/* Small Flowers */}
+                        {smallFlowers.map((flower, idx) => (
+                          <div
+                            key={`small-${idx}`}
+                            className="relative aspect-square"
+                          >
+                            <Image
+                              src={flower.flower.imageSingle}
+                              alt={flower.flower.name}
+                              className="object-contain"
+                              fill
+                              sizes="24px"
+                            />
+                          </div>
+                        ))}
+
+                        {/* Main Flowers */}
+                        {mainFlowers.map((flower, idx) => (
+                          <div
+                            key={`main-${idx}`}
+                            className="relative aspect-square"
+                          >
+                            <Image
+                              src={flower.flower.imageSingle}
+                              alt={flower.flower.name}
+                              className="object-contain"
+                              fill
+                              sizes="24px"
+                            />
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="ml-6 flex flex-1 flex-col ">
+                    <div className="ml-6 flex flex-1 flex-col">
                       <div className="flex">
                         <div className="min-w-0 flex-1">
-                          <h4 className="text-sm">
-                            <p className="font-medium text-gray-700 hover:text-gray-800 text-xl">
-                              {bundle.bundleTheme.bundleName}
-                            </p>
+                          <h4 className="text-xl font-medium text-gray-700">
+                            {item.color.name} Bundle ({item.size.size})
                           </h4>
-                          <h4 className="text-base font-medium text-gray-900 hover:text-gray-800">
-                            {bundle.bundleTheme.name}
-                          </h4>
-                          <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800">
-                            {bundle.animal.name}
-                          </h4>
-                          {bundle.hat.name !== "none" && (
-                            <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800">
-                              {bundle.hat.name} hat
-                            </h4>
-                          )}
-                          {extras.length > 0 && (
-                            <>
-                              <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800">
-                                Extras:
-                              </h4>
-                              <h4 className="text-sm font-medium text-gray-700 hover:text-gray-800">
-                                {extras
-                                  .map((extra) =>
-                                    extra.type === "animal"
-                                      ? (extra.item as Animal).name
-                                      : (extra.item as Flower).name
-                                  )
-                                  .join(", ")}
-                              </h4>
-                            </>
+
+                          {/* Flowers */}
+                          {item.flowers.length > 0 && (
+                            <div className="mt-1">
+                              <h5 className="text-sm font-medium text-gray-600">
+                                Flowers:
+                              </h5>
+                              <div className="flex flex-wrap gap-2">
+                                {item.flowers.map((flower, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-sm text-gray-500"
+                                  >
+                                    {flower.flower.name}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
                       </div>
 
                       <div className="flex flex-1 items-end justify-between pt-2">
                         <p className="mt-1 text-lg font-medium text-gray-900">
-                          ${bundle.price}.00 x{bundle.quantity}
+                          ${item.price.toFixed(2)} x{item.quantity}
                         </p>
                       </div>
                     </div>
@@ -204,7 +191,8 @@ export default async function page({
             </ul>
           </div>
 
-          <div className=" b-red-500">
+          {/* Order Summary */}
+          <div className="">
             <h3 className="sr-only">Summary</h3>
             <dl className="space-y-6 border-t border-gray-200 pt-10 text-sm">
               <div className="flex justify-between">

@@ -1,9 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -20,137 +15,151 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum BundleSize {
+  SMALL
+  MEDIUM
+  LARGE
+  EXTRA_LARGE
+}
+
+enum FlowerType {
+  SMALL
+  MAIN
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String?
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  StripeCustomer    StripeCustomer?
-
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  name           String?
+  orders         Order[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  stripeCustomer StripeCustomer?
 }
 
-model Bundle {
-  id           Int           @id @default(autoincrement())
-  name         String @unique
+model Size {
+  id              Int        @id @default(autoincrement())
+  size            BundleSize @unique
+  price           Float
+  smallFlowerLimit Int       // Number of small flowers allowed
+  mainFlowerLimit  Int       // Number of main flowers allowed
+  dimensionScale   Float     // Scale factor for bundle display
+  orderItems      OrderItem[]
+}
+
+model Color {
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
   description  String
-  price        Float
-  slug        String @unique  
-  size         String   @default("Small")
-  stock        Int
-  imageUrl     String // Default image URL for the product
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  BundleTheme BundleTheme[]
-}
-
-model BundleTheme {
-  id           Int           @id @default(autoincrement())
-  bundleName  String      @default("Bloom Bundle")
-  name         String        
-  stock        Int
-  imageFront     String // Default image URL for the theme  
-  imageBlank    String // Default image URL for the theme
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  bundleId      Int
-  Bundle        Bundle    @relation(fields: [bundleId], references: [id])
-  orderItems    OrderItem[]
-  animalLocationX Float @default(0)
-  animalLocationY Float @default(0)
-  animalWidth     Float @default(1)
-  animalRotation     Float @default(0)
-  flowers        Flower[] @relation("BundleThemeFlowers")
-}
-
-
-model Hat {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  description  String
-  price        Float
-  stock        Int
-  imageUrl     String        @default("https://res.cloudinary.com/dx3x3t5mz/image/upload/v1626820134/animal-hats/animal-hat-1.jpg")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  orderItems OrderItem[]
-}
-
-model Animal {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  stock        Int
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  widthFactor Float           
-  xlocation    Float           
-  imageUrl     String // Default image URL for the animal
-  graduationUrl String
-  birthdayUrl String
+  stock        Int        // Added stock field
+  imageBack    String     
+  imageFront   String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
   orderItems   OrderItem[]
 }
 
-model Flower{
-  id           Int           @id @default(autoincrement())
-  name         String        @unique
-  description  String         @default("1 x")
+model Flower {
+  id           Int              @id @default(autoincrement())
+  name         String           @unique
+  flowerType   FlowerType
+  description  String
   price        Float
   stock        Int
-  imageUrl     String 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  bundleThemes BundleTheme[] @relation("BundleThemeFlowers")
+  imageUrl     String
+  imageSingle  String
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  orderItems   FlowerSelection[]
+}
+
+model Animal {
+  id            Int         @id @default(autoincrement())
+  name          String      @unique
+  price         Float
+  stock         Int
+  imageUrl      String
+  graduationUrl String
+  birthdayUrl   String
+  widthFactor   Float       
+  xlocation     Float       
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+}
+
+model Hat {
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
+  type         String      // GRADUATION or BIRTHDAY
+  description  String
+  price        Float
+  stock        Int
+  imageUrl     String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  orderItems   OrderItem[]
 }
 
 model Order {
   id             Int         @id @default(autoincrement())
-  orderNumber   Int       @unique
-  userId         Int?
+  orderNumber    Int         @unique
+  userId         String?
   firstName      String
   lastName       String
   email          String
-  phone           String
+  phone          String
   deliveryMethod String
-  user           User?        @relation(fields: [userId], references: [id])
+  user           User?       @relation(fields: [userId], references: [id])
   total          Float
   status         OrderStatus @default(PENDING)
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   orderItems     OrderItem[]
-  paid          Boolean      @default(false)
-  address       String? 
-  apartment     String? 
-  city          String?
-  country       String?
+  paid           Boolean     @default(false)
+  address        String? 
+  apartment      String? 
+  city           String?
+  country        String?
   region        String?
   postalCode    String?
 }
 
 model OrderItem {
-  id             Int         @id @default(autoincrement())
+  id             Int              @id @default(autoincrement())
   orderId        Int
-  order          Order       @relation(fields: [orderId], references: [id])
-  bundleThemeId  Int
-  bundleTheme    BundleTheme @relation(fields: [bundleThemeId], references: [id])
-  animalId       Int
-  animal         Animal      @relation(fields: [animalId], references: [id])
-  hatId          Int
-  hat            Hat        @relation(fields: [hatId], references: [id])
+  order          Order            @relation(fields: [orderId], references: [id])
+  colorId        Int
+  color          Color            @relation(fields: [colorId], references: [id])
+  sizeId         Int
+  size           Size             @relation(fields: [sizeId], references: [id])
+  animalId       Int?
+  animal         Animal?          @relation(fields: [animalId], references: [id])
+  hatId          Int?
+  hat            Hat?             @relation(fields: [hatId], references: [id])
+  flowers        FlowerSelection[]
   quantity       Int
-  extras         Json
   price          Float
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 }
 
+model FlowerSelection {
+  id          Int       @id @default(autoincrement())
+  orderItemId Int
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id])
+  flowerId    Int
+  flower      Flower    @relation(fields: [flowerId], references: [id])
+  quantity    Int
+  position    Int
+}
 
 model StripeCustomer {
-  id               String @id @default(uuid())
-  userId           Int @unique
-  stripeCustomerId String @unique
-  user             User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  stripeCustomerId String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

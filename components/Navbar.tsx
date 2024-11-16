@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Cart from "./Cart";
 import MobileSidebar from "./mobile-sidebar";
@@ -33,9 +32,9 @@ export default function Navbar() {
         pathname !== "/" && "bg-secondary-500"
       )}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 justify-between">
-          <Logo />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ">
+        <div className="flex justify-between ">
+          <Logo className="w-32 h-32" />
 
           <div className="ml-6 flex items-center gap-4">
             <div className="md:flex gap-2 hidden">

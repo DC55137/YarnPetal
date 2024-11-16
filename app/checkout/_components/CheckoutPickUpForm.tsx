@@ -54,7 +54,7 @@ export default function CheckoutPickUpForm({
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
       price:
-        cart.reduce((acc, item) => acc + item.bundlePrice * item.quantity, 0) +
+        cart.reduce((acc, item) => acc + item.price * item.quantity, 0) +
         selectedDeliveryMethod.price,
       cart: cart,
     };

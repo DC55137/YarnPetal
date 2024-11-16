@@ -4,7 +4,7 @@ import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
 import { CartItem } from "@/src/stores/cart-store";
 import { generateOrderNumber } from "@/lib/functions";
-import { Prisma } from "@prisma/client"; // Import Prisma namespace for types
+import { Prisma } from "@prisma/client";
 import { Resend } from "resend";
 
 type checkoutProps = {
@@ -24,56 +24,33 @@ type checkoutProps = {
     postalCode?: string;
   };
 };
+
 async function adjustStock(cart: CartItem[]) {
   for (const item of cart) {
-    await prismadb.bundleTheme.update({
-      where: { id: item.bundleTheme.id },
+    // Adjust color stock
+    await prismadb.color.update({
+      where: { id: item.color.id },
       data: { stock: { decrement: item.quantity } },
     });
 
-    // Adjust stock for flowers in the bundleTheme
-    const bundleThemeFlowers = await prismadb.bundleTheme.findUnique({
-      where: { id: item.bundleTheme.id },
-      select: { flowers: true },
-    });
-
-    if (bundleThemeFlowers && bundleThemeFlowers.flowers) {
-      for (const flower of bundleThemeFlowers.flowers) {
-        await prismadb.flower.update({
-          where: { id: flower.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-    }
-
-    await prismadb.animal.update({
-      where: { id: item.animal.id },
-      data: { stock: { decrement: item.quantity } },
-    });
-
-    if (item.hat) {
-      await prismadb.hat.update({
-        where: { id: item.hat.id },
+    // Adjust flower stock
+    for (const flower of item.flowers) {
+      await prismadb.flower.update({
+        where: { id: flower.flower.id },
         data: { stock: { decrement: item.quantity } },
       });
     }
 
-    for (const extra of item.extras) {
-      if (extra.type === "flower") {
-        await prismadb.flower.update({
-          where: { id: extra.item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      } else if (extra.type === "animal") {
-        await prismadb.animal.update({
-          where: { id: extra.item.id },
-          data: { stock: { decrement: item.quantity } },
-        });
-      }
-      // Decrement stock for extra animal's hat if exists
-      if (extra.hat) {
+    // Adjust animals and their hats stock
+    for (const animalWithHat of item.animals) {
+      await prismadb.animal.update({
+        where: { id: animalWithHat.animal.id },
+        data: { stock: { decrement: item.quantity } },
+      });
+
+      if (animalWithHat.hat) {
         await prismadb.hat.update({
-          where: { id: extra.hat.id },
+          where: { id: animalWithHat.hat.id },
           data: { stock: { decrement: item.quantity } },
         });
       }
@@ -98,25 +75,28 @@ export async function checkout({ formData }: checkoutProps) {
     postalCode,
   } = formData;
 
+  // Create line items for Stripe
   const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.map(
-    (item) => {
-      const productName = item.bundleTheme.name
-        ? `${item.bundleName} - ${item.animal.name} - ${item.bundleTheme.name} `
-        : item.bundleName;
-      return {
-        quantity: item.quantity,
-        price_data: {
-          currency: "aud",
-          product_data: {
-            name: productName,
-          },
-          unit_amount: Math.round(item.bundlePrice * 100), // Use item price here
+    (item) => ({
+      quantity: item.quantity,
+      price_data: {
+        currency: "aud",
+        product_data: {
+          name: `${item.color.name} Bundle - ${item.size.size}`,
+          description: `Flowers: ${item.flowers
+            .map((f) => f.flower.name)
+            .join(", ")}\nAnimals: ${item.animals
+            .map(
+              (a) => `${a.animal.name}${a.hat ? ` with ${a.hat.name} hat` : ""}`
+            )
+            .join(", ")}`,
         },
-      };
-    }
+        unit_amount: Math.round(item.price * 100),
+      },
+    })
   );
 
-  // Save order details in the database and generate an order ID
+  // Save order details in the database
   const order = await prismadb.order.create({
     data: {
       orderNumber: generateOrderNumber(),
@@ -134,21 +114,30 @@ export async function checkout({ formData }: checkoutProps) {
       postalCode,
       orderItems: {
         create: cart.map((item) => ({
-          bundleTheme: { connect: { id: item.bundleTheme.id } },
-          animal: { connect: { id: item.animal.id } },
-          hat: { connect: { id: item.hat.id } },
+          colorId: item.color.id,
+          sizeId: item.size.id,
           quantity: item.quantity,
-          extras: item.extras as Prisma.InputJsonValue, // Cast to InputJsonValue
-          price: item.bundlePrice,
+          price: item.price,
+          flowers: {
+            create: item.flowers.map((flower) => ({
+              flowerId: flower.flower.id,
+              quantity: 1,
+              position: flower.position,
+            })),
+          },
         })),
       },
     },
     include: {
       orderItems: {
         include: {
-          bundleTheme: true,
-          animal: true,
-          hat: true,
+          color: true,
+          size: true,
+          flowers: {
+            include: {
+              flower: true,
+            },
+          },
         },
       },
     },
@@ -166,48 +155,56 @@ export async function checkout({ formData }: checkoutProps) {
       <h1>Purchase Made</h1>
       <p>by ${order.firstName} ${order.lastName},</p>
       <p>We are excited to confirm your order. Below are the details of your purchase:</p>
-            <strong>Price:</strong> ${order.total}<br />
-            <h2>Order Summary</h2>
-            <ul>
-              <li><strong>Order ID:</strong> ${order.id}</li>
-              <li><strong>Order Date:</strong> ${new Date(
-                order.createdAt
-              ).toLocaleDateString()}</li>
-              <li><strong>Delivery Method:</strong> ${order.deliveryMethod}</li>
-              <li><strong>Total Price:</strong> $${order.total.toFixed(2)}</li>
-            </ul>
-            <h2>Customer Information</h2>
-            <ul>
-              <li><strong>Email:</strong> ${order.email}</li>
-              <li><strong>Phone:</strong> ${order.phone}</li>
-              <li><strong>Address:</strong> ${order.address}, ${
-        order.apartment
-      }, ${order.city}, ${order.region}, ${order.postalCode}, ${
-        order.country
-      }</li>
-            </ul>
-            <h2>Items Purchased</h2>
-            <ul>
-              ${order.orderItems
-                .map(
-                  (item) => `
-                <li>
-                  <strong>Bundle Theme:</strong> ${item.bundleTheme.name} <br />
-                  <strong>Animal:</strong> ${item.animal.name} <br />
-                  <strong>Hat:</strong> ${
-                    item.hat ? item.hat.name : "No hat"
-                  } <br />
-                  <strong>Quantity:</strong> ${item.quantity} <br />
-                  <strong>Price:</strong> $${item.price.toFixed(2)} <br />
-                  <img src="${item.bundleTheme.imageBlank}" alt="${
-                    item.bundleTheme.name
-                  }" width="100" />
-                </li>
-              `
-                )
-                .join("")}
-            </ul>
-              `,
+      <h2>Order Summary</h2>
+      <ul>
+        <li><strong>Order ID:</strong> ${order.id}</li>
+        <li><strong>Order Number:</strong> ${order.orderNumber}</li>
+        <li><strong>Order Date:</strong> ${new Date(
+          order.createdAt
+        ).toLocaleDateString()}</li>
+        <li><strong>Delivery Method:</strong> ${order.deliveryMethod}</li>
+        <li><strong>Total Price:</strong> $${order.total.toFixed(2)}</li>
+      </ul>
+      <h2>Customer Information</h2>
+      <ul>
+        <li><strong>Email:</strong> ${order.email}</li>
+        <li><strong>Phone:</strong> ${order.phone}</li>
+        ${
+          order.address
+            ? `
+        <li><strong>Address:</strong> ${order.address}
+          ${order.apartment ? `, ${order.apartment}` : ""}
+          ${order.city ? `, ${order.city}` : ""}
+          ${order.region ? `, ${order.region}` : ""}
+          ${order.postalCode ? `, ${order.postalCode}` : ""}
+          ${order.country ? `, ${order.country}` : ""}
+        </li>
+        `
+            : ""
+        }
+      </ul>
+      <h2>Items Purchased</h2>
+      <ul>
+        ${order.orderItems
+          .map(
+            (item) => `
+          <li>
+            <strong>Color:</strong> ${item.color.name} <br />
+            <strong>Size:</strong> ${item.size.size} <br />
+            <strong>Flowers:</strong> ${item.flowers
+              .map((f) => f.flower.name)
+              .join(", ")} <br />
+            <strong>Quantity:</strong> ${item.quantity} <br />
+            <strong>Price:</strong> $${item.price.toFixed(2)} <br />
+            <img src="${item.color.imageBack}" alt="${
+              item.color.name
+            }" width="100" />
+          </li>
+        `
+          )
+          .join("")}
+      </ul>
+      `,
     });
     return { url: "none", orderNumber: order.orderNumber };
   }
@@ -218,9 +215,8 @@ export async function checkout({ formData }: checkoutProps) {
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/order-confirmation/${order.orderNumber}`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout?canceled=true`,
     customer_email: email,
-
     metadata: {
-      orderId: order.id.toString(), // Pass the order ID in the metadata
+      orderId: order.id.toString(),
     },
   });
 
