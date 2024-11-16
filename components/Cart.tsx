@@ -178,8 +178,6 @@ export default function Cart() {
     (state) => state
   );
 
-  const cart = cartStore?.cart ?? [];
-
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -197,19 +195,23 @@ export default function Cart() {
     document.getElementById("sheet-content")?.classList.add("open");
   };
 
-  if (!isClient) {
-    return (
-      <button
-        type="button"
-        className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 hover:cursor-pointer"
-      >
-        <span className="absolute -inset-1.5" />
-        <span className="sr-only">View cart</span>
-        <ShoppingBag className="h-6 w-6" aria-hidden="true" />
-      </button>
-    );
+  // Loading state component
+  const LoadingCart = () => (
+    <button
+      type="button"
+      className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 hover:cursor-pointer"
+    >
+      <span className="absolute -inset-1.5" />
+      <span className="sr-only">View cart</span>
+      <ShoppingBag className="h-6 w-6" aria-hidden="true" />
+    </button>
+  );
+
+  if (!isClient || !cartStore) {
+    return <LoadingCart />;
   }
 
+  const { cart, changeQuantity, removeFromCart } = cartStore;
   const cartCount = cart.length;
   const cartTotal = cart.reduce((total, item) => {
     const additionalCost =
@@ -253,8 +255,8 @@ export default function Cart() {
                       <CartItemDisplay
                         key={`${item.color.id}-${item.size.id}-${index}`}
                         item={item}
-                        onUpdateQuantity={cartStore.changeQuantity}
-                        onRemove={cartStore.removeFromCart}
+                        onUpdateQuantity={changeQuantity}
+                        onRemove={removeFromCart}
                       />
                     ))}
                   </div>
