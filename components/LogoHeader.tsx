@@ -9,7 +9,7 @@ export default function Logo({ className }: { className?: string }) {
       className={cn("flex gap-2 items-center justify-center", className)}
       href="/"
     >
-      <svg viewBox="0 0 95.55 95.82" aria-label="Logo">
+      <svg viewBox="0 0 95.55 95.82" aria-label="Logo" className="w-full">
         <defs>
           <style>
             {`

@@ -34,7 +34,7 @@ export default function Hero() {
 const HeroText = () => {
   return (
     <div className="xl:max-w-4xl md:pr-8 grow-0">
-      <Logo className="mx-auto w-[500px] " />
+      <Logo className="mx-auto md:w-[500px] w-[350px]" />
       <div className="mb-10 -mt-10 flex items-center ">
         <a href="/create" className="mx-auto">
           <Button>Shop Now </Button>
