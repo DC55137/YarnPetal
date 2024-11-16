@@ -260,40 +260,221 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   );
 };
 
-// Item Selection Card
-const ItemCard: React.FC<ItemCardProps> = ({
-  item,
-  isDisabled,
-  onAdd,
-  type,
-}) => (
-  <div className="relative">
-    <label
-      className={cn(
-        "flex flex-col items-center justify-center rounded-md border p-2 cursor-pointer",
-        isDisabled && "opacity-50 cursor-not-allowed"
-      )}
-    >
-      <div className="relative w-full aspect-square">
-        <Image
-          src={item.imageUrl}
-          alt={item.name}
-          className="object-contain object-top rounded-md"
-          fill
-          sizes="70px"
-        />
+// New Small Flowers Summary Component
+const SmallFlowersSummary: React.FC<{
+  selectedFlowers: SelectedFlowerItem[];
+  limit: number;
+}> = ({ selectedFlowers, limit }) => {
+  const groupedFlowers = selectedFlowers.reduce((acc, curr) => {
+    const id = curr.flower.id;
+    acc[id] = acc[id] || { flower: curr.flower, count: 0 };
+    acc[id].count++;
+    return acc;
+  }, {} as Record<number, { flower: Flower; count: number }>);
+
+  return (
+    <div className="sticky top-0 bg-white z-10 pb-4 border-b">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Small Flowers Selected
+          <span className="ml-2 text-sm font-normal text-gray-500">
+            ({selectedFlowers.length}/{limit})
+          </span>
+        </h3>
       </div>
-      <span className="mt-2 text-xs text-center">{item.name}</span>
-    </label>
-    <Button
-      size="sm"
-      variant="outline"
-      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-      onClick={onAdd}
-      disabled={isDisabled}
-    >
-      <Plus className="h-4 w-4" />
-    </Button>
+      {selectedFlowers.length > 0 ? (
+        <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+          {Object.values(groupedFlowers).map(({ flower, count }) => (
+            <div
+              key={flower.id}
+              className="flex items-center gap-1 bg-main-50 px-2 py-1 rounded-full"
+            >
+              <div className="relative w-4 h-4">
+                <Image
+                  src={flower.imageSingle}
+                  alt={flower.name}
+                  className="object-contain"
+                  fill
+                  sizes="16px"
+                />
+              </div>
+              <span className="text-sm text-gray-700 whitespace-nowrap">
+                {flower.name} × {count}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500 italic">
+          No small flowers selected yet. You need {limit} small flowers.
+        </p>
+      )}
+    </div>
+  );
+};
+
+// Enhanced ItemCard Component
+const ItemCard: React.FC<
+  ItemCardProps & {
+    count: number;
+    maxCount: number;
+    itemPrice?: number;
+  }
+> = ({ item, isDisabled, onAdd, type, count, maxCount, itemPrice }) => {
+  const isSoldOut = item.stock === 0;
+
+  return (
+    <div className="relative">
+      <label
+        className={cn(
+          "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all overflow-hidden",
+          isSoldOut
+            ? "border-red-200 bg-white/80"
+            : count > 0
+            ? "border-main-300 bg-main-50"
+            : "hover:border-main-200"
+        )}
+      >
+        {/* Item Image and Details */}
+        <div className="relative w-full aspect-square">
+          <Image
+            src={item.imageUrl}
+            alt={item.name}
+            className="object-contain object-top rounded-md"
+            fill
+            sizes="70px"
+          />
+          {/* Diagonal Sold Out Banner */}
+          {isSoldOut && (
+            <div className="absolute inset-0 overflow-hidden rounded-md">
+              <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+              <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                SOLD OUT
+              </div>
+            </div>
+          )}
+        </div>
+        <span
+          className={cn(
+            "mt-2 text-xs text-center font-medium",
+            isSoldOut ? "text-gray-400" : "text-gray-700"
+          )}
+        >
+          {item.name}
+        </span>
+
+        {isSoldOut && (
+          <span className="text-[10px] text-red-500 font-medium">
+            Out of Stock
+          </span>
+        )}
+
+        {count > 0 && (
+          <div className="mt-1 text-xs text-main-600 font-medium">
+            {count} selected
+          </div>
+        )}
+
+        {/* Low Stock Warning */}
+        {!isSoldOut && item.stock <= 3 && (
+          <span className="mt-1 text-[10px] text-orange-500 font-medium">
+            Only {item.stock} left
+          </span>
+        )}
+      </label>
+
+      {/* Selection Counter */}
+      {!isSoldOut && (
+        <>
+          <div
+            className={cn(
+              "absolute -top-2 -right-2 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold",
+              count === maxCount
+                ? "bg-main-600 text-white"
+                : count > 0
+                ? "bg-main-100 text-main-600"
+                : "bg-gray-100 text-gray-700"
+            )}
+          >
+            {count}/{maxCount}
+          </div>
+          <Button
+            size="sm"
+            variant={count > 0 ? "default" : "outline"}
+            className="absolute -top-2 -left-2 h-6 w-6 rounded-full p-0"
+            onClick={onAdd}
+            disabled={isDisabled}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </>
+      )}
+    </div>
+  );
+};
+
+// Additional helper component for low stock warning
+const LowStockBadge: React.FC<{ stock: number }> = ({ stock }) => (
+  <div className="absolute top-2 right-2 px-2 py-1 bg-orange-100 rounded-full">
+    <span className="text-[10px] font-medium text-orange-600">
+      {stock} left
+    </span>
+  </div>
+);
+
+const SizeCard: React.FC<{
+  size: Size;
+  isSelected: boolean;
+  onChange: (size: Size) => void;
+}> = ({ size, isSelected, onChange }) => (
+  <label
+    className={cn(
+      "relative flex flex-col items-center p-4 rounded-lg border cursor-pointer transition-all",
+      isSelected
+        ? "border-main-600 bg-main-50 ring-2 ring-main-500"
+        : "border-gray-200 hover:border-main-300"
+    )}
+  >
+    <input
+      type="radio"
+      name="size"
+      value={size.size}
+      checked={isSelected}
+      onChange={() => onChange(size)}
+      className="sr-only"
+    />
+    {/* <div className="relative w-full aspect-square mb-3">
+      <div
+        className="absolute inset-0 border-4 border-dashed rounded-lg border-gray-300"
+        style={{ transform: `scale(${size.dimensionScale})` }}
+      />
+    </div> */}
+    <div className="text-center">
+      <p className="font-semibold text-gray-900">{size.size}</p>
+      <p className="text-sm text-gray-500">${size.price.toFixed(2)}</p>
+    </div>
+    <div className="mt-2 text-xs text-gray-500 text-center">
+      <p>{size.mainFlowerLimit} main items</p>
+      <p>{size.smallFlowerLimit} small flowers</p>
+    </div>
+  </label>
+);
+
+// New Flower/Animal Counter Component
+
+const ItemCounter: React.FC<{
+  item: Flower | Animal;
+  count: number;
+  max: number;
+  type: "flower" | "animal";
+}> = ({ item, count, max, type }) => (
+  <div
+    className={cn(
+      "absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+      count === max ? "bg-main-600 text-white" : "bg-gray-100 text-gray-700"
+    )}
+  >
+    {count}/{max}
   </div>
 );
 
@@ -387,6 +568,15 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
   const calculatePrice = selectedSize.price;
 
+  // Update the flower and animal sections to include counters
+  const getFlowerCount = (flower: Flower) =>
+    selectedFlowers.filter((f) => f.flower.id === flower.id).length;
+
+  const getAnimalCount = (animal: Animal) =>
+    selectedAnimals.filter((a) => a.animal.id === animal.id).length;
+
+  // In the main CreatePage component, update the size selector section:
+
   return (
     <div className="py-12 bg-secondary-500">
       <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -439,39 +629,17 @@ const CreatePage: React.FC<CreatePageProps> = ({
           <div className="lg:col-span-6 mt-8 lg:mt-0 bg-white p-6 rounded-lg shadow-2xl">
             {/* Size Selector */}
             <div className="mt-8">
-              <div className="flex justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                  Size ({selectedSize.size})
-                </h2>
-                <p className="text-sm text-gray-500">
-                  ${selectedSize.price.toFixed(2)}
-                </p>
-              </div>
-              <p className="text-sm text-gray-500 mb-2">
-                Includes up to {selectedSize.mainFlowerLimit} main items and{" "}
-                {selectedSize.smallFlowerLimit} small flowers
-              </p>
-              <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Choose Your Bundle Size
+              </h2>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {sizes.map((size) => (
-                  <label
+                  <SizeCard
                     key={size.size}
-                    className={cn(
-                      "flex items-center justify-center rounded-md border py-3 px-3 text-sm font-medium uppercase cursor-pointer",
-                      selectedSize.size === size.size
-                        ? "bg-main-600 text-white hover:bg-main-700"
-                        : "border-gray-200 bg-white text-gray-900 hover:bg-gray-50"
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="size"
-                      value={size.size}
-                      checked={selectedSize.size === size.size}
-                      onChange={() => setSelectedSize(size)}
-                      className="sr-only"
-                    />
-                    {size.size}
-                  </label>
+                    size={size}
+                    isSelected={selectedSize.size === size.size}
+                    onChange={setSelectedSize}
+                  />
                 ))}
               </div>
             </div>
@@ -526,41 +694,59 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
             {/* Small Flowers Section */}
             <div className="mt-8">
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Step 1: Small Flowers
                   <span className="text-sm font-normal text-gray-500 ml-2">
-                    (Required: {selectedSize.smallFlowerLimit})
+                    (
+                    {
+                      selectedFlowers.filter(
+                        (f) => f.flower.flowerType === FlowerType.SMALL
+                      ).length
+                    }
+                    /{selectedSize.smallFlowerLimit} selected)
                   </span>
                 </h3>
-                <span className="text-sm font-medium text-gray-500">
-                  {
-                    selectedFlowers.filter(
-                      (f) => f.flower.flowerType === FlowerType.SMALL
-                    ).length
-                  }
-                  /{selectedSize.smallFlowerLimit}
-                </span>
               </div>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 {flowers
                   .filter((flower) => flower.flowerType === FlowerType.SMALL)
-                  .map((flower) => (
-                    <ItemCard
-                      key={flower.id}
-                      item={flower}
-                      isDisabled={
-                        flower.stock === 0 ||
-                        selectedFlowers.filter(
-                          (f) => f.flower.flowerType === FlowerType.SMALL
-                        ).length >= selectedSize.smallFlowerLimit
-                      }
-                      onAdd={(e) => handleAddFlower(flower, e)}
-                      type="flower"
-                    />
-                  ))}
+                  .map((flower) => {
+                    const count = selectedFlowers.filter(
+                      (f) => f.flower.id === flower.id
+                    ).length;
+
+                    return (
+                      <ItemCard
+                        key={flower.id}
+                        item={flower}
+                        count={count}
+                        maxCount={selectedSize.smallFlowerLimit}
+                        itemPrice={flower.price}
+                        isDisabled={
+                          flower.stock === 0 ||
+                          selectedFlowers.filter(
+                            (f) => f.flower.flowerType === FlowerType.SMALL
+                          ).length >= selectedSize.smallFlowerLimit
+                        }
+                        onAdd={(e) => {
+                          handleAddFlower(flower, e);
+                          toast.success(
+                            count === 0
+                              ? `Added first ${flower.name}`
+                              : `Added another ${flower.name} (${
+                                  count + 1
+                                } total)`
+                          );
+                        }}
+                        type="flower"
+                      />
+                    );
+                  })}
               </div>
             </div>
+
+            {/* Small Flowers Summary */}
 
             {/* Main Items Section */}
             <div className="mt-8">
@@ -585,13 +771,19 @@ const CreatePage: React.FC<CreatePageProps> = ({
                   <h4 className="text-md font-medium text-gray-700 mb-2">
                     Main Flowers
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-5">
                     {flowers
                       .filter((flower) => flower.flowerType === FlowerType.MAIN)
                       .map((flower) => (
                         <ItemCard
                           key={flower.id}
                           item={flower}
+                          count={getFlowerCount(flower)}
+                          maxCount={
+                            flower.flowerType === FlowerType.SMALL
+                              ? selectedSize.smallFlowerLimit
+                              : selectedSize.mainFlowerLimit
+                          }
                           isDisabled={
                             flower.stock === 0 ||
                             selectedFlowers.filter(
@@ -600,7 +792,10 @@ const CreatePage: React.FC<CreatePageProps> = ({
                               selectedAnimals.length >=
                               selectedSize.mainFlowerLimit
                           }
-                          onAdd={(e) => handleAddFlower(flower, e)}
+                          onAdd={(e) => {
+                            handleAddFlower(flower, e);
+                            toast.success(`Added ${flower.name}`);
+                          }}
                           type="flower"
                         />
                       ))}
@@ -612,11 +807,13 @@ const CreatePage: React.FC<CreatePageProps> = ({
                   <h4 className="text-md font-medium text-gray-700 mb-2">
                     Animals
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-5">
                     {animals.map((animal) => (
                       <ItemCard
                         key={animal.id}
                         item={animal}
+                        count={getAnimalCount(animal)}
+                        maxCount={selectedSize.mainFlowerLimit}
                         isDisabled={
                           animal.stock === 0 ||
                           selectedFlowers.filter(
@@ -625,7 +822,10 @@ const CreatePage: React.FC<CreatePageProps> = ({
                             selectedAnimals.length >=
                             selectedSize.mainFlowerLimit
                         }
-                        onAdd={(e) => handleAddAnimal(animal, e)}
+                        onAdd={(e) => {
+                          handleAddAnimal(animal, e);
+                          toast.success(`Added ${animal.name}`);
+                        }}
                         type="animal"
                       />
                     ))}

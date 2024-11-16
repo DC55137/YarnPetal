@@ -16,7 +16,23 @@ async function adjustStock(orderItems: any[]) {
     // Adjust flower stock
     for (const flowerSelection of item.flowers) {
       await prismadb.flower.update({
-        where: { id: flowerSelection.flower.id },
+        where: { id: flowerSelection.flowerId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust animal stock if present
+    if (item.animalId) {
+      await prismadb.animal.update({
+        where: { id: item.animalId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust hat stock if present
+    if (item.hatId) {
+      await prismadb.hat.update({
+        where: { id: item.hatId },
         data: { stock: { decrement: item.quantity } },
       });
     }
@@ -49,13 +65,15 @@ export async function POST(req: Request) {
       });
     }
 
-    const order = await prismadb.order.update({
+    const order = await prismadb.order.findUnique({
       where: { id: Number(orderId) },
       include: {
         orderItems: {
           include: {
             color: true,
             size: true,
+            animal: true,
+            hat: true,
             flowers: {
               include: {
                 flower: true,
@@ -64,12 +82,17 @@ export async function POST(req: Request) {
           },
         },
       },
-      data: { paid: true },
     });
 
     if (!order) {
       return new NextResponse("Order not found", { status: 404 });
     }
+
+    // Update order to paid
+    await prismadb.order.update({
+      where: { id: Number(orderId) },
+      data: { paid: true },
+    });
 
     // Adjust stock
     await adjustStock(order.orderItems);
@@ -124,6 +147,12 @@ export async function POST(req: Request) {
             <strong>Flowers:</strong> ${item.flowers
               .map((f) => f.flower.name)
               .join(", ")} <br />
+            ${
+              item.animal
+                ? `<strong>Animal:</strong> ${item.animal.name} <br />`
+                : ""
+            }
+            ${item.hat ? `<strong>Hat:</strong> ${item.hat.name} <br />` : ""}
             <strong>Quantity:</strong> ${item.quantity} <br />
             <strong>Price:</strong> $${item.price.toFixed(2)} <br />
             <img src="${item.color.imageBack}" alt="${
