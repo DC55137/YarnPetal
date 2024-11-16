@@ -37,11 +37,8 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
   );
 
   // Calculate additional costs (animals + hat)
-  const additionalCost =
-    item.animals.reduce((sum, animal) => sum + animal.animal.price, 0) +
-    (item.hat?.price || 0);
 
-  const totalPrice = (item.size.price + additionalCost) * item.quantity;
+  const totalPrice = item.size.price * item.quantity;
 
   return (
     <div className="py-6">
