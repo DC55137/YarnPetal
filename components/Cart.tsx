@@ -157,8 +157,7 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
                 ${totalPrice.toFixed(2)}
               </p>
               <p className="text-xs text-gray-500">
-                ${item.size.price.toFixed(2)} + ${additionalCost.toFixed(2)}{" "}
-                add-ons
+                ${item.size.price.toFixed(2)} add-ons
               </p>
             </div>
           </div>
