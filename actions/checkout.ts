@@ -75,7 +75,7 @@ export async function checkout({ formData }: checkoutProps) {
   } = formData;
 
   // Create line items for Stripe
-  const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.map(
+  const cartItems: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.map(
     (item) => ({
       quantity: item.quantity,
       price_data: {
@@ -94,6 +94,25 @@ export async function checkout({ formData }: checkoutProps) {
       },
     })
   );
+
+  // Add delivery fee as a separate line item
+  const deliveryLineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
+    quantity: 1,
+    price_data: {
+      currency: "aud",
+      product_data: {
+        name: deliveryMethod,
+        description: "Delivery fee",
+      },
+      unit_amount:
+        Math.round(
+          price -
+            cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
+        ) * 100,
+    },
+  };
+
+  const line_items = [...cartItems, deliveryLineItem];
 
   // Calculate extra animal price if applicable
   const getExtraAnimalPrice = (item: CartItem) => {

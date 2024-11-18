@@ -78,6 +78,8 @@ export default function CheckoutMailForm({
       setLoading(false);
       return;
     }
+
+    // Validate postal code for non-Australia-wide deliveries
     if (
       !isAustraliaWide &&
       !availablePostCodes.includes(Number(form.postalCode))
@@ -91,15 +93,24 @@ export default function CheckoutMailForm({
       return;
     }
 
+    // Calculate cart subtotal
+    const cartSubtotal = cart.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
+
+    // Calculate total price including delivery fee
+    const totalPrice = cartSubtotal + selectedDeliveryMethod.price;
+
     const formData = {
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
-      price:
-        cart.reduce((acc, item) => acc + item.price * item.quantity, 0) +
-        selectedDeliveryMethod.price,
+      price: totalPrice, // Send the total price including delivery fee
       cart: cart,
     };
+
     try {
+      mailFormSchema.parse(form);
       checkout({ formData })
         .then((response) => {
           if (response.url) {
@@ -110,7 +121,6 @@ export default function CheckoutMailForm({
               return;
             } else {
               setErrors({}); // Clear all errors on successful submission
-
               window.location.assign(response.url);
             }
           } else {
@@ -127,7 +137,6 @@ export default function CheckoutMailForm({
         const newErrors = error.flatten().fieldErrors;
         const errorMessages: Record<string, string> = {};
         for (const key in newErrors) {
-          // Use optional chaining and nullish coalescing to safely handle potentially undefined arrays
           errorMessages[key] = newErrors[key]?.[0] ?? "Unexpected error";
         }
         setErrors(errorMessages);

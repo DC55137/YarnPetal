@@ -50,12 +50,18 @@ export default function CheckoutPickUpForm({
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    // Calculate the cart subtotal
+    const cartSubtotal = cart.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    );
+    // Add delivery fee
+    const totalPrice = cartSubtotal + selectedDeliveryMethod.price;
+
     const formData = {
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
-      price:
-        cart.reduce((acc, item) => acc + item.price * item.quantity, 0) +
-        selectedDeliveryMethod.price,
+      price: totalPrice, // Send the total price including delivery fee
       cart: cart,
     };
 
@@ -76,7 +82,7 @@ export default function CheckoutPickUpForm({
         }
         checkout({ formData })
           .then((response) => {
-            setErrors({}); // Clear all errors on successful submission
+            setErrors({});
             toast.success("Order placed successfully");
             window.location.assign(
               `/order-confirmation/${response.orderNumber}`
@@ -90,7 +96,7 @@ export default function CheckoutPickUpForm({
         checkout({ formData })
           .then((response) => {
             if (response.url) {
-              setErrors({}); // Clear all errors on successful submission
+              setErrors({});
               window.location.assign(response.url);
             } else {
               toast.error("Error: No URL returned");
