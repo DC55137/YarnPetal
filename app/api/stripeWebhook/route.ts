@@ -21,18 +21,34 @@ async function adjustStock(orderItems: any[]) {
       });
     }
 
-    // Adjust animal stock if present
-    if (item.animalId) {
+    // Adjust base animal stock if present
+    if (item.baseAnimalId) {
       await prismadb.animal.update({
-        where: { id: item.animalId },
+        where: { id: item.baseAnimalId },
         data: { stock: { decrement: item.quantity } },
       });
     }
 
-    // Adjust hat stock if present
-    if (item.hatId) {
+    // Adjust base animal hat stock if present
+    if (item.baseAnimalHatId) {
       await prismadb.hat.update({
-        where: { id: item.hatId },
+        where: { id: item.baseAnimalHatId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust extra animal stock if present
+    if (item.extraAnimalId) {
+      await prismadb.animal.update({
+        where: { id: item.extraAnimalId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust extra animal hat stock if present
+    if (item.extraAnimalHatId) {
+      await prismadb.hat.update({
+        where: { id: item.extraAnimalHatId },
         data: { stock: { decrement: item.quantity } },
       });
     }
@@ -72,8 +88,10 @@ export async function POST(req: Request) {
           include: {
             color: true,
             size: true,
-            animal: true,
-            hat: true,
+            baseAnimal: true,
+            baseAnimalHat: true,
+            extraAnimal: true,
+            extraAnimalHat: true,
             flowers: {
               include: {
                 flower: true,
@@ -139,30 +157,95 @@ export async function POST(req: Request) {
       <h2>Items Purchased</h2>
       <ul>
         ${order.orderItems
-          .map(
-            (item) => `
-          <li>
-            <strong>Color:</strong> ${item.color.name} <br />
-            <strong>Size:</strong> ${item.size.size} <br />
-            <strong>Flowers:</strong> ${item.flowers
+          .map((item) => {
+            // Get all small flowers
+            const smallFlowers = item.flowers
+              .filter((f) => f.flower.flowerType === "SMALL")
               .map((f) => f.flower.name)
-              .join(", ")} <br />
-            ${
-              item.animal
-                ? `<strong>Animal:</strong> ${item.animal.name} <br />`
-                : ""
-            }
-            ${item.hat ? `<strong>Hat:</strong> ${item.hat.name} <br />` : ""}
-            <strong>Quantity:</strong> ${item.quantity} <br />
-            <strong>Price:</strong> $${item.price.toFixed(2)} <br />
-            <img src="${item.color.imageBack}" alt="${
+              .join(", ");
+
+            // Get all main flowers
+            const mainFlowers = item.flowers
+              .filter((f) => f.flower.flowerType === "MAIN")
+              .map((f) => f.flower.name)
+              .join(", ");
+
+            return `
+            <li style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+              <h3 style="margin: 0 0 10px 0;">${item.color.name} Bundle (${
+              item.size.size
+            })</h3>
+              
+              ${
+                smallFlowers
+                  ? `
+                <strong>Small Flowers:</strong> ${smallFlowers}<br />
+              `
+                  : ""
+              }
+              
+              ${
+                mainFlowers
+                  ? `
+                <strong>Main Flowers:</strong> ${mainFlowers}<br />
+              `
+                  : ""
+              }
+              
+              ${
+                item.baseAnimal
+                  ? `
+                <strong>Base Animal:</strong> ${item.baseAnimal.name}
+                ${
+                  item.baseAnimalHat
+                    ? ` with ${item.baseAnimalHat.name} hat`
+                    : ""
+                }<br />
+              `
+                  : ""
+              }
+
+              ${
+                item.extraAnimal
+                  ? `
+                <strong>Extra Animal:</strong> ${item.extraAnimal.name}
+                ${
+                  item.extraAnimalHat
+                    ? ` with ${item.extraAnimalHat.name} hat`
+                    : ""
+                }<br />
+              `
+                  : ""
+              }
+              
+              <div style="margin-top: 10px;">
+                <strong>Quantity:</strong> ${item.quantity}<br />
+                <strong>Base Price:</strong> $${item.basePrice.toFixed(2)}<br />
+                ${
+                  item.extraAnimalPrice
+                    ? `<strong>Extra Animal Price:</strong> $${item.extraAnimalPrice.toFixed(
+                        2
+                      )}<br />`
+                    : ""
+                }
+                <strong>Total Price:</strong> $${item.totalPrice.toFixed(
+                  2
+                )}<br />
+              </div>
+              
+              <div style="margin-top: 10px;">
+                <img src="${item.color.imageBack}" alt="${
               item.color.name
-            }" width="100" />
-          </li>
-        `
-          )
+            }" width="100" style="border-radius: 5px;" />
+              </div>
+            </li>
+          `;
+          })
           .join("")}
       </ul>
+      <p style="color: #666; font-size: 14px; margin-top: 20px;">
+        Thank you for your purchase! If you have any questions about your order, please don't hesitate to contact us.
+      </p>
       `,
     });
 
