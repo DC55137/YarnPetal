@@ -21,18 +21,34 @@ async function adjustStock(orderItems: any[]) {
       });
     }
 
-    // Adjust animal stock if present
-    if (item.animalId) {
+    // Adjust base animal stock if present
+    if (item.baseAnimalId) {
       await prismadb.animal.update({
-        where: { id: item.animalId },
+        where: { id: item.baseAnimalId },
         data: { stock: { decrement: item.quantity } },
       });
     }
 
-    // Adjust hat stock if present
-    if (item.hatId) {
+    // Adjust base animal hat stock if present
+    if (item.baseAnimalHatId) {
       await prismadb.hat.update({
-        where: { id: item.hatId },
+        where: { id: item.baseAnimalHatId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust extra animal stock if present
+    if (item.extraAnimalId) {
+      await prismadb.animal.update({
+        where: { id: item.extraAnimalId },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust extra animal hat stock if present
+    if (item.extraAnimalHatId) {
+      await prismadb.hat.update({
+        where: { id: item.extraAnimalHatId },
         data: { stock: { decrement: item.quantity } },
       });
     }
@@ -72,8 +88,10 @@ export async function POST(req: Request) {
           include: {
             color: true,
             size: true,
-            animal: true,
-            hat: true,
+            baseAnimal: true,
+            baseAnimalHat: true,
+            extraAnimal: true,
+            extraAnimalHat: true,
             flowers: {
               include: {
                 flower: true,
@@ -175,17 +193,44 @@ export async function POST(req: Request) {
               }
               
               ${
-                item.animal
+                item.baseAnimal
                   ? `
-                <strong>Animal:</strong> ${item.animal.name}
-                ${item.hat ? ` with ${item.hat.name} hat` : ""}<br />
+                <strong>Base Animal:</strong> ${item.baseAnimal.name}
+                ${
+                  item.baseAnimalHat
+                    ? ` with ${item.baseAnimalHat.name} hat`
+                    : ""
+                }<br />
+              `
+                  : ""
+              }
+
+              ${
+                item.extraAnimal
+                  ? `
+                <strong>Extra Animal:</strong> ${item.extraAnimal.name}
+                ${
+                  item.extraAnimalHat
+                    ? ` with ${item.extraAnimalHat.name} hat`
+                    : ""
+                }<br />
               `
                   : ""
               }
               
               <div style="margin-top: 10px;">
                 <strong>Quantity:</strong> ${item.quantity}<br />
-                <strong>Price:</strong> $${item.price.toFixed(2)}<br />
+                <strong>Base Price:</strong> $${item.basePrice.toFixed(2)}<br />
+                ${
+                  item.extraAnimalPrice
+                    ? `<strong>Extra Animal Price:</strong> $${item.extraAnimalPrice.toFixed(
+                        2
+                      )}<br />`
+                    : ""
+                }
+                <strong>Total Price:</strong> $${item.totalPrice.toFixed(
+                  2
+                )}<br />
               </div>
               
               <div style="margin-top: 10px;">

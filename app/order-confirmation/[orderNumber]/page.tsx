@@ -23,6 +23,10 @@ export default async function page({
               flower: true,
             },
           },
+          baseAnimal: true,
+          baseAnimalHat: true,
+          extraAnimal: true,
+          extraAnimalHat: true,
         },
       },
     },
@@ -148,6 +152,54 @@ export default async function page({
                             />
                           </div>
                         ))}
+
+                        {/* Base Animal */}
+                        {item.baseAnimal && (
+                          <div className="relative aspect-square">
+                            <Image
+                              src={item.baseAnimal.imageUrl}
+                              alt={item.baseAnimal.name}
+                              className="object-contain"
+                              fill
+                              sizes="24px"
+                            />
+                            {item.baseAnimalHat && (
+                              <div className="absolute top-0 left-0 right-0 flex justify-center">
+                                <Image
+                                  src={item.baseAnimalHat.imageUrl}
+                                  alt={item.baseAnimalHat.name}
+                                  width={12}
+                                  height={12}
+                                  className="object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Extra Animal */}
+                        {item.extraAnimal && (
+                          <div className="relative aspect-square">
+                            <Image
+                              src={item.extraAnimal.imageUrl}
+                              alt={item.extraAnimal.name}
+                              className="object-contain"
+                              fill
+                              sizes="24px"
+                            />
+                            {item.extraAnimalHat && (
+                              <div className="absolute top-0 left-0 right-0 flex justify-center">
+                                <Image
+                                  src={item.extraAnimalHat.imageUrl}
+                                  alt={item.extraAnimalHat.name}
+                                  width={12}
+                                  height={12}
+                                  className="object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -160,7 +212,7 @@ export default async function page({
 
                           {/* Flowers */}
                           {item.flowers.length > 0 && (
-                            <div className="mt-1">
+                            <div className="mt-2">
                               <h5 className="text-sm font-medium text-gray-600">
                                 Flowers:
                               </h5>
@@ -176,13 +228,52 @@ export default async function page({
                               </div>
                             </div>
                           )}
+
+                          {/* Base Animal */}
+                          {item.baseAnimal && (
+                            <div className="mt-2">
+                              <h5 className="text-sm font-medium text-gray-600">
+                                Base Animal:
+                              </h5>
+                              <span className="text-sm text-gray-500">
+                                {item.baseAnimal.name}
+                                {item.baseAnimalHat &&
+                                  ` with ${item.baseAnimalHat.name}`}
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Extra Animal */}
+                          {item.extraAnimal && (
+                            <div className="mt-2">
+                              <h5 className="text-sm font-medium text-gray-600">
+                                Extra Animal:
+                              </h5>
+                              <span className="text-sm text-gray-500">
+                                {item.extraAnimal.name}
+                                {item.extraAnimalHat &&
+                                  ` with ${item.extraAnimalHat.name}`}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
                       <div className="flex flex-1 items-end justify-between pt-2">
-                        <p className="mt-1 text-lg font-medium text-gray-900">
-                          ${item.price.toFixed(2)} x{item.quantity}
-                        </p>
+                        <div className="space-y-1">
+                          <p className="text-sm text-gray-500">
+                            Base Price: ${item.basePrice.toFixed(2)}
+                          </p>
+                          {item.extraAnimalPrice > 0 && (
+                            <p className="text-sm text-gray-500">
+                              Extra Animal: ${item.extraAnimalPrice.toFixed(2)}
+                            </p>
+                          )}
+                          <p className="text-lg font-medium text-gray-900">
+                            Total: ${item.totalPrice.toFixed(2)} x
+                            {item.quantity}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -200,7 +291,10 @@ export default async function page({
                 <dd className="text-gray-700">
                   $
                   {order.orderItems
-                    .reduce((acc, item) => acc + item.quantity * item.price, 0)
+                    .reduce(
+                      (acc, item) => acc + item.quantity * item.totalPrice,
+                      0
+                    )
                     .toFixed(2)}
                 </dd>
               </div>
@@ -218,7 +312,7 @@ export default async function page({
                   $
                   {(
                     order.orderItems.reduce(
-                      (acc, item) => acc + item.quantity * item.price,
+                      (acc, item) => acc + item.quantity * item.totalPrice,
                       0
                     ) + deliveryMethod!.price
                   ).toFixed(2)}

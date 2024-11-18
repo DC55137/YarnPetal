@@ -4,7 +4,6 @@ import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
 import { CartItem } from "@/src/stores/cart-store";
 import { generateOrderNumber } from "@/lib/functions";
-import { Prisma } from "@prisma/client";
 import { Resend } from "resend";
 
 type checkoutProps = {
@@ -96,6 +95,14 @@ export async function checkout({ formData }: checkoutProps) {
     })
   );
 
+  // Calculate extra animal price if applicable
+  const getExtraAnimalPrice = (item: CartItem) => {
+    if (item.animals.length > item.size.baseAnimalLimit) {
+      return item.size.extraAnimalPrice;
+    }
+    return 0;
+  };
+
   // Save order details in the database
   const order = await prismadb.order.create({
     data: {
@@ -117,7 +124,9 @@ export async function checkout({ formData }: checkoutProps) {
           colorId: item.color.id,
           sizeId: item.size.id,
           quantity: item.quantity,
-          price: item.price,
+          basePrice: item.price - getExtraAnimalPrice(item), // Base price without extra animal
+          extraAnimalPrice: getExtraAnimalPrice(item), // Price for extra animal if added
+          totalPrice: item.price, // Total price including extras
           flowers: {
             create: item.flowers.map((flower) => ({
               flowerId: flower.flower.id,
@@ -125,6 +134,12 @@ export async function checkout({ formData }: checkoutProps) {
               position: flower.position,
             })),
           },
+          // Handle base animal and its hat
+          baseAnimalId: item.animals[0]?.animal.id || null,
+          baseAnimalHatId: item.animals[0]?.hat?.id || null,
+          // Handle extra animal and its hat if present
+          extraAnimalId: item.animals[1]?.animal.id || null,
+          extraAnimalHatId: item.animals[1]?.hat?.id || null,
         })),
       },
     },
@@ -138,6 +153,10 @@ export async function checkout({ formData }: checkoutProps) {
               flower: true,
             },
           },
+          baseAnimal: true,
+          baseAnimalHat: true,
+          extraAnimal: true,
+          extraAnimalHat: true,
         },
       },
     },
@@ -194,8 +213,22 @@ export async function checkout({ formData }: checkoutProps) {
             <strong>Flowers:</strong> ${item.flowers
               .map((f) => f.flower.name)
               .join(", ")} <br />
+            <strong>Base Animal:</strong> ${
+              item.baseAnimal ? item.baseAnimal.name : "None"
+            }${
+              item.baseAnimalHat ? ` with ${item.baseAnimalHat.name}` : ""
+            } <br />
+            ${
+              item.extraAnimal
+                ? `<strong>Extra Animal:</strong> ${item.extraAnimal.name}${
+                    item.extraAnimalHat
+                      ? ` with ${item.extraAnimalHat.name}`
+                      : ""
+                  } <br />`
+                : ""
+            }
             <strong>Quantity:</strong> ${item.quantity} <br />
-            <strong>Price:</strong> $${item.price.toFixed(2)} <br />
+            <strong>Total Price:</strong> $${item.totalPrice.toFixed(2)} <br />
             <img src="${item.color.imageBack}" alt="${
               item.color.name
             }" width="100" />

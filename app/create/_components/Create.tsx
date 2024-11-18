@@ -34,6 +34,7 @@ interface ImageDisplayProps {
   selectedSize: Size;
   availableHats: Hat[];
   imageLoading: boolean;
+  totalPrice: number;
   setImageLoading: (loading: boolean) => void;
   onRemoveFlower: (position: number) => void;
   onRemoveAnimal: (position: number) => void;
@@ -110,6 +111,30 @@ const SelectedAnimalCard: React.FC<{
   </div>
 );
 
+// ImageDisplay Component Enhancement
+const ImagePlaceholder: React.FC<{
+  type: "small-flower" | "main-flower" | "animal";
+}> = ({ type }) => (
+  <div className="relative aspect-square rounded-lg overflow-hidden border bg-gray-50 p-2">
+    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+      <div className="w-12 h-12 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center mb-2">
+        {type === "small-flower" && (
+          <div className="w-6 h-6 rounded-full bg-gray-200" />
+        )}
+        {type === "main-flower" && (
+          <div className="w-8 h-8 rounded-full bg-gray-200" />
+        )}
+        {type === "animal" && (
+          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+        )}
+      </div>
+      <span className="text-xs text-gray-500 text-center">
+        Add {type.split("-").join(" ")}
+      </span>
+    </div>
+  </div>
+);
+
 // Image Display Component
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
   selectedColor,
@@ -118,6 +143,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   selectedSize,
   availableHats,
   imageLoading,
+  totalPrice,
   setImageLoading,
   onRemoveFlower,
   onRemoveAnimal,
@@ -135,111 +161,206 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   }, [selectedColor, setImageLoading]);
 
   return (
-    <div className="flex gap-6 flex-col pt-10">
+    <div className="flex gap-6 flex-col pt-6">
+      {/* Header with Color Name and Price */}
+      <div className="flex justify-between items-center px-4">
+        <h2 className={cn("text-3xl text-main-600", pacifico.className)}>
+          {selectedColor.name} Bundle
+        </h2>
+        <div className="bg-main-50 px-4 py-2 rounded-lg">
+          <span className="text-2xl font-bold text-main-600">
+            ${totalPrice.toFixed(2)}
+          </span>
+        </div>
+      </div>
+
       <div className="flex gap-6">
         {/* Color Preview */}
         <div className="w-1/3 flex flex-col gap-4">
           <h3 className="text-base font-medium">Selected Color</h3>
           <div className="relative aspect-square w-full rounded-lg overflow-hidden">
-            <div
-              className={cn(
-                "absolute inset-0 flex items-center justify-center bg-white",
-                !imageLoading && "hidden"
-              )}
-            >
-              <Loader className="w-8 h-8 animate-spin" />
-            </div>
-            <Image
-              key={selectedColor.id}
-              src={selectedColor.imageBack}
-              alt={selectedColor.name}
-              className={cn("object-cover", imageLoading && "opacity-0")}
-              fill
-              priority
-              onLoadingComplete={() => setImageLoading(false)}
-            />
+            {selectedColor ? (
+              <>
+                <div
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center bg-white",
+                    !imageLoading && "hidden"
+                  )}
+                >
+                  <Loader className="w-8 h-8 animate-spin" />
+                </div>
+                <Image
+                  key={selectedColor.id}
+                  src={selectedColor.imageBack}
+                  alt={selectedColor.name}
+                  className={cn("object-cover", imageLoading && "opacity-0")}
+                  fill
+                  priority
+                  onLoadingComplete={() => setImageLoading(false)}
+                />
+              </>
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                <span className="text-gray-400">Select a color</span>
+              </div>
+            )}
           </div>
+          {/* Color Description */}
+          <p className="text-sm text-gray-600">{selectedColor.description}</p>
         </div>
 
         {/* Selected Items Display */}
         <div className="w-2/3 space-y-6">
-          {/* Small Flowers */}
-          {smallFlowers.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-3">Small Flowers</h3>
-              <div className="grid grid-cols-4 gap-3">
-                {smallFlowers.map((flower) => (
-                  <div key={flower.position} className="relative">
-                    <div className="relative aspect-square rounded-lg overflow-hidden border bg-white p-2">
-                      <Image
-                        src={flower.flower.imageSingle}
-                        alt={flower.flower.name}
-                        className="object-contain"
-                        fill
-                        sizes="(max-width: 768px) 25vw, 20vw"
-                      />
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                      onClick={() => onRemoveFlower(flower.position)}
-                    >
-                      <Trash className="h-3 w-3" />
-                    </Button>
+          {/* Small Flowers Section */}
+          <div>
+            <h3 className="text-sm font-medium mb-3">Small Flowers</h3>
+            <div className="grid grid-cols-4 gap-3">
+              {smallFlowers.map((flower) => (
+                <div key={flower.position} className="relative">
+                  <div className="relative aspect-square rounded-lg overflow-hidden border bg-white p-2">
+                    <Image
+                      src={flower.flower.imageSingle}
+                      alt={flower.flower.name}
+                      className="object-contain"
+                      fill
+                      sizes="(max-width: 768px) 25vw, 20vw"
+                    />
                   </div>
-                ))}
-              </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                    onClick={() => onRemoveFlower(flower.position)}
+                  >
+                    <Trash className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+              {/* Placeholders */}
+              {smallFlowers.length < selectedSize.smallFlowerLimit &&
+                Array.from(
+                  {
+                    length: selectedSize.smallFlowerLimit - smallFlowers.length,
+                  },
+                  (_, i) => (
+                    <ImagePlaceholder key={`small-${i}`} type="small-flower" />
+                  )
+                )}
             </div>
-          )}
+          </div>
 
-          {/* Main Flowers */}
-          {mainFlowers.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-3">Main Flowers</h3>
-              <div className="grid grid-cols-4 gap-3">
-                {mainFlowers.map((flower) => (
-                  <div key={flower.position} className="relative">
-                    <div className="relative aspect-square rounded-lg overflow-hidden border bg-white p-2">
-                      <Image
-                        src={flower.flower.imageSingle}
-                        alt={flower.flower.name}
-                        className="object-contain"
-                        fill
-                        sizes="(max-width: 768px) 25vw, 20vw"
-                      />
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                      onClick={() => onRemoveFlower(flower.position)}
-                    >
-                      <Trash className="h-3 w-3" />
-                    </Button>
+          {/* Main Flowers Section */}
+          <div>
+            <h3 className="text-sm font-medium mb-3">Main Flowers</h3>
+            <div className="grid grid-cols-4 gap-3">
+              {mainFlowers.map((flower) => (
+                <div key={flower.position} className="relative">
+                  <div className="relative aspect-square rounded-lg overflow-hidden border bg-white p-2">
+                    <Image
+                      src={flower.flower.imageSingle}
+                      alt={flower.flower.name}
+                      className="object-contain"
+                      fill
+                      sizes="(max-width: 768px) 25vw, 20vw"
+                    />
                   </div>
-                ))}
-              </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                    onClick={() => onRemoveFlower(flower.position)}
+                  >
+                    <Trash className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+              {/* Placeholders */}
+              {mainFlowers.length < selectedSize.mainFlowerLimit &&
+                Array.from(
+                  { length: selectedSize.mainFlowerLimit - mainFlowers.length },
+                  (_, i) => (
+                    <ImagePlaceholder key={`main-${i}`} type="main-flower" />
+                  )
+                )}
             </div>
-          )}
+          </div>
 
-          {/* Animals with Hat Selection */}
-          {selectedAnimals.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium mb-3">Animals</h3>
-              <div className="grid grid-cols-4 gap-3">
-                {selectedAnimals.map((animal) => (
-                  <SelectedAnimalCard
-                    key={animal.position}
-                    animal={animal}
-                    availableHats={availableHats}
-                    onRemove={onRemoveAnimal}
-                    onHatChange={onHatChange}
-                  />
-                ))}
-              </div>
+          {/* Animals Section */}
+          <div>
+            <h3 className="text-sm font-medium mb-3">Animals</h3>
+            <div className="grid grid-cols-4 gap-3">
+              {selectedAnimals.map((animal) => (
+                <div key={animal.position} className="relative">
+                  <div className="relative aspect-square rounded-lg overflow-hidden border bg-white p-2">
+                    <Image
+                      src={animal.animal.imageUrl}
+                      alt={animal.animal.name}
+                      className="object-contain"
+                      fill
+                      sizes="(max-width: 768px) 25vw, 20vw"
+                    />
+                    {animal.hat &&
+                      animal.hat.imageUrl &&
+                      animal.hat.imageUrl !== "none" && (
+                        <div className="absolute top-0 left-0 right-0 flex justify-center">
+                          <Image
+                            src={animal.hat.imageUrl}
+                            alt={animal.hat.name}
+                            width={40}
+                            height={40}
+                            className="object-contain"
+                          />
+                        </div>
+                      )}
+                  </div>
+                  <div className="mt-2">
+                    <select
+                      className="w-full text-sm rounded-md border-gray-200 bg-white"
+                      value={animal.hat?.id?.toString() || ""}
+                      onChange={(e) => {
+                        const selectedHat = e.target.value
+                          ? availableHats.find(
+                              (h) => h.id === parseInt(e.target.value)
+                            ) || null
+                          : null;
+                        onHatChange(animal.position, selectedHat);
+                      }}
+                    >
+                      <option value="">No hat</option>
+                      {availableHats
+                        .filter(
+                          (hat) => hat.imageUrl && hat.imageUrl !== "none"
+                        )
+                        .map((hat) => (
+                          <option key={hat.id} value={hat.id.toString()}>
+                            {hat.name} (${hat.price.toFixed(2)})
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+                    onClick={() => onRemoveAnimal(animal.position)}
+                  >
+                    <Trash className="h-3 w-3" />
+                  </Button>
+                </div>
+              ))}
+              {/* Placeholders */}
+              {selectedAnimals.length < selectedSize.baseAnimalLimit &&
+                Array.from(
+                  {
+                    length:
+                      selectedSize.baseAnimalLimit - selectedAnimals.length,
+                  },
+                  (_, i) => (
+                    <ImagePlaceholder key={`animal-${i}`} type="animal" />
+                  )
+                )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -256,59 +377,6 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
           </span>
         </div>
       </div>
-    </div>
-  );
-};
-
-// New Small Flowers Summary Component
-const SmallFlowersSummary: React.FC<{
-  selectedFlowers: SelectedFlowerItem[];
-  limit: number;
-}> = ({ selectedFlowers, limit }) => {
-  const groupedFlowers = selectedFlowers.reduce((acc, curr) => {
-    const id = curr.flower.id;
-    acc[id] = acc[id] || { flower: curr.flower, count: 0 };
-    acc[id].count++;
-    return acc;
-  }, {} as Record<number, { flower: Flower; count: number }>);
-
-  return (
-    <div className="sticky top-0 bg-white z-10 pb-4 border-b">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Small Flowers Selected
-          <span className="ml-2 text-sm font-normal text-gray-500">
-            ({selectedFlowers.length}/{limit})
-          </span>
-        </h3>
-      </div>
-      {selectedFlowers.length > 0 ? (
-        <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
-          {Object.values(groupedFlowers).map(({ flower, count }) => (
-            <div
-              key={flower.id}
-              className="flex items-center gap-1 bg-main-50 px-2 py-1 rounded-full"
-            >
-              <div className="relative w-4 h-4">
-                <Image
-                  src={flower.imageSingle}
-                  alt={flower.name}
-                  className="object-contain"
-                  fill
-                  sizes="16px"
-                />
-              </div>
-              <span className="text-sm text-gray-700 whitespace-nowrap">
-                {flower.name} × {count}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-gray-500 italic">
-          No small flowers selected yet. You need {limit} small flowers.
-        </p>
-      )}
     </div>
   );
 };
@@ -413,15 +481,7 @@ const ItemCard: React.FC<
   );
 };
 
-// Additional helper component for low stock warning
-const LowStockBadge: React.FC<{ stock: number }> = ({ stock }) => (
-  <div className="absolute top-2 right-2 px-2 py-1 bg-orange-100 rounded-full">
-    <span className="text-[10px] font-medium text-orange-600">
-      {stock} left
-    </span>
-  </div>
-);
-
+// SizeCard Component
 const SizeCard: React.FC<{
   size: Size;
   isSelected: boolean;
@@ -443,42 +503,91 @@ const SizeCard: React.FC<{
       onChange={() => onChange(size)}
       className="sr-only"
     />
-    {/* <div className="relative w-full aspect-square mb-3">
-      <div
-        className="absolute inset-0 border-4 border-dashed rounded-lg border-gray-300"
-        style={{ transform: `scale(${size.dimensionScale})` }}
-      />
-    </div> */}
     <div className="text-center">
       <p className="font-semibold text-gray-900">{size.size}</p>
       <p className="text-sm text-gray-500">${size.price.toFixed(2)}</p>
     </div>
     <div className="mt-2 text-xs text-gray-500 text-center">
-      <p>{size.mainFlowerLimit} main items</p>
+      <p>{size.mainFlowerLimit} main flowers</p>
       <p>{size.smallFlowerLimit} small flowers</p>
+      <p>1 animal included</p>
     </div>
   </label>
 );
 
-// New Flower/Animal Counter Component
+// First, add an ExtraAnimalSection component to handle the extra animal option
+const ExtraAnimalSection: React.FC<{
+  selectedSize: Size;
+  selectedAnimals: AnimalWithHat[];
+  animals: Animal[];
+  getAnimalCount: (animal: Animal) => number;
+  onAddAnimal: (animal: Animal, e: React.MouseEvent<HTMLButtonElement>) => void;
+  hasExtraAnimal: boolean;
+  onToggleExtraAnimal: (value: boolean) => void;
+}> = ({
+  selectedSize,
+  selectedAnimals,
+  animals,
+  getAnimalCount,
+  onAddAnimal,
+  hasExtraAnimal,
+  onToggleExtraAnimal,
+}) => {
+  // Only show this section if base animal is selected
+  if (selectedAnimals.length < selectedSize.baseAnimalLimit) {
+    return null;
+  }
 
-const ItemCounter: React.FC<{
-  item: Flower | Animal;
-  count: number;
-  max: number;
-  type: "flower" | "animal";
-}> = ({ item, count, max, type }) => (
-  <div
-    className={cn(
-      "absolute -top-2 -left-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
-      count === max ? "bg-main-600 text-white" : "bg-gray-100 text-gray-700"
-    )}
-  >
-    {count}/{max}
-  </div>
-);
+  return (
+    <div className="mt-8 border-t pt-8">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Add an Extra Animal?
+            <span className="text-sm font-normal text-gray-500 ml-2">
+              (+${selectedSize.extraAnimalPrice.toFixed(2)})
+            </span>
+          </h3>
+          <p className="text-sm text-gray-500">
+            You can add one additional animal to your bundle
+          </p>
+        </div>
+        <Button
+          variant={hasExtraAnimal ? "default" : "outline"}
+          onClick={() => onToggleExtraAnimal(!hasExtraAnimal)}
+        >
+          {hasExtraAnimal ? "Remove Extra Animal" : "Add Extra Animal"}
+        </Button>
+      </div>
 
-// Main Create Page Component
+      {hasExtraAnimal && (
+        <div className="mt-4">
+          <div className="grid grid-cols-4 gap-5">
+            {animals.map((animal) => (
+              <ItemCard
+                key={animal.id}
+                item={animal}
+                count={getAnimalCount(animal)}
+                maxCount={selectedSize.maxExtraAnimals}
+                isDisabled={
+                  animal.stock === 0 ||
+                  selectedAnimals.length >=
+                    selectedSize.baseAnimalLimit +
+                      (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0)
+                }
+                onAdd={(e) => onAddAnimal(animal, e)}
+                type="animal"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+/////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
+/////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
 const CreatePage: React.FC<CreatePageProps> = ({
   colors,
   sizes,
@@ -497,16 +606,18 @@ const CreatePage: React.FC<CreatePageProps> = ({
   );
   const [selectedAnimals, setSelectedAnimals] = useState<AnimalWithHat[]>([]);
   const [imageLoading, setImageLoading] = useState(false);
+  const [hasExtraAnimal, setHasExtraAnimal] = useState(false);
 
   const { addToCart } = useCartStore();
 
-  // Reset selections when size changes
+  // Reset extra animal when size changes
   useEffect(() => {
     setSelectedFlowers([]);
     setSelectedAnimals([]);
+    setHasExtraAnimal(false);
   }, [selectedSize]);
 
-  // Handlers
+  // Update handlers to check limits separately
   const handleAddFlower = (
     flower: Flower,
     e: React.MouseEvent<HTMLButtonElement>
@@ -515,9 +626,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
     const selectedSmallCount = selectedFlowers.filter(
       (f) => f.flower.flowerType === FlowerType.SMALL
     ).length;
-    const selectedMainCount =
-      selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
-        .length + selectedAnimals.length;
+    const selectedMainCount = selectedFlowers.filter(
+      (f) => f.flower.flowerType === FlowerType.MAIN
+    ).length;
 
     if (
       flower.flowerType === FlowerType.SMALL &&
@@ -532,7 +643,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
       flower.flowerType === FlowerType.MAIN &&
       selectedMainCount >= selectedSize.mainFlowerLimit
     ) {
-      toast.error(`Maximum ${selectedSize.mainFlowerLimit} main items allowed`);
+      toast.error(
+        `Maximum ${selectedSize.mainFlowerLimit} main flowers allowed`
+      );
       return;
     }
 
@@ -540,22 +653,32 @@ const CreatePage: React.FC<CreatePageProps> = ({
     setSelectedFlowers([...selectedFlowers, { flower, position }]);
   };
 
+  // Update handleAddAnimal to handle extra animals
   const handleAddAnimal = (
     animal: Animal,
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
-    const selectedMainCount =
-      selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
-        .length + selectedAnimals.length;
+    const maxAnimals =
+      selectedSize.baseAnimalLimit +
+      (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0);
 
-    if (selectedMainCount >= selectedSize.mainFlowerLimit) {
-      toast.error(`Maximum ${selectedSize.mainFlowerLimit} main items allowed`);
+    if (selectedAnimals.length >= maxAnimals) {
+      toast.error(`Maximum ${maxAnimals} animals allowed`);
       return;
     }
 
     const position = selectedAnimals.length + 1;
     setSelectedAnimals([...selectedAnimals, { animal, position, hat: null }]);
+  };
+
+  // Handle toggling extra animal
+  const handleToggleExtraAnimal = (value: boolean) => {
+    if (!value && selectedAnimals.length > selectedSize.baseAnimalLimit) {
+      // Remove the extra animal when toggling off
+      setSelectedAnimals((prev) => prev.slice(0, selectedSize.baseAnimalLimit));
+    }
+    setHasExtraAnimal(value);
   };
 
   const handleHatChange = (animalPosition: number, hat: Hat | null) => {
@@ -566,7 +689,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
     );
   };
 
-  const calculatePrice = selectedSize.price;
+  // Update price calculation to include extra animal
+  const calculatePrice =
+    selectedSize.price + (hasExtraAnimal ? selectedSize.extraAnimalPrice : 0);
 
   // Update the flower and animal sections to include counters
   const getFlowerCount = (flower: Flower) =>
@@ -575,7 +700,95 @@ const CreatePage: React.FC<CreatePageProps> = ({
   const getAnimalCount = (animal: Animal) =>
     selectedAnimals.filter((a) => a.animal.id === animal.id).length;
 
+  const isAddToCartDisabled =
+    loading ||
+    selectedColor.stock === 0 ||
+    selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.SMALL)
+      .length !== selectedSize.smallFlowerLimit ||
+    selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
+      .length !== selectedSize.mainFlowerLimit ||
+    selectedAnimals.length !==
+      selectedSize.baseAnimalLimit +
+        (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0) ||
+    (hasExtraAnimal &&
+      selectedAnimals.length !==
+        selectedSize.baseAnimalLimit + selectedSize.maxExtraAnimals);
+
   // In the main CreatePage component, update the size selector section:
+
+  // Update the ItemCard rendering for main flowers
+  const mainFlowersSection = (
+    <div className="border-r pr-4 ">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        Step 4: Main Flowers
+        <span className="text-sm font-normal text-gray-500 ml-2">
+          (
+          {
+            selectedFlowers.filter(
+              (f) => f.flower.flowerType === FlowerType.MAIN
+            ).length
+          }
+          /{selectedSize.mainFlowerLimit} selected)
+        </span>
+      </h3>
+
+      <div className="grid grid-cols-4 gap-5">
+        {flowers
+          .filter((flower) => flower.flowerType === FlowerType.MAIN)
+          .map((flower) => (
+            <ItemCard
+              key={flower.id}
+              item={flower}
+              count={getFlowerCount(flower)}
+              maxCount={selectedSize.mainFlowerLimit}
+              isDisabled={
+                flower.stock === 0 ||
+                selectedFlowers.filter(
+                  (f) => f.flower.flowerType === FlowerType.MAIN
+                ).length >= selectedSize.mainFlowerLimit
+              }
+              onAdd={(e) => {
+                handleAddFlower(flower, e);
+                toast.success(`Added ${flower.name}`);
+              }}
+              type="flower"
+            />
+          ))}
+      </div>
+    </div>
+  );
+
+  // Update the ItemCard rendering for animals
+  const animalsSection = (
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+        Step 5: Animals
+        <span className="text-sm font-normal text-gray-500 ml-2">
+          ({selectedAnimals.length}/{selectedSize.baseAnimalLimit} selected)
+        </span>
+      </h3>
+
+      <div className="grid grid-cols-4 gap-5">
+        {animals.map((animal) => (
+          <ItemCard
+            key={animal.id}
+            item={animal}
+            count={getAnimalCount(animal)}
+            maxCount={selectedSize.baseAnimalLimit}
+            isDisabled={
+              animal.stock === 0 ||
+              selectedAnimals.length >= selectedSize.baseAnimalLimit
+            }
+            onAdd={(e) => {
+              handleAddAnimal(animal, e);
+              toast.success(`Added ${animal.name}`);
+            }}
+            type="animal"
+          />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="py-12 bg-secondary-500">
@@ -589,13 +802,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
             <h1 className="text-2xl font-bold text-gray-900">
               Create Your Bundle
             </h1>
-            <p className="text-2xl font-bold text-gray-900">
-              ${calculatePrice.toFixed(2)}
-            </p>
           </div>
-          <h2 className={cn("text-4xl text-main-600 mt-2", pacifico.className)}>
-            {selectedColor.name} Bundle
-          </h2>
         </div>
 
         <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8">
@@ -609,6 +816,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
                 selectedSize={selectedSize}
                 availableHats={hats}
                 imageLoading={imageLoading}
+                totalPrice={calculatePrice} // Add this line
                 setImageLoading={setImageLoading}
                 onRemoveFlower={(position) =>
                   setSelectedFlowers((prev) =>
@@ -629,9 +837,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
           <div className="lg:col-span-7 mt-8 lg:mt-0 bg-white p-6 rounded-lg shadow-2xl">
             {/* Size Selector */}
             <div className="mt-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Choose Your Bundle Size
-              </h2>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Step 1: Size Selection
+              </h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {sizes.map((size) => (
                   <SizeCard
@@ -646,6 +854,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
             {/* Color Selector */}
             <div className="mt-8">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Step 2: Colour Selection
+              </h3>
               <div className="mb-4">
                 <h2 className="text-lg font-semibold text-gray-900 mb-1">
                   Color ({selectedColor.name})
@@ -696,7 +907,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
             <div className="mt-8">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  Step 1: Small Flowers
+                  Step 3: Small Flowers
                   <span className="text-sm font-normal text-gray-500 ml-2">
                     (
                     {
@@ -750,77 +961,29 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
             {/* Main Items Section */}
             <div className="mt-8">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Step 2: Main Items
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    (Required: {selectedSize.mainFlowerLimit})
-                  </span>
-                </h3>
-                <span className="text-sm font-medium text-gray-500">
-                  {selectedFlowers.filter(
-                    (f) => f.flower.flowerType === FlowerType.MAIN
-                  ).length + selectedAnimals.length}
-                  /{selectedSize.mainFlowerLimit}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                {/* Main Flowers */}
-                <div className="border-r pr-4">
-                  <h4 className="text-md font-medium text-gray-700 mb-2">
-                    Main Flowers
-                  </h4>
-                  <div className="grid grid-cols-2 gap-5">
-                    {flowers
-                      .filter((flower) => flower.flowerType === FlowerType.MAIN)
-                      .map((flower) => (
-                        <ItemCard
-                          key={flower.id}
-                          item={flower}
-                          count={getFlowerCount(flower)}
-                          maxCount={
-                            flower.flowerType === FlowerType.SMALL
-                              ? selectedSize.smallFlowerLimit
-                              : selectedSize.mainFlowerLimit
-                          }
-                          isDisabled={
-                            flower.stock === 0 ||
-                            selectedFlowers.filter(
-                              (f) => f.flower.flowerType === FlowerType.MAIN
-                            ).length +
-                              selectedAnimals.length >=
-                              selectedSize.mainFlowerLimit
-                          }
-                          onAdd={(e) => {
-                            handleAddFlower(flower, e);
-                            toast.success(`Added ${flower.name}`);
-                          }}
-                          type="flower"
-                        />
-                      ))}
-                  </div>
-                </div>
-
-                {/* Animals */}
+              <div className="flex flex-col gap-4">
+                {mainFlowersSection}
                 <div>
-                  <h4 className="text-md font-medium text-gray-700 mb-2">
-                    Animals
-                  </h4>
-                  <div className="grid grid-cols-2 gap-5">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Step 5: Animals
+                    <span className="text-sm font-normal text-gray-500 ml-2">
+                      ({selectedAnimals.length}/
+                      {selectedSize.baseAnimalLimit +
+                        (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0)}
+                      selected)
+                    </span>
+                  </h3>
+
+                  <div className="grid grid-cols-4 gap-5">
                     {animals.map((animal) => (
                       <ItemCard
                         key={animal.id}
                         item={animal}
                         count={getAnimalCount(animal)}
-                        maxCount={selectedSize.mainFlowerLimit}
+                        maxCount={selectedSize.baseAnimalLimit}
                         isDisabled={
                           animal.stock === 0 ||
-                          selectedFlowers.filter(
-                            (f) => f.flower.flowerType === FlowerType.MAIN
-                          ).length +
-                            selectedAnimals.length >=
-                            selectedSize.mainFlowerLimit
+                          selectedAnimals.length >= selectedSize.baseAnimalLimit
                         }
                         onAdd={(e) => {
                           handleAddAnimal(animal, e);
@@ -830,24 +993,24 @@ const CreatePage: React.FC<CreatePageProps> = ({
                       />
                     ))}
                   </div>
+
+                  {/* Add Extra Animal Section */}
+                  <ExtraAnimalSection
+                    selectedSize={selectedSize}
+                    selectedAnimals={selectedAnimals}
+                    animals={animals}
+                    getAnimalCount={getAnimalCount}
+                    onAddAnimal={handleAddAnimal}
+                    hasExtraAnimal={hasExtraAnimal}
+                    onToggleExtraAnimal={handleToggleExtraAnimal}
+                  />
                 </div>
               </div>
             </div>
 
             {/* Add to Cart Button */}
             <Button
-              disabled={
-                loading ||
-                selectedColor.stock === 0 ||
-                selectedFlowers.filter(
-                  (f) => f.flower.flowerType === FlowerType.SMALL
-                ).length !== selectedSize.smallFlowerLimit ||
-                selectedFlowers.filter(
-                  (f) => f.flower.flowerType === FlowerType.MAIN
-                ).length +
-                  selectedAnimals.length !==
-                  selectedSize.mainFlowerLimit
-              }
+              disabled={isAddToCartDisabled}
               className={cn(
                 "w-full mt-8",
                 loading && "opacity-50 cursor-not-allowed"
@@ -861,11 +1024,11 @@ const CreatePage: React.FC<CreatePageProps> = ({
                   flowers: selectedFlowers,
                   animals: selectedAnimals.map((animal) => ({
                     ...animal,
-                    hat: animal.hat, // This ensures the hat is included with each animal
+                    hat: animal.hat,
                   })),
                   price: calculatePrice,
                   quantity: 1,
-                  hat: null, // Set to null since hats are now per-animal
+                  hat: null,
                 });
                 toast.success("Added to cart");
                 setSelectedFlowers([]);

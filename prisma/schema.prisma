@@ -44,6 +44,9 @@ model Size {
   price           Float
   smallFlowerLimit Int       // Number of small flowers allowed
   mainFlowerLimit  Int       // Number of main flowers allowed
+  baseAnimalLimit  Int       // Base number of animals included (1 for all sizes)
+  maxExtraAnimals  Int       // Maximum number of extra animals allowed (1 in this case)
+  extraAnimalPrice Float     // Price for each extra animal ($7.00)
   dimensionScale   Float     // Scale factor for bundle display
   orderItems      OrderItem[]
 }
@@ -75,31 +78,33 @@ model Flower {
 }
 
 model Animal {
-  id            Int         @id @default(autoincrement())
-  name          String      @unique
-  price         Float
-  stock         Int
-  imageUrl      String
-  graduationUrl String
-  birthdayUrl   String
-  widthFactor   Float       
-  xlocation     Float       
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  orderItems    OrderItem[]
+  id               Int         @id @default(autoincrement())
+  name             String      @unique
+  price            Float
+  stock            Int
+  imageUrl         String
+  graduationUrl    String
+  birthdayUrl      String
+  widthFactor      Float       
+  xlocation        Float       
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  baseOrderItems   OrderItem[] @relation("BaseAnimal")
+  extraOrderItems  OrderItem[] @relation("ExtraAnimal")
 }
 
 model Hat {
-  id           Int         @id @default(autoincrement())
-  name         String      @unique
-  type         String      // GRADUATION or BIRTHDAY
-  description  String
-  price        Float
-  stock        Int
-  imageUrl     String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  orderItems   OrderItem[]
+  id               Int         @id @default(autoincrement())
+  name             String      @unique
+  type             String      // GRADUATION or BIRTHDAY
+  description      String
+  price            Float
+  stock            Int
+  imageUrl         String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  baseAnimalItems  OrderItem[] @relation("BaseAnimalHat")
+  extraAnimalItems OrderItem[] @relation("ExtraAnimalHat")
 }
 
 model Order {
@@ -134,13 +139,19 @@ model OrderItem {
   color          Color            @relation(fields: [colorId], references: [id])
   sizeId         Int
   size           Size             @relation(fields: [sizeId], references: [id])
-  animalId       Int?
-  animal         Animal?          @relation(fields: [animalId], references: [id])
-  hatId          Int?
-  hat            Hat?             @relation(fields: [hatId], references: [id])
+  baseAnimalId   Int?            // The included animal
+  baseAnimal     Animal?          @relation("BaseAnimal", fields: [baseAnimalId], references: [id])
+  baseAnimalHatId Int?           // Hat for the base animal
+  baseAnimalHat  Hat?            @relation("BaseAnimalHat", fields: [baseAnimalHatId], references: [id])
+  extraAnimalId  Int?            // The additional animal (if added)
+  extraAnimal    Animal?         @relation("ExtraAnimal", fields: [extraAnimalId], references: [id])
+  extraAnimalHatId Int?          // Hat for the extra animal
+  extraAnimalHat Hat?           @relation("ExtraAnimalHat", fields: [extraAnimalHatId], references: [id])
   flowers        FlowerSelection[]
   quantity       Int
-  price          Float
+  basePrice      Float           // Price before extra animal
+  extraAnimalPrice Float?        // Price for extra animal if added
+  totalPrice     Float           // Total price including extras
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }

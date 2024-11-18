@@ -36,9 +36,21 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
     (f) => f.flower.flowerType === FlowerType.MAIN
   );
 
-  // Calculate additional costs (animals + hat)
+  // Calculate additional costs
+  const hasExtraAnimal = item.animals.length > item.size.baseAnimalLimit;
+  const extraAnimalCost = hasExtraAnimal ? item.size.extraAnimalPrice : 0;
 
-  const totalPrice = item.size.price * item.quantity;
+  // Calculate animal hat costs
+  const animalHatsCost = item.animals.reduce((total, animal) => {
+    return total + (animal.hat?.price || 0);
+  }, 0);
+
+  // Calculate total add-ons cost
+  const addOnsCost = (extraAnimalCost + animalHatsCost) * item.quantity;
+
+  // Calculate base price and total
+  const basePrice = item.size.price * item.quantity;
+  const totalPrice = basePrice + addOnsCost;
 
   return (
     <div className="py-6">
@@ -71,12 +83,21 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
           </div>
 
           {/* Contents Summary */}
+
           <div className="mt-1 text-sm text-gray-500">
             <p>
               {smallFlowers.length} small flowers, {mainFlowers.length} main
               flowers
-              {item.animals.length > 0 && `, ${item.animals.length} animals`}
-              {item.hat && `, ${item.hat.name} hat`}
+              {item.animals.length > 0 && (
+                <>
+                  , {item.size.baseAnimalLimit} base animal
+                  {hasExtraAnimal && ` + 1 extra animal`}
+                </>
+              )}
+              {item.animals.some((a) => a.hat) &&
+                ` with ${item.animals.filter((a) => a.hat).length} hat${
+                  item.animals.filter((a) => a.hat).length > 1 ? "s" : ""
+                }`}
             </p>
           </div>
 
@@ -156,7 +177,11 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
               <p className="text-sm font-medium text-gray-900">
                 ${totalPrice.toFixed(2)}
               </p>
-              <p className="text-xs text-gray-500">$0.00 add-ons</p>
+              {addOnsCost > 0 && (
+                <p className="text-xs text-gray-500">
+                  Includes ${addOnsCost.toFixed(2)} in add-ons
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -207,8 +232,17 @@ export default function Cart() {
 
   const { cart, changeQuantity, removeFromCart } = cartStore;
   const cartCount = cart.length;
+  // Update cart total calculation to include extra animals and hats
   const cartTotal = cart.reduce((total, item) => {
-    return total + item.size.price * item.quantity;
+    const basePrice = item.size.price * item.quantity;
+    const hasExtraAnimal = item.animals.length > item.size.baseAnimalLimit;
+    const extraAnimalCost = hasExtraAnimal ? item.size.extraAnimalPrice : 0;
+    const animalHatsCost = item.animals.reduce((hatTotal, animal) => {
+      return hatTotal + (animal.hat?.price || 0);
+    }, 0);
+    const addOnsCost = (extraAnimalCost + animalHatsCost) * item.quantity;
+
+    return total + basePrice + addOnsCost;
   }, 0);
 
   return (
