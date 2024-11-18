@@ -202,7 +202,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
                   className={cn("object-cover", imageLoading && "opacity-0")}
                   fill
                   priority
-                  onLoadingComplete={() => setImageLoading(false)}
+                  onLoad={() => setImageLoading(false)}
                 />
               </>
             ) : (

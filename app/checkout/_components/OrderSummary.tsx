@@ -69,11 +69,11 @@ const PickUpLocationMap = () => {
       <div className="flex flex-col gap-2 grow-0">
         <MapPin size={24} />
         <p className="">Pick Up</p>
-        <p>Batchworth </p>
+        <p>5 Batchworth Rd, Molendinar QLD 4214</p>
 
         <Link
           href={
-            "https://www.google.com/maps/place/3029+The+Blvd,+Carrara+QLD+4211/data=!4m2!3m1!1s0x6b911b21296d7a59:0x27619f25d792bca2?sa=X&ved=1t:242&ictx=111"
+            "https://www.google.com/maps/place/5+Batchworth+Rd,+Molendinar+QLD+4214/data=!4m2!3m1!1s0x6b911a992a49e773:0x331eb854cd906a8c?sa=X&ved=1t:242&ictx=111&cshid=1731940642694121"
           }
           className="flex items-center gap-2 text-main-500 underline-offset-4 hover:underline"
           target="_blank"
@@ -84,7 +84,7 @@ const PickUpLocationMap = () => {
       </div>
       <div className="">
         <Image
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1716789828/YarnPetals/frenchQuarters_j6kstw.webp"
+          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1731940497/YarnPetals/Screenshot_2024-11-19_at_12.19.41_am_fzguub.png"
           alt="Map"
           width={200}
           height={200}
