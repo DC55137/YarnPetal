@@ -13,6 +13,12 @@ import {
   SelectedAnimalItem,
 } from "@/src/stores/cart-store";
 import { Animal, Hat, Color, Size, Flower, FlowerType } from "@prisma/client";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Extended interfaces
 interface AnimalWithHat extends SelectedAnimalItem {
@@ -381,106 +387,6 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   );
 };
 
-// Enhanced ItemCard Component
-const ItemCard: React.FC<
-  ItemCardProps & {
-    count: number;
-    maxCount: number;
-    itemPrice?: number;
-  }
-> = ({ item, isDisabled, onAdd, type, count, maxCount, itemPrice }) => {
-  const isSoldOut = item.stock === 0;
-
-  return (
-    <div className="relative">
-      <label
-        className={cn(
-          "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all overflow-hidden",
-          isSoldOut
-            ? "border-red-200 bg-white/80"
-            : count > 0
-            ? "border-main-300 bg-main-50"
-            : "hover:border-main-200"
-        )}
-      >
-        {/* Item Image and Details */}
-        <div className="relative w-full aspect-square">
-          <Image
-            src={item.imageUrl}
-            alt={item.name}
-            className="object-contain object-top rounded-md"
-            fill
-            sizes="70px"
-          />
-          {/* Diagonal Sold Out Banner */}
-          {isSoldOut && (
-            <div className="absolute inset-0 overflow-hidden rounded-md">
-              <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-              <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                SOLD OUT
-              </div>
-            </div>
-          )}
-        </div>
-        <span
-          className={cn(
-            "mt-2 text-xs text-center font-medium",
-            isSoldOut ? "text-gray-400" : "text-gray-700"
-          )}
-        >
-          {item.name}
-        </span>
-
-        {isSoldOut && (
-          <span className="text-[10px] text-red-500 font-medium">
-            Out of Stock
-          </span>
-        )}
-
-        {count > 0 && (
-          <div className="mt-1 text-xs text-main-600 font-medium">
-            {count} selected
-          </div>
-        )}
-
-        {/* Low Stock Warning */}
-        {!isSoldOut && item.stock <= 3 && (
-          <span className="mt-1 text-[10px] text-orange-500 font-medium">
-            Only {item.stock} left
-          </span>
-        )}
-      </label>
-
-      {/* Selection Counter */}
-      {!isSoldOut && (
-        <>
-          <div
-            className={cn(
-              "absolute -top-2 -right-2 h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold",
-              count === maxCount
-                ? "bg-main-600 text-white"
-                : count > 0
-                ? "bg-main-100 text-main-600"
-                : "bg-gray-100 text-gray-700"
-            )}
-          >
-            {count}/{maxCount}
-          </div>
-          <Button
-            size="sm"
-            variant={count > 0 ? "default" : "outline"}
-            className="absolute -top-2 -left-2 h-6 w-6 rounded-full p-0"
-            onClick={onAdd}
-            disabled={isDisabled}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-        </>
-      )}
-    </div>
-  );
-};
-
 // SizeCard Component
 const SizeCard: React.FC<{
   size: Size;
@@ -515,13 +421,514 @@ const SizeCard: React.FC<{
   </label>
 );
 
-// First, add an ExtraAnimalSection component to handle the extra animal option
+const MainFlowersSection: React.FC<{
+  flowers: Flower[];
+  selectedFlowers: SelectedFlowerItem[];
+  selectedSize: Size;
+  getFlowerCount: (flower: Flower) => number;
+  handleAddFlower: (
+    flower: Flower,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  setSelectedFlowers: React.Dispatch<
+    React.SetStateAction<SelectedFlowerItem[]>
+  >;
+}> = ({
+  flowers,
+  selectedFlowers,
+  selectedSize,
+  getFlowerCount,
+  handleAddFlower,
+  setSelectedFlowers,
+}) => {
+  const mainFlowers = selectedFlowers.filter(
+    (f) => f.flower.flowerType === FlowerType.MAIN
+  );
+  const isLimitReached = mainFlowers.length >= selectedSize.mainFlowerLimit;
+
+  return (
+    <div className="border-r pr-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Step 4: Main Flowers
+          </h3>
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
+                isLimitReached
+                  ? "bg-gray-100 text-gray-700"
+                  : "bg-gray-100 text-gray-700"
+              )}
+            >
+              {mainFlowers.length}/{selectedSize.mainFlowerLimit}
+            </div>
+            {isLimitReached && (
+              <span className="text-sm text-gray-600">Maximum selected</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-5">
+        {flowers
+          .filter((flower) => flower.flowerType === FlowerType.MAIN)
+          .map((flower) => {
+            const count = getFlowerCount(flower);
+            const isSoldOut = flower.stock === 0;
+
+            return (
+              <div key={flower.id} className="relative group">
+                <div
+                  className={cn(
+                    "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
+                    isSoldOut
+                      ? "border-red-200 bg-white/80"
+                      : count > 0
+                      ? "border-main-300 bg-main-50"
+                      : isLimitReached
+                      ? "border-gray-200 bg-gray-50"
+                      : "hover:border-main-200"
+                  )}
+                >
+                  {/* Item Image */}
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src={flower.imageUrl}
+                      alt={flower.name}
+                      className="object-contain object-top rounded-md"
+                      fill
+                      sizes="70px"
+                    />
+                  </div>
+
+                  {/* Item Name and Count */}
+                  <div className="mt-2 space-y-1 text-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      {flower.name}
+                    </span>
+                    {count > 0 && (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-5 px-2 bg-main-100 rounded-full">
+                          <span className="text-xs font-medium text-main-700">
+                            {count} selected
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hover Message when limit reached */}
+                  {isLimitReached && count === 0 && (
+                    <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                      <p className="text-xs text-gray-600 text-center">
+                        Increase the size to add more main flowers
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Remove Button - Only show when selected */}
+                  {count > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const positionToRemove = selectedFlowers.find(
+                          (f) => f.flower.id === flower.id
+                        )?.position;
+                        if (positionToRemove) {
+                          setSelectedFlowers((prev) =>
+                            prev.filter((f) => f.position !== positionToRemove)
+                          );
+                          toast.success(`Removed ${flower.name}`);
+                        }
+                      }}
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                    >
+                      <Trash className="h-3 w-3 text-main-700" />
+                    </Button>
+                  )}
+
+                  {/* Add Button - Always visible but disabled when appropriate */}
+                  <Button
+                    size="sm"
+                    variant={count > 0 ? "default" : "outline"}
+                    className="absolute -top-2 -left-2 h-6 w-6 rounded-full p-0"
+                    onClick={(e) => handleAddFlower(flower, e)}
+                    disabled={isSoldOut || isLimitReached}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+
+                  {/* Stock Indicators */}
+                  {isSoldOut && (
+                    <div className="absolute inset-0 overflow-hidden rounded-md">
+                      <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+                      <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                        SOLD OUT
+                      </div>
+                    </div>
+                  )}
+                  {!isSoldOut && flower.stock <= 3 && (
+                    <span className="mt-1 text-[10px] text-orange-500 font-medium">
+                      Only {flower.stock} left
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  );
+};
+
+const SmallFlowersSection: React.FC<{
+  flowers: Flower[];
+  selectedFlowers: SelectedFlowerItem[];
+  selectedSize: Size;
+  getFlowerCount: (flower: Flower) => number;
+  handleAddFlower: (
+    flower: Flower,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  setSelectedFlowers: React.Dispatch<
+    React.SetStateAction<SelectedFlowerItem[]>
+  >;
+}> = ({
+  flowers,
+  selectedFlowers,
+  selectedSize,
+  getFlowerCount,
+  handleAddFlower,
+  setSelectedFlowers,
+}) => {
+  const smallFlowers = selectedFlowers.filter(
+    (f) => f.flower.flowerType === FlowerType.SMALL
+  );
+  const isLimitReached = smallFlowers.length >= selectedSize.smallFlowerLimit;
+
+  return (
+    <div className="border-r pr-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Step 3: Small Flowers
+          </h3>
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
+                isLimitReached
+                  ? "bg-gray-100 text-gray-700"
+                  : "bg-gray-100 text-gray-700"
+              )}
+            >
+              {smallFlowers.length}/{selectedSize.smallFlowerLimit}
+            </div>
+            {isLimitReached && (
+              <span className="text-sm text-gray-600">Maximum selected</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-5">
+        {flowers
+          .filter((flower) => flower.flowerType === FlowerType.SMALL)
+          .map((flower) => {
+            const count = getFlowerCount(flower);
+            const isSoldOut = flower.stock === 0;
+
+            return (
+              <div key={flower.id} className="relative group">
+                <div
+                  className={cn(
+                    "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
+                    isSoldOut
+                      ? "border-red-200 bg-white/80"
+                      : count > 0
+                      ? "border-main-300 bg-main-50"
+                      : isLimitReached
+                      ? "border-gray-200 bg-gray-50"
+                      : "hover:border-main-200"
+                  )}
+                >
+                  {/* Item Image */}
+                  <div className="relative w-full aspect-square">
+                    <Image
+                      src={flower.imageUrl}
+                      alt={flower.name}
+                      className="object-contain object-top rounded-md"
+                      fill
+                      sizes="70px"
+                    />
+                  </div>
+
+                  {/* Item Name and Count */}
+                  <div className="mt-2 space-y-1 text-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      {flower.name}
+                    </span>
+                    {count > 0 && (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-5 px-2 bg-main-100 rounded-full">
+                          <span className="text-xs font-medium text-main-700">
+                            {count} selected
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hover Message when limit reached */}
+                  {isLimitReached && count === 0 && (
+                    <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                      <p className="text-xs text-gray-600 text-center">
+                        Maximum {selectedSize.smallFlowerLimit} small flowers
+                        allowed for this size.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Remove Button - Only show when selected */}
+                  {count > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const positionToRemove = selectedFlowers.find(
+                          (f) => f.flower.id === flower.id
+                        )?.position;
+                        if (positionToRemove) {
+                          setSelectedFlowers((prev) =>
+                            prev.filter((f) => f.position !== positionToRemove)
+                          );
+                          toast.success(`Removed ${flower.name}`);
+                        }
+                      }}
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                    >
+                      <Trash className="h-3 w-3 text-main-700" />
+                    </Button>
+                  )}
+
+                  {/* Add Button - Always visible but disabled when appropriate */}
+                  <Button
+                    size="sm"
+                    variant={count > 0 ? "default" : "outline"}
+                    className="absolute -top-2 -left-2 h-6 w-6 rounded-full p-0"
+                    onClick={(e) => handleAddFlower(flower, e)}
+                    disabled={isSoldOut || isLimitReached}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+
+                  {/* Stock Indicators */}
+                  {isSoldOut && (
+                    <div className="absolute inset-0 overflow-hidden rounded-md">
+                      <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+                      <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                        SOLD OUT
+                      </div>
+                    </div>
+                  )}
+                  {!isSoldOut && flower.stock <= 3 && (
+                    <span className="mt-1 text-[10px] text-orange-500 font-medium">
+                      Only {flower.stock} left
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+      </div>
+    </div>
+  );
+};
+
+const AnimalsSection: React.FC<{
+  animals: Animal[];
+  selectedAnimals: AnimalWithHat[];
+  selectedSize: Size;
+  getAnimalCount: (animal: Animal) => number;
+  handleAddAnimal: (
+    animal: Animal,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  setSelectedAnimals: React.Dispatch<React.SetStateAction<AnimalWithHat[]>>;
+  hasExtraAnimal: boolean;
+}> = ({
+  animals,
+  selectedAnimals,
+  selectedSize,
+  getAnimalCount,
+  handleAddAnimal,
+  setSelectedAnimals,
+  hasExtraAnimal,
+}) => {
+  const baseAnimalCount = selectedAnimals.slice(
+    0,
+    selectedSize.baseAnimalLimit
+  ).length;
+  const isLimitReached = baseAnimalCount >= selectedSize.baseAnimalLimit;
+
+  return (
+    <div className="border-r pr-4">
+      <div className="flex justify-between items-center mb-4">
+        <div className="space-y-1">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Step 5: Animals
+          </h3>
+          <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
+                isLimitReached
+                  ? "bg-gray-100 text-gray-700"
+                  : "bg-gray-100 text-gray-700"
+              )}
+            >
+              {baseAnimalCount}/{selectedSize.baseAnimalLimit}
+            </div>
+            {isLimitReached && (
+              <span className="text-sm text-gray-600">Maximum selected</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-4 gap-5">
+        {animals.map((animal) => {
+          const count = getAnimalCount(animal);
+          const isSoldOut = animal.stock === 0;
+          const isSelected = selectedAnimals
+            .slice(0, selectedSize.baseAnimalLimit)
+            .some((a) => a.animal.id === animal.id);
+
+          return (
+            <div key={animal.id} className="relative group">
+              <div
+                className={cn(
+                  "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
+                  isSoldOut
+                    ? "border-red-200 bg-white/80"
+                    : isSelected
+                    ? "border-main-300 bg-main-50"
+                    : isLimitReached
+                    ? "border-gray-200 bg-gray-50"
+                    : "hover:border-main-200"
+                )}
+              >
+                {/* Item Image */}
+                <div className="relative w-full aspect-square">
+                  <Image
+                    src={animal.imageUrl}
+                    alt={animal.name}
+                    className="object-contain object-top rounded-md"
+                    fill
+                    sizes="70px"
+                  />
+                </div>
+
+                {/* Item Name and Count */}
+                <div className="mt-2 space-y-1 text-center">
+                  <span className="text-sm font-medium text-gray-700">
+                    {animal.name}
+                  </span>
+                  {isSelected && (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-5 px-2 bg-main-100 rounded-full">
+                        <span className="text-xs font-medium text-main-700">
+                          Selected
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Hover Message when limit reached */}
+                {isLimitReached && !isSelected && (
+                  <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                    <p className="text-xs text-gray-600 text-center">
+                      Maximum {selectedSize.baseAnimalLimit}{" "}
+                      {selectedSize.baseAnimalLimit === 1
+                        ? "animal"
+                        : "animals"}
+                      allowed for this size.
+                    </p>
+                  </div>
+                )}
+
+                {/* Remove Button - Only show when selected */}
+                {isSelected && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      const animalToRemove = selectedAnimals.find(
+                        (a) => a.animal.id === animal.id
+                      );
+                      if (animalToRemove) {
+                        setSelectedAnimals((prev) =>
+                          prev.filter(
+                            (a) => a.position !== animalToRemove.position
+                          )
+                        );
+                        toast.success(`Removed ${animal.name}`);
+                      }
+                    }}
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                  >
+                    <Trash className="h-3 w-3 text-main-700" />
+                  </Button>
+                )}
+
+                {/* Add Button - Always visible but disabled when appropriate */}
+                <Button
+                  size="sm"
+                  variant={isSelected ? "default" : "outline"}
+                  className="absolute -top-2 -left-2 h-6 w-6 rounded-full p-0"
+                  onClick={(e) => handleAddAnimal(animal, e)}
+                  disabled={isSoldOut || isLimitReached}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                {/* Stock Indicators */}
+                {isSoldOut && (
+                  <div className="absolute inset-0 overflow-hidden rounded-md">
+                    <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+                    <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                      SOLD OUT
+                    </div>
+                  </div>
+                )}
+                {!isSoldOut && animal.stock <= 3 && (
+                  <span className="mt-1 text-[10px] text-orange-500 font-medium">
+                    Only {animal.stock} left
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 const ExtraAnimalSection: React.FC<{
   selectedSize: Size;
   selectedAnimals: AnimalWithHat[];
   animals: Animal[];
   getAnimalCount: (animal: Animal) => number;
-  onAddAnimal: (animal: Animal, e: React.MouseEvent<HTMLButtonElement>) => void;
+  handleAddAnimal: (
+    animal: Animal,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  setSelectedAnimals: React.Dispatch<React.SetStateAction<AnimalWithHat[]>>;
   hasExtraAnimal: boolean;
   onToggleExtraAnimal: (value: boolean) => void;
 }> = ({
@@ -529,7 +936,8 @@ const ExtraAnimalSection: React.FC<{
   selectedAnimals,
   animals,
   getAnimalCount,
-  onAddAnimal,
+  handleAddAnimal,
+  setSelectedAnimals,
   hasExtraAnimal,
   onToggleExtraAnimal,
 }) => {
@@ -538,47 +946,170 @@ const ExtraAnimalSection: React.FC<{
     return null;
   }
 
+  const extraAnimalCount = selectedAnimals.slice(
+    selectedSize.baseAnimalLimit
+  ).length;
+  const isLimitReached = extraAnimalCount >= selectedSize.maxExtraAnimals;
+
   return (
     <div className="mt-8 border-t pt-8">
       <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Add an Extra Animal?
-            <span className="text-sm font-normal text-gray-500 ml-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Add an Extra Animal?
+            </h3>
+            <div className="text-sm font-normal text-gray-500">
               (+${selectedSize.extraAnimalPrice.toFixed(2)})
-            </span>
-          </h3>
-          <p className="text-sm text-gray-500">
-            You can add one additional animal to your bundle
-          </p>
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              You can add one additional animal to your bundle
+            </p>
+            <Button
+              variant={hasExtraAnimal ? "default" : "outline"}
+              onClick={() => onToggleExtraAnimal(!hasExtraAnimal)}
+              className="ml-4"
+            >
+              {hasExtraAnimal ? "Remove Extra Animal" : "Add Extra Animal"}
+            </Button>
+          </div>
         </div>
-        <Button
-          variant={hasExtraAnimal ? "default" : "outline"}
-          onClick={() => onToggleExtraAnimal(!hasExtraAnimal)}
-        >
-          {hasExtraAnimal ? "Remove Extra Animal" : "Add Extra Animal"}
-        </Button>
       </div>
 
       {hasExtraAnimal && (
         <div className="mt-4">
+          <div className="flex items-center gap-2 mb-4">
+            <div
+              className={cn(
+                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
+                isLimitReached
+                  ? "bg-gray-100 text-gray-700"
+                  : "bg-gray-100 text-gray-700"
+              )}
+            >
+              {extraAnimalCount}/{selectedSize.maxExtraAnimals}
+            </div>
+            {isLimitReached && (
+              <span className="text-sm text-gray-600">Maximum selected</span>
+            )}
+          </div>
+
           <div className="grid grid-cols-4 gap-5">
-            {animals.map((animal) => (
-              <ItemCard
-                key={animal.id}
-                item={animal}
-                count={getAnimalCount(animal)}
-                maxCount={selectedSize.maxExtraAnimals}
-                isDisabled={
-                  animal.stock === 0 ||
-                  selectedAnimals.length >=
-                    selectedSize.baseAnimalLimit +
-                      (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0)
-                }
-                onAdd={(e) => onAddAnimal(animal, e)}
-                type="animal"
-              />
-            ))}
+            {animals.map((animal) => {
+              const isExtraAnimalSelected = selectedAnimals
+                .slice(selectedSize.baseAnimalLimit)
+                .some((a) => a.animal.id === animal.id);
+              const isSoldOut = animal.stock === 0;
+
+              return (
+                <div key={animal.id} className="relative group">
+                  <div
+                    className={cn(
+                      "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
+                      isSoldOut
+                        ? "border-red-200 bg-white/80"
+                        : isExtraAnimalSelected
+                        ? "border-main-300 bg-main-50"
+                        : isLimitReached
+                        ? "border-gray-200 bg-gray-50"
+                        : "hover:border-main-200"
+                    )}
+                  >
+                    {/* Item Image */}
+                    <div className="relative w-full aspect-square">
+                      <Image
+                        src={animal.imageUrl}
+                        alt={animal.name}
+                        className="object-contain object-top rounded-md"
+                        fill
+                        sizes="70px"
+                      />
+                    </div>
+
+                    {/* Item Name and Selected Status */}
+                    <div className="mt-2 space-y-1 text-center">
+                      <span className="text-sm font-medium text-gray-700">
+                        {animal.name}
+                      </span>
+                      {isExtraAnimalSelected && (
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="h-5 px-2 bg-main-100 rounded-full">
+                            <span className="text-xs font-medium text-main-700">
+                              Selected
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Hover Message when limit reached */}
+                    {isLimitReached && !isExtraAnimalSelected && (
+                      <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                        <p className="text-xs text-gray-600 text-center">
+                          Maximum {selectedSize.maxExtraAnimals} extra{" "}
+                          {selectedSize.maxExtraAnimals === 1
+                            ? "animal"
+                            : "animals"}
+                          allowed for this size.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Remove Button - Only show when selected */}
+                    {isExtraAnimalSelected && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const extraAnimal = selectedAnimals
+                            .slice(selectedSize.baseAnimalLimit)
+                            .find((a) => a.animal.id === animal.id);
+                          if (extraAnimal) {
+                            setSelectedAnimals((prev) =>
+                              prev.filter(
+                                (a) => a.position !== extraAnimal.position
+                              )
+                            );
+                            toast.success(`Removed extra ${animal.name}`);
+                          }
+                        }}
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                      >
+                        <Trash className="h-3 w-3 text-main-700" />
+                      </Button>
+                    )}
+
+                    {/* Add Button - Always visible but disabled when appropriate */}
+                    <Button
+                      size="sm"
+                      variant={isExtraAnimalSelected ? "default" : "outline"}
+                      className="absolute -top-2 -left-2 h-6 w-6 rounded-full p-0"
+                      onClick={(e) => handleAddAnimal(animal, e)}
+                      disabled={isSoldOut || isLimitReached}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+
+                    {/* Stock Indicators */}
+                    {isSoldOut && (
+                      <div className="absolute inset-0 overflow-hidden rounded-md">
+                        <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+                        <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                          SOLD OUT
+                        </div>
+                      </div>
+                    )}
+                    {!isSoldOut && animal.stock <= 3 && (
+                      <span className="mt-1 text-[10px] text-orange-500 font-medium">
+                        Only {animal.stock} left
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -716,80 +1247,6 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
   // In the main CreatePage component, update the size selector section:
 
-  // Update the ItemCard rendering for main flowers
-  const mainFlowersSection = (
-    <div className="border-r pr-4 ">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Step 4: Main Flowers
-        <span className="text-sm font-normal text-gray-500 ml-2">
-          (
-          {
-            selectedFlowers.filter(
-              (f) => f.flower.flowerType === FlowerType.MAIN
-            ).length
-          }
-          /{selectedSize.mainFlowerLimit} selected)
-        </span>
-      </h3>
-
-      <div className="grid grid-cols-4 gap-5">
-        {flowers
-          .filter((flower) => flower.flowerType === FlowerType.MAIN)
-          .map((flower) => (
-            <ItemCard
-              key={flower.id}
-              item={flower}
-              count={getFlowerCount(flower)}
-              maxCount={selectedSize.mainFlowerLimit}
-              isDisabled={
-                flower.stock === 0 ||
-                selectedFlowers.filter(
-                  (f) => f.flower.flowerType === FlowerType.MAIN
-                ).length >= selectedSize.mainFlowerLimit
-              }
-              onAdd={(e) => {
-                handleAddFlower(flower, e);
-                toast.success(`Added ${flower.name}`);
-              }}
-              type="flower"
-            />
-          ))}
-      </div>
-    </div>
-  );
-
-  // Update the ItemCard rendering for animals
-  const animalsSection = (
-    <div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Step 5: Animals
-        <span className="text-sm font-normal text-gray-500 ml-2">
-          ({selectedAnimals.length}/{selectedSize.baseAnimalLimit} selected)
-        </span>
-      </h3>
-
-      <div className="grid grid-cols-4 gap-5">
-        {animals.map((animal) => (
-          <ItemCard
-            key={animal.id}
-            item={animal}
-            count={getAnimalCount(animal)}
-            maxCount={selectedSize.baseAnimalLimit}
-            isDisabled={
-              animal.stock === 0 ||
-              selectedAnimals.length >= selectedSize.baseAnimalLimit
-            }
-            onAdd={(e) => {
-              handleAddAnimal(animal, e);
-              toast.success(`Added ${animal.name}`);
-            }}
-            type="animal"
-          />
-        ))}
-      </div>
-    </div>
-  );
-
   return (
     <div className="py-12 bg-secondary-500">
       <div className="mx-auto mt-8 max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
@@ -905,106 +1362,47 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
             {/* Small Flowers Section */}
             <div className="mt-8">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Step 3: Small Flowers
-                  <span className="text-sm font-normal text-gray-500 ml-2">
-                    (
-                    {
-                      selectedFlowers.filter(
-                        (f) => f.flower.flowerType === FlowerType.SMALL
-                      ).length
-                    }
-                    /{selectedSize.smallFlowerLimit} selected)
-                  </span>
-                </h3>
-              </div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                {flowers
-                  .filter((flower) => flower.flowerType === FlowerType.SMALL)
-                  .map((flower) => {
-                    const count = selectedFlowers.filter(
-                      (f) => f.flower.id === flower.id
-                    ).length;
-
-                    return (
-                      <ItemCard
-                        key={flower.id}
-                        item={flower}
-                        count={count}
-                        maxCount={selectedSize.smallFlowerLimit}
-                        itemPrice={flower.price}
-                        isDisabled={
-                          flower.stock === 0 ||
-                          selectedFlowers.filter(
-                            (f) => f.flower.flowerType === FlowerType.SMALL
-                          ).length >= selectedSize.smallFlowerLimit
-                        }
-                        onAdd={(e) => {
-                          handleAddFlower(flower, e);
-                          toast.success(
-                            count === 0
-                              ? `Added first ${flower.name}`
-                              : `Added another ${flower.name} (${
-                                  count + 1
-                                } total)`
-                          );
-                        }}
-                        type="flower"
-                      />
-                    );
-                  })}
-              </div>
+              <SmallFlowersSection
+                flowers={flowers}
+                selectedFlowers={selectedFlowers}
+                selectedSize={selectedSize}
+                getFlowerCount={getFlowerCount}
+                handleAddFlower={handleAddFlower}
+                setSelectedFlowers={setSelectedFlowers}
+              />
             </div>
 
-            {/* Small Flowers Summary */}
-
-            {/* Main Items Section */}
+            {/* Main Flowers Section */}
             <div className="mt-8">
               <div className="flex flex-col gap-4">
-                {mainFlowersSection}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Step 5: Animals
-                    <span className="text-sm font-normal text-gray-500 ml-2">
-                      ({selectedAnimals.length}/
-                      {selectedSize.baseAnimalLimit +
-                        (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0)}
-                      selected)
-                    </span>
-                  </h3>
-
-                  <div className="grid grid-cols-4 gap-5">
-                    {animals.map((animal) => (
-                      <ItemCard
-                        key={animal.id}
-                        item={animal}
-                        count={getAnimalCount(animal)}
-                        maxCount={selectedSize.baseAnimalLimit}
-                        isDisabled={
-                          animal.stock === 0 ||
-                          selectedAnimals.length >= selectedSize.baseAnimalLimit
-                        }
-                        onAdd={(e) => {
-                          handleAddAnimal(animal, e);
-                          toast.success(`Added ${animal.name}`);
-                        }}
-                        type="animal"
-                      />
-                    ))}
-                  </div>
-
-                  {/* Add Extra Animal Section */}
-                  <ExtraAnimalSection
-                    selectedSize={selectedSize}
-                    selectedAnimals={selectedAnimals}
-                    animals={animals}
-                    getAnimalCount={getAnimalCount}
-                    onAddAnimal={handleAddAnimal}
-                    hasExtraAnimal={hasExtraAnimal}
-                    onToggleExtraAnimal={handleToggleExtraAnimal}
-                  />
-                </div>
+                <MainFlowersSection
+                  flowers={flowers}
+                  selectedFlowers={selectedFlowers}
+                  selectedSize={selectedSize}
+                  getFlowerCount={getFlowerCount}
+                  handleAddFlower={handleAddFlower}
+                  setSelectedFlowers={setSelectedFlowers}
+                />
+                <AnimalsSection
+                  animals={animals}
+                  selectedAnimals={selectedAnimals}
+                  selectedSize={selectedSize}
+                  getAnimalCount={getAnimalCount}
+                  handleAddAnimal={handleAddAnimal}
+                  setSelectedAnimals={setSelectedAnimals}
+                  hasExtraAnimal={hasExtraAnimal}
+                />
+                {/* Add Extra Animal Section */}
+                <ExtraAnimalSection
+                  selectedSize={selectedSize}
+                  selectedAnimals={selectedAnimals}
+                  animals={animals}
+                  getAnimalCount={getAnimalCount}
+                  handleAddAnimal={handleAddAnimal}
+                  setSelectedAnimals={setSelectedAnimals}
+                  hasExtraAnimal={hasExtraAnimal}
+                  onToggleExtraAnimal={handleToggleExtraAnimal}
+                />
               </div>
             </div>
 

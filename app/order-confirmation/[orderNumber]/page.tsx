@@ -82,7 +82,7 @@ export default async function page({
             </>
           )}
           <dl className="mt-12 text-sm font-medium">
-            <dt className="text-gray-900">Tracking number</dt>
+            <dt className="text-gray-900">order number</dt>
             <dd className="mt-2 text-main-600">{order.orderNumber}</dd>
           </dl>
         </div>
