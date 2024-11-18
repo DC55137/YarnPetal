@@ -105,6 +105,12 @@ export default async function page({
                   (f) => f.flower.flowerType === FlowerType.MAIN
                 );
 
+                // Safely handle nullable prices
+                const basePrice = item.basePrice || 0;
+                const extraAnimalPrice = item.extraAnimalPrice || 0;
+                const totalPrice =
+                  item.totalPrice || basePrice + extraAnimalPrice;
+
                 return (
                   <li key={index} className="flex px-4 py-6 relative">
                     <div className="flex-shrink-0 space-y-4">
@@ -262,16 +268,15 @@ export default async function page({
                       <div className="flex flex-1 items-end justify-between pt-2">
                         <div className="space-y-1">
                           <p className="text-sm text-gray-500">
-                            Base Price: ${item.basePrice.toFixed(2)}
+                            Base Price: ${basePrice.toFixed(2)}
                           </p>
-                          {item.extraAnimalPrice > 0 && (
+                          {extraAnimalPrice > 0 && (
                             <p className="text-sm text-gray-500">
-                              Extra Animal: ${item.extraAnimalPrice.toFixed(2)}
+                              Extra Animal: ${extraAnimalPrice.toFixed(2)}
                             </p>
                           )}
                           <p className="text-lg font-medium text-gray-900">
-                            Total: ${item.totalPrice.toFixed(2)} x
-                            {item.quantity}
+                            Total: ${totalPrice.toFixed(2)} x{item.quantity}
                           </p>
                         </div>
                       </div>
