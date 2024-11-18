@@ -447,7 +447,7 @@ const MainFlowersSection: React.FC<{
   const isLimitReached = mainFlowers.length >= selectedSize.mainFlowerLimit;
 
   return (
-    <div className="border-r pr-4">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -471,7 +471,7 @@ const MainFlowersSection: React.FC<{
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-2">
         {flowers
           .filter((flower) => flower.flowerType === FlowerType.MAIN)
           .map((flower) => {
@@ -523,7 +523,9 @@ const MainFlowersSection: React.FC<{
                   {isLimitReached && count === 0 && (
                     <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
                       <p className="text-xs text-gray-600 text-center">
-                        Increase the size to add more main flowers
+                        {selectedSize.size === "EXTRA_LARGE"
+                          ? "Maximum number reached"
+                          : "Increase the size to add more main flowers"}
                       </p>
                     </div>
                   )}
@@ -610,7 +612,7 @@ const SmallFlowersSection: React.FC<{
   const isLimitReached = smallFlowers.length >= selectedSize.smallFlowerLimit;
 
   return (
-    <div className="border-r pr-4">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -634,7 +636,7 @@ const SmallFlowersSection: React.FC<{
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-2">
         {flowers
           .filter((flower) => flower.flowerType === FlowerType.SMALL)
           .map((flower) => {
@@ -775,7 +777,7 @@ const AnimalsSection: React.FC<{
   const isLimitReached = baseAnimalCount >= selectedSize.baseAnimalLimit;
 
   return (
-    <div className="border-r pr-4">
+    <div>
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -799,7 +801,7 @@ const AnimalsSection: React.FC<{
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-2">
         {animals.map((animal) => {
           const count = getAnimalCount(animal);
           const isSoldOut = animal.stock === 0;
@@ -996,7 +998,7 @@ const ExtraAnimalSection: React.FC<{
             )}
           </div>
 
-          <div className="grid grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-2">
             {animals.map((animal) => {
               const isExtraAnimalSelected = selectedAnimals
                 .slice(selectedSize.baseAnimalLimit)
@@ -1361,7 +1363,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
             </div>
 
             {/* Small Flowers Section */}
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col gap-1">
               <SmallFlowersSection
                 flowers={flowers}
                 selectedFlowers={selectedFlowers}
@@ -1370,40 +1372,34 @@ const CreatePage: React.FC<CreatePageProps> = ({
                 handleAddFlower={handleAddFlower}
                 setSelectedFlowers={setSelectedFlowers}
               />
-            </div>
-
-            {/* Main Flowers Section */}
-            <div className="mt-8">
-              <div className="flex flex-col gap-4">
-                <MainFlowersSection
-                  flowers={flowers}
-                  selectedFlowers={selectedFlowers}
-                  selectedSize={selectedSize}
-                  getFlowerCount={getFlowerCount}
-                  handleAddFlower={handleAddFlower}
-                  setSelectedFlowers={setSelectedFlowers}
-                />
-                <AnimalsSection
-                  animals={animals}
-                  selectedAnimals={selectedAnimals}
-                  selectedSize={selectedSize}
-                  getAnimalCount={getAnimalCount}
-                  handleAddAnimal={handleAddAnimal}
-                  setSelectedAnimals={setSelectedAnimals}
-                  hasExtraAnimal={hasExtraAnimal}
-                />
-                {/* Add Extra Animal Section */}
-                <ExtraAnimalSection
-                  selectedSize={selectedSize}
-                  selectedAnimals={selectedAnimals}
-                  animals={animals}
-                  getAnimalCount={getAnimalCount}
-                  handleAddAnimal={handleAddAnimal}
-                  setSelectedAnimals={setSelectedAnimals}
-                  hasExtraAnimal={hasExtraAnimal}
-                  onToggleExtraAnimal={handleToggleExtraAnimal}
-                />
-              </div>
+              <MainFlowersSection
+                flowers={flowers}
+                selectedFlowers={selectedFlowers}
+                selectedSize={selectedSize}
+                getFlowerCount={getFlowerCount}
+                handleAddFlower={handleAddFlower}
+                setSelectedFlowers={setSelectedFlowers}
+              />
+              <AnimalsSection
+                animals={animals}
+                selectedAnimals={selectedAnimals}
+                selectedSize={selectedSize}
+                getAnimalCount={getAnimalCount}
+                handleAddAnimal={handleAddAnimal}
+                setSelectedAnimals={setSelectedAnimals}
+                hasExtraAnimal={hasExtraAnimal}
+              />
+              {/* Add Extra Animal Section */}
+              <ExtraAnimalSection
+                selectedSize={selectedSize}
+                selectedAnimals={selectedAnimals}
+                animals={animals}
+                getAnimalCount={getAnimalCount}
+                handleAddAnimal={handleAddAnimal}
+                setSelectedAnimals={setSelectedAnimals}
+                hasExtraAnimal={hasExtraAnimal}
+                onToggleExtraAnimal={handleToggleExtraAnimal}
+              />
             </div>
 
             {/* Add to Cart Button */}
