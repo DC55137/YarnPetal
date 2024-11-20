@@ -1194,7 +1194,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
           </div>
 
           {/* Selection Form */}
-          <div className="lg:col-span-7 mt-8 lg:mt-0 bg-white py-6 px-2 rounded-lg shadow-2xl">
+          <div className="lg:col-span-7 mt-8 lg:mt-0 bg-white py-6 px-2 md:px-5 rounded-lg shadow-2xl">
             {/* Size Selector */}
             <div className="mt-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
