@@ -102,3 +102,16 @@ export interface CartItem {
   quantity: number;
   hat: Hat | null;
 }
+
+// types.ts
+export interface GalleryImage {
+  id: number;
+  src: string;
+  alt: string;
+  size: "small" | "medium" | "large";
+  tags: string[];
+}
+
+export interface GalleryPageProps {
+  images: GalleryImage[];
+}

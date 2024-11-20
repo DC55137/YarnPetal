@@ -20,6 +20,12 @@ export function generateNavigation(pathname: string): NavigationItem[] {
       href: `${PATH_PAGE.root}`,
       current: pathname === `/`,
     },
+
+    {
+      name: NAV_CONTENT.gallery,
+      href: `${PATH_PAGE.gallery}`,
+      current: pathname.startsWith(`${PATH_PAGE.gallery}`),
+    },
     {
       name: NAV_CONTENT.create,
       href: `${PATH_PAGE.create}`,
@@ -42,6 +48,7 @@ type NavContent = {
   contact: string;
   checkout: string;
   create: string;
+  gallery: string;
 };
 
 const NAV_CONTENT: NavContent = {
@@ -51,4 +58,5 @@ const NAV_CONTENT: NavContent = {
   contact: "Contact Us",
   checkout: "Checkout",
   create: "Create",
+  gallery: "Gallery",
 };

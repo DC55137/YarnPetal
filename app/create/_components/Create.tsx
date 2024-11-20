@@ -7,11 +7,7 @@ import { Loader, Plus, Trash } from "lucide-react";
 import { pacifico } from "@/app/fonts";
 import toast from "react-hot-toast";
 import Breadcrumb from "@/components/Breadcrumbs";
-import {
-  useCartStore,
-  SelectedFlowerItem,
-  SelectedAnimalItem,
-} from "@/src/stores/cart-store";
+import { useCartStore, SelectedFlowerItem } from "@/src/stores/cart-store";
 import { Animal, Hat, Size, Flower, FlowerType } from "@prisma/client";
 import { AnimalWithHat, CreatePageProps, ImageDisplayProps } from "@/lib/types";
 

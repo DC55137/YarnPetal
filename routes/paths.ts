@@ -18,4 +18,5 @@ export const PATH_PAGE = {
   about: "/abouts",
   contact: "/contact",
   checkout: "/checkout",
+  gallery: "/gallery",
 };
