@@ -220,7 +220,7 @@ const DisplayInfo = () => {
         bundle. Perfect for gifting or to treat yourself. Each bundle can be
         customized to match your style. Shop now!
       </p>
-      <Link href="/bundles">
+      <Link href="/create">
         <Button>Shop Bundles</Button>
       </Link>
     </div>

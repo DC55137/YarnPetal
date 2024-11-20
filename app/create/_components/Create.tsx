@@ -775,7 +775,7 @@ const AnimalsSection: React.FC<{
                         toast.success(`Removed ${animal.name}`);
                       }
                     }}
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
                   >
                     <Trash className="h-5 w-5 text-main-700" />
                   </Button>
@@ -1174,7 +1174,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
                 selectedFlowers={selectedFlowers}
                 selectedAnimals={selectedAnimals}
                 selectedSize={selectedSize}
-                availableHats={hats}
+                availableHats={hats.filter((hat) => hat.stock > 0)}
                 imageLoading={imageLoading}
                 totalPrice={calculatePrice} // Add this line
                 setImageLoading={setImageLoading}
