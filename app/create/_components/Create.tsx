@@ -17,15 +17,15 @@ const ImagePlaceholder: React.FC<{
 }> = ({ type }) => (
   <div className="relative aspect-square rounded-lg overflow-hidden border bg-gray-50 p-2">
     <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
-      <div className="w-12 h-12 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center mb-2">
+      <div className="w-10 h-10 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center mb-2">
         {type === "small-flower" && (
-          <div className="w-6 h-6 rounded-full bg-gray-200" />
+          <div className="w-4 h-4 rounded-full bg-gray-200" />
         )}
         {type === "main-flower" && (
-          <div className="w-8 h-8 rounded-full bg-gray-200" />
+          <div className="w-6 h-6 rounded-full bg-gray-200" />
         )}
         {type === "animal" && (
-          <div className="w-8 h-8 bg-gray-200 rounded-lg" />
+          <div className="w-6 h-6 bg-gray-200 rounded-lg" />
         )}
       </div>
       <span className="text-xs text-gray-500 text-center">
@@ -272,8 +272,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             Small Flowers: {smallFlowers.length}/{selectedSize.smallFlowerLimit}
           </span>
           <span>
-            Main Items: {mainFlowers.length + selectedAnimals.length}/
-            {selectedSize.mainFlowerLimit}
+            Main Items: {mainFlowers.length}/{selectedSize.mainFlowerLimit}
           </span>
         </div>
       </div>
