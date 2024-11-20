@@ -374,7 +374,7 @@ const SmallFlowersSection: React.FC<{
           .filter((flower) => flower.flowerType === FlowerType.SMALL)
           .map((flower) => {
             const count = getFlowerCount(flower);
-            const isSoldOut = flower.stock === 0;
+            const isSoldOut = flower.stock - count <= 0;
 
             return (
               <div key={flower.id} className="relative group">
@@ -538,7 +538,7 @@ const MainFlowersSection: React.FC<{
           .filter((flower) => flower.flowerType === FlowerType.MAIN)
           .map((flower) => {
             const count = getFlowerCount(flower);
-            const isSoldOut = flower.stock === 0;
+            const isSoldOut = flower.stock - count <= 0;
 
             return (
               <div key={flower.id} className="relative group">
@@ -901,7 +901,14 @@ const ExtraAnimalSection: React.FC<{
               const isExtraAnimalSelected = selectedAnimals
                 .slice(selectedSize.baseAnimalLimit)
                 .some((a) => a.animal.id === animal.id);
-              const isSoldOut = animal.stock === 0;
+              const isSame =
+                selectedAnimals && selectedAnimals[0].animal.id === animal.id;
+              let isSoldOut;
+              if (isSame) {
+                isSoldOut = animal.stock === 1;
+              } else {
+                isSoldOut = animal.stock === 0;
+              }
 
               return (
                 <div key={animal.id} className="relative group">
