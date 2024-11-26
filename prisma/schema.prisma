@@ -67,6 +67,7 @@ model Flower {
   id           Int              @id @default(autoincrement())
   name         String           @unique
   flowerType   FlowerType
+  isPremium    Boolean         @default(false)  // Add this field
   description  String
   price        Float
   stock        Int

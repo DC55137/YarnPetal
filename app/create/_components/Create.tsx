@@ -8,8 +8,28 @@ import { pacifico } from "@/app/fonts";
 import toast from "react-hot-toast";
 import Breadcrumb from "@/components/Breadcrumbs";
 import { useCartStore, SelectedFlowerItem } from "@/src/stores/cart-store";
-import { Animal, Hat, Size, Flower, FlowerType } from "@prisma/client";
-import { AnimalWithHat, CreatePageProps, ImageDisplayProps } from "@/lib/types";
+import {
+  Animal,
+  Hat,
+  Size,
+  Flower,
+  FlowerType,
+  BundleSize,
+} from "@prisma/client";
+import {
+  AnimalWithHat,
+  CreatePageProps,
+  ImageDisplayProps,
+  PremiumLimit,
+} from "@/lib/types";
+
+// Add these constants to your component
+const PREMIUM_LIMITS: Record<BundleSize, number> = {
+  SMALL: 1,
+  MEDIUM: 1,
+  LARGE: 1,
+  EXTRA_LARGE: 2,
+};
 
 // ImageDisplay Component Enhancement
 const ImagePlaceholder: React.FC<{
@@ -314,7 +334,9 @@ const SizeCard: React.FC<{
   </label>
 );
 
-const SmallFlowersSection: React.FC<{
+const FlowerSection: React.FC<{
+  title: string;
+  flowerType: FlowerType;
   flowers: Flower[];
   selectedFlowers: SelectedFlowerItem[];
   selectedSize: Size;
@@ -327,6 +349,8 @@ const SmallFlowersSection: React.FC<{
     React.SetStateAction<SelectedFlowerItem[]>
   >;
 }> = ({
+  title,
+  flowerType,
   flowers,
   selectedFlowers,
   selectedSize,
@@ -334,30 +358,56 @@ const SmallFlowersSection: React.FC<{
   handleAddFlower,
   setSelectedFlowers,
 }) => {
-  const smallFlowers = selectedFlowers.filter(
-    (f) => f.flower.flowerType === FlowerType.SMALL
-  );
-  const isLimitReached = smallFlowers.length >= selectedSize.smallFlowerLimit;
+  const filteredFlowers = flowers.filter((f) => f.flowerType === flowerType);
+
+  const selectedCount = selectedFlowers.filter(
+    (f) => f.flower.flowerType === flowerType
+  ).length;
+
+  const premiumCount = selectedFlowers.filter((f) => f.flower.isPremium).length;
+
+  const isPremiumLimitReached =
+    premiumCount >= PREMIUM_LIMITS[selectedSize.size];
+
+  const maxCount =
+    flowerType === FlowerType.SMALL
+      ? selectedSize.smallFlowerLimit
+      : selectedSize.mainFlowerLimit;
+
+  const isAtLimit = selectedCount >= maxCount;
+
+  const getCountDisplay = () => {
+    if (flowerType === FlowerType.SMALL) {
+      return (
+        <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
+          {selectedCount}/{maxCount} Small Flowers
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
+          {selectedCount}/{maxCount} Main Flowers
+        </div>
+        {selectedSize.size !== "SMALL" && (
+          <div className="text-sm text-purple-600">
+            ({premiumCount}/{PREMIUM_LIMITS[selectedSize.size]} can be signature
+            flowers)
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Step 3: Small Flowers
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
-                isLimitReached
-                  ? "bg-gray-100 text-gray-700"
-                  : "bg-gray-100 text-gray-700"
-              )}
-            >
-              {smallFlowers.length}/{selectedSize.smallFlowerLimit}
-            </div>
-            {isLimitReached && (
+            {getCountDisplay()}
+            {isAtLimit && (
               <span className="text-sm text-gray-600">Maximum selected</span>
             )}
           </div>
@@ -365,279 +415,181 @@ const SmallFlowersSection: React.FC<{
       </div>
 
       <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
-        {flowers
-          .filter((flower) => flower.flowerType === FlowerType.SMALL)
-          .map((flower) => {
-            const count = getFlowerCount(flower);
-            const isSoldOut = flower.stock - count <= 0;
+        {filteredFlowers.map((flower) => {
+          const count = getFlowerCount(flower);
+          const isSoldOut = flower.stock - count <= 0;
+          const isPremium = flower.isPremium;
+          const showPremiumBadge = isPremium && selectedSize.size !== "SMALL";
+          const isDisabled =
+            isSoldOut ||
+            isAtLimit ||
+            (isPremium && isPremiumLimitReached && count === 0);
 
-            return (
-              <div key={flower.id} className="relative group">
-                <div
-                  className={cn(
-                    "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                    isSoldOut
-                      ? "border-red-200 bg-white/80"
-                      : count > 0
-                      ? "border-main-300 bg-main-50"
-                      : isLimitReached
-                      ? "border-gray-200 bg-gray-50"
-                      : "hover:border-main-200"
-                  )}
-                >
-                  {/* Item Image */}
-                  <div className="relative w-full aspect-square">
-                    <Image
-                      src={flower.imageUrl}
-                      alt={flower.name}
-                      className="object-contain object-top rounded-md"
-                      fill
-                      sizes="70px"
-                    />
-                  </div>
-
-                  {/* Item Name and Count */}
-                  <div className="mt-2 space-y-1 text-center">
-                    <span className="text-sm font-medium text-gray-700">
-                      {flower.name}
-                    </span>
-                    {count > 0 && (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className=" px-2 bg-main-100 rounded-full">
-                          <span className="text-xs font-medium text-main-700">
-                            {count} selected
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Hover Message when limit reached */}
-                  {isLimitReached && count === 0 && (
-                    <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                      <p className="text-xs text-gray-600 text-center">
-                        Maximum {selectedSize.smallFlowerLimit} small flowers
-                        allowed for this size.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Remove Button - Only show when selected */}
-                  {count > 0 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const positionToRemove = selectedFlowers.find(
-                          (f) => f.flower.id === flower.id
-                        )?.position;
-                        if (positionToRemove) {
-                          setSelectedFlowers((prev) =>
-                            prev.filter((f) => f.position !== positionToRemove)
-                          );
-                          toast.success(`Removed ${flower.name}`);
-                        }
-                      }}
-                      className="absolute -top-2 -right-1 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
+          return (
+            <div key={flower.id} className="relative group">
+              <div
+                className={cn(
+                  "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
+                  showPremiumBadge && "border-purple-200",
+                  isSoldOut
+                    ? "border-red-200 bg-white/80"
+                    : count > 0
+                    ? showPremiumBadge
+                      ? "border-purple-300 bg-purple-50"
+                      : "border-main-300 bg-main-50"
+                    : isDisabled
+                    ? "border-gray-200 bg-gray-50"
+                    : showPremiumBadge
+                    ? "hover:border-purple-200"
+                    : "hover:border-main-200"
+                )}
+              >
+                {showPremiumBadge && (
+                  <div className="absolute -top-2 right-8 bg-purple-100 rounded-full px-2 py-1 z-10">
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        isPremiumLimitReached && count === 0
+                          ? "text-gray-500"
+                          : "text-purple-700"
+                      )}
                     >
-                      <Trash className="h-5 w-5 text-main-700" />
-                    </Button>
-                  )}
+                      Signature
+                    </span>
+                  </div>
+                )}
 
-                  {/* Add Button - Always visible but disabled when appropriate */}
-                  <Button
-                    size="sm"
-                    variant={count > 0 ? "default" : "outline"}
-                    className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0"
-                    onClick={(e) => handleAddFlower(flower, e)}
-                    disabled={isSoldOut || isLimitReached}
-                  >
-                    <Plus className="h-6 w-6" />
-                  </Button>
+                {/* Item Image */}
+                <div className="relative w-full aspect-square">
+                  <Image
+                    src={flower.imageUrl}
+                    alt={flower.name}
+                    className="object-contain object-top rounded-md"
+                    fill
+                    sizes="70px"
+                  />
+                </div>
 
-                  {/* Stock Indicators */}
-                  {isSoldOut && (
-                    <div className="absolute inset-0 overflow-hidden rounded-md">
-                      <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-                      <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                        SOLD OUT
+                {/* Item Name and Count */}
+                <div className="mt-2 space-y-1 text-center">
+                  <span className="text-sm font-medium text-gray-700">
+                    {flower.name}
+                  </span>
+                  {count > 0 && (
+                    <div className="flex items-center justify-center gap-2">
+                      <div
+                        className={cn(
+                          "px-2 rounded-full",
+                          showPremiumBadge ? "bg-purple-100" : "bg-main-100"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "text-xs font-medium",
+                            showPremiumBadge
+                              ? "text-purple-700"
+                              : "text-main-700"
+                          )}
+                        >
+                          {count} selected
+                        </span>
                       </div>
                     </div>
-                  )}
-                  {!isSoldOut && flower.stock <= 3 && (
-                    <span className="mt-1 text-[10px] text-orange-500 font-medium">
-                      Only {flower.stock} left
-                    </span>
                   )}
                 </div>
-              </div>
-            );
-          })}
-      </div>
-    </div>
-  );
-};
 
-const MainFlowersSection: React.FC<{
-  flowers: Flower[];
-  selectedFlowers: SelectedFlowerItem[];
-  selectedSize: Size;
-  getFlowerCount: (flower: Flower) => number;
-  handleAddFlower: (
-    flower: Flower,
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => void;
-  setSelectedFlowers: React.Dispatch<
-    React.SetStateAction<SelectedFlowerItem[]>
-  >;
-}> = ({
-  flowers,
-  selectedFlowers,
-  selectedSize,
-  getFlowerCount,
-  handleAddFlower,
-  setSelectedFlowers,
-}) => {
-  const mainFlowers = selectedFlowers.filter(
-    (f) => f.flower.flowerType === FlowerType.MAIN
-  );
-  const isLimitReached = mainFlowers.length >= selectedSize.mainFlowerLimit;
-
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Step 4: Main Flowers
-          </h3>
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
-                isLimitReached
-                  ? "bg-gray-100 text-gray-700"
-                  : "bg-gray-100 text-gray-700"
-              )}
-            >
-              {mainFlowers.length}/{selectedSize.mainFlowerLimit}
-            </div>
-            {isLimitReached && (
-              <span className="text-sm text-gray-600">Maximum selected</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
-        {flowers
-          .filter((flower) => flower.flowerType === FlowerType.MAIN)
-          .map((flower) => {
-            const count = getFlowerCount(flower);
-            const isSoldOut = flower.stock - count <= 0;
-
-            return (
-              <div key={flower.id} className="relative group">
-                <div
-                  className={cn(
-                    "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                    isSoldOut
-                      ? "border-red-200 bg-white/80"
-                      : count > 0
-                      ? "border-main-300 bg-main-50"
-                      : isLimitReached
-                      ? "border-gray-200 bg-gray-50"
-                      : "hover:border-main-200"
-                  )}
-                >
-                  {/* Item Image */}
-                  <div className="relative w-full aspect-square">
-                    <Image
-                      src={flower.imageUrl}
-                      alt={flower.name}
-                      className="object-contain object-top rounded-md"
-                      fill
-                      sizes="70px"
-                    />
-                  </div>
-
-                  {/* Item Name and Count */}
-                  <div className="mt-2 space-y-1 text-center">
-                    <span className="text-sm font-medium text-gray-700">
-                      {flower.name}
-                    </span>
-                    {count > 0 && (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className=" px-2 bg-main-100 rounded-full">
-                          <span className="text-xs font-medium text-main-700">
-                            {count} selected
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Hover Message when limit reached */}
-                  {isLimitReached && count === 0 && (
-                    <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                {/* Hover Message when limit reached */}
+                {(isAtLimit || (isPremium && isPremiumLimitReached)) &&
+                  count === 0 && (
+                    <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 z-10">
                       <p className="text-xs text-gray-600 text-center">
-                        {selectedSize.size === "EXTRA_LARGE"
+                        {isPremium && isPremiumLimitReached
+                          ? `Maximum ${
+                              PREMIUM_LIMITS[selectedSize.size]
+                            } signature ${
+                              PREMIUM_LIMITS[selectedSize.size] === 1
+                                ? "flower"
+                                : "flowers"
+                            } already selected`
+                          : flowerType === FlowerType.SMALL
+                          ? `Maximum ${maxCount} small flowers allowed for this size`
+                          : selectedSize.size === "EXTRA_LARGE"
                           ? "Maximum number reached"
                           : "Increase the size to add more main flowers"}
                       </p>
                     </div>
                   )}
 
-                  {/* Remove Button - Only show when selected */}
-                  {count > 0 && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const positionToRemove = selectedFlowers.find(
-                          (f) => f.flower.id === flower.id
-                        )?.position;
-                        if (positionToRemove) {
-                          setSelectedFlowers((prev) =>
-                            prev.filter((f) => f.position !== positionToRemove)
-                          );
-                          toast.success(`Removed ${flower.name}`);
-                        }
-                      }}
-                      className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
-                    >
-                      <Trash className="h-5 w-5 text-main-700" />
-                    </Button>
-                  )}
-
-                  {/* Add Button - Always visible but disabled when appropriate */}
+                {/* Remove Button */}
+                {count > 0 && (
                   <Button
                     size="sm"
-                    variant={count > 0 ? "default" : "outline"}
-                    className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0"
-                    onClick={(e) => handleAddFlower(flower, e)}
-                    disabled={isSoldOut || isLimitReached}
+                    variant="ghost"
+                    onClick={() => {
+                      const positionToRemove = selectedFlowers.find(
+                        (f) => f.flower.id === flower.id
+                      )?.position;
+                      if (positionToRemove) {
+                        setSelectedFlowers((prev) =>
+                          prev.filter((f) => f.position !== positionToRemove)
+                        );
+                        toast.success(`Removed ${flower.name}`);
+                      }
+                    }}
+                    className={cn(
+                      "absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 z-20",
+                      showPremiumBadge
+                        ? "bg-purple-100 hover:bg-purple-200"
+                        : "bg-main-100 hover:bg-main-200"
+                    )}
                   >
-                    <Plus className="h-6 w-6" />
+                    <Trash
+                      className={cn(
+                        "h-5 w-5",
+                        showPremiumBadge ? "text-purple-700" : "text-main-700"
+                      )}
+                    />
                   </Button>
+                )}
 
-                  {/* Stock Indicators */}
-                  {isSoldOut && (
-                    <div className="absolute inset-0 overflow-hidden rounded-md">
-                      <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-                      <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                        SOLD OUT
-                      </div>
+                {/* Add Button */}
+                <Button
+                  size="sm"
+                  variant={count > 0 ? "default" : "outline"}
+                  className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0 z-20"
+                  onClick={(e) => handleAddFlower(flower, e)}
+                  disabled={isDisabled}
+                >
+                  <Plus className="h-6 w-6" />
+                </Button>
+
+                {/* Stock Indicators */}
+                {isSoldOut && (
+                  <div className="absolute inset-0 overflow-hidden rounded-md z-10">
+                    <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+                    <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                      SOLD OUT
                     </div>
-                  )}
-                  {!isSoldOut && flower.stock <= 3 && (
-                    <span className="mt-1 text-[10px] text-orange-500 font-medium">
-                      Only {flower.stock} left
-                    </span>
-                  )}
-                </div>
+                  </div>
+                )}
+                {!isSoldOut && flower.stock <= 3 && (
+                  <span className="mt-1 text-[10px] text-orange-500 font-medium">
+                    Only {flower.stock} left
+                  </span>
+                )}
               </div>
-            );
-          })}
+
+              {/* Premium limit indicator */}
+              {isPremium && isPremiumLimitReached && count === 0 && (
+                <div className="mt-1 text-center">
+                  <span className="text-xs text-gray-500">
+                    Signature limit reached
+                  </span>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -1050,7 +1002,17 @@ const CreatePage: React.FC<CreatePageProps> = ({
     setHasExtraAnimal(false);
   }, [selectedSize]);
 
-  // Update handlers to check limits separately
+  // Add helper functions for premium flowers
+  const getPremiumFlowerCount = () => {
+    return selectedFlowers.filter((f) => f.flower.isPremium).length;
+  };
+
+  const isPremiumLimitReached = () => {
+    const currentCount = getPremiumFlowerCount();
+    return currentCount >= PREMIUM_LIMITS[selectedSize.size];
+  };
+
+  // Modify handleAddFlower to include premium flower logic
   const handleAddFlower = (
     flower: Flower,
     e: React.MouseEvent<HTMLButtonElement>
@@ -1062,6 +1024,19 @@ const CreatePage: React.FC<CreatePageProps> = ({
     const selectedMainCount = selectedFlowers.filter(
       (f) => f.flower.flowerType === FlowerType.MAIN
     ).length;
+
+    // Check premium flower limits
+    if (flower.isPremium) {
+      const premiumCount = getPremiumFlowerCount();
+      if (premiumCount >= PREMIUM_LIMITS[selectedSize.size]) {
+        toast.error(
+          `Maximum ${PREMIUM_LIMITS[selectedSize.size]} signature ${
+            PREMIUM_LIMITS[selectedSize.size] === 1 ? "flower" : "flowers"
+          } allowed for ${selectedSize.size.toLowerCase()} size`
+        );
+        return;
+      }
+    }
 
     if (
       flower.flowerType === FlowerType.SMALL &&
@@ -1084,6 +1059,11 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
     const position = selectedFlowers.length + 1;
     setSelectedFlowers([...selectedFlowers, { flower, position }]);
+    if (flower.isPremium) {
+      toast.success(`Added ${flower.name} (Signature Flower)`);
+    } else {
+      toast.success(`Added ${flower.name}`);
+    }
   };
 
   // Update handleAddAnimal to handle extra animals
@@ -1286,7 +1266,11 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
             {/* Small Flowers Section */}
             <div className="mt-8 flex flex-col gap-1">
-              <SmallFlowersSection
+              {/* Premium/Signature Flowers Section */}
+              {/* Small Flowers Section */}
+              <FlowerSection
+                title="Step 3: Small Flowers"
+                flowerType={FlowerType.SMALL}
                 flowers={flowers}
                 selectedFlowers={selectedFlowers}
                 selectedSize={selectedSize}
@@ -1294,7 +1278,11 @@ const CreatePage: React.FC<CreatePageProps> = ({
                 handleAddFlower={handleAddFlower}
                 setSelectedFlowers={setSelectedFlowers}
               />
-              <MainFlowersSection
+
+              {/* Main Flowers Section */}
+              <FlowerSection
+                title="Step 4: Main Flowers"
+                flowerType={FlowerType.MAIN}
                 flowers={flowers}
                 selectedFlowers={selectedFlowers}
                 selectedSize={selectedSize}

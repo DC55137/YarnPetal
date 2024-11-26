@@ -1,5 +1,13 @@
 // Types and interfaces file (types.ts)
-import { Animal, Hat, Color, Size, Flower, FlowerType } from "@prisma/client";
+import {
+  Animal,
+  Hat,
+  Color,
+  Size,
+  Flower,
+  FlowerType,
+  BundleSize,
+} from "@prisma/client";
 
 export interface SelectedFlowerItem {
   flower: Flower;
@@ -114,4 +122,10 @@ export interface GalleryImage {
 
 export interface GalleryPageProps {
   images: GalleryImage[];
+}
+
+// Add these types to your types.ts
+export interface PremiumLimit {
+  size: BundleSize;
+  limit: number;
 }
