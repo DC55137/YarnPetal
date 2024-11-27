@@ -48,6 +48,7 @@ model Size {
   maxExtraAnimals  Int       // Maximum number of extra animals allowed (1 in this case)
   extraAnimalPrice Float     // Price for each extra animal ($7.00)
   dimensionScale   Float     // Scale factor for bundle display
+  image          String     @default("")
   orderItems      OrderItem[]
 }
 

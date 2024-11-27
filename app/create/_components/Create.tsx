@@ -3,33 +3,115 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Loader, Plus, Trash } from "lucide-react";
+import { ChevronLeft, Loader, Plus, Trash } from "lucide-react";
 import { pacifico } from "@/app/fonts";
 import toast from "react-hot-toast";
-import Breadcrumb from "@/components/Breadcrumbs";
-import { useCartStore, SelectedFlowerItem } from "@/src/stores/cart-store";
-import {
-  Animal,
-  Hat,
-  Size,
-  Flower,
-  FlowerType,
-  BundleSize,
-} from "@prisma/client";
-import {
-  AnimalWithHat,
-  CreatePageProps,
-  ImageDisplayProps,
-  PremiumLimit,
-} from "@/lib/types";
+import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-// Add these constants to your component
-const PREMIUM_LIMITS: Record<BundleSize, number> = {
-  SMALL: 1,
-  MEDIUM: 1,
-  LARGE: 1,
-  EXTRA_LARGE: 2,
+import { useCartStore, SelectedFlowerItem } from "@/src/stores/cart-store";
+import { Animal, Hat, Size, Flower, FlowerType, Color } from "@prisma/client";
+import { AnimalWithHat, CreatePageProps, ImageDisplayProps } from "@/lib/types";
+import StepIndicator from "./StepIndicator";
+import { revalidatePath } from "next/cache";
+
+// Define step types
+type Step = "size" | "color" | "smallFlowers" | "mainFlowers" | "animals";
+
+const STEPS: Step[] = [
+  "size",
+  "color",
+  "smallFlowers",
+  "mainFlowers",
+  "animals",
+];
+
+const STEP_TITLES: Record<Step, string> = {
+  size: "Choose Your Bundle Size",
+  color: "Select Your Color",
+  smallFlowers: "Add Small Flowers",
+  mainFlowers: "Add Main Flowers",
+  animals: "Choose Your Animals",
 };
+
+const StepHeader: React.FC<{
+  currentStep: Step;
+  onBack: () => void;
+  isFirstStep: boolean;
+  selectedSize?: Size;
+  selectedColor?: Color;
+}> = ({ currentStep, onBack, isFirstStep, selectedSize, selectedColor }) => {
+  return (
+    <div className="flex flex-col items-center justify-between mb-6">
+      <div className="flex mr-auto items-center gap-3">
+        {!isFirstStep && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back
+            </Button>
+          </>
+        )}
+      </div>
+      <div className="flex items-center gap-4 text-sm"></div>
+      <h2 className="text-2xl font-bold text-gray-900">
+        <span className="text-main-500">
+          {STEPS.indexOf(currentStep) + 1}.{" "}
+        </span>
+        {STEP_TITLES[currentStep]}
+      </h2>
+    </div>
+  );
+};
+
+const ColorCard: React.FC<{
+  color: Color;
+  isSelected: boolean;
+  onSelect: (color: Color) => void;
+}> = ({ color, isSelected, onSelect }) => (
+  <button
+    onClick={() => color.stock > 0 && onSelect(color)}
+    disabled={color.stock === 0}
+    className={cn(
+      "relative aspect-square rounded-lg border-2 transition-all",
+      isSelected ? "ring-2 ring-main-500 border-main-500" : "border-gray-200",
+      color.stock === 0
+        ? "opacity-50 cursor-not-allowed"
+        : "hover:border-main-300",
+      "group"
+    )}
+  >
+    <div className="relative w-full h-full rounded-lg overflow-hidden">
+      <Image
+        src={color.imageBack}
+        alt={color.name}
+        fill
+        className="object-cover"
+      />
+      <div
+        className={cn(
+          "absolute inset-0 flex flex-col items-center justify-center bg-white/90 transition-opacity",
+          isSelected ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+        )}
+      >
+        <span className="text-sm font-medium text-gray-900">{color.name}</span>
+        {color.stock <= 3 && color.stock > 0 && (
+          <span className="text-xs text-orange-500">
+            Only {color.stock} left
+          </span>
+        )}
+        {color.stock === 0 && (
+          <span className="text-xs text-red-500">Out of stock</span>
+        )}
+      </div>
+    </div>
+  </button>
+);
 
 // ImageDisplay Component Enhancement
 const ImagePlaceholder: React.FC<{
@@ -49,7 +131,7 @@ const ImagePlaceholder: React.FC<{
         )}
       </div>
       <span className="text-xs text-gray-500 text-center">
-        Add {type.split("-").join(" ")}
+        {type.split("-").join(" ")}
       </span>
     </div>
   </div>
@@ -308,7 +390,7 @@ const SizeCard: React.FC<{
 }> = ({ size, isSelected, onChange }) => (
   <label
     className={cn(
-      "relative flex flex-col items-center p-4 rounded-lg border cursor-pointer transition-all",
+      "relative flex flex-col p-4 rounded-lg border cursor-pointer transition-all",
       isSelected
         ? "border-main-600 bg-main-50 ring-2 ring-main-500"
         : "border-gray-200 hover:border-main-300"
@@ -322,14 +404,37 @@ const SizeCard: React.FC<{
       onChange={() => onChange(size)}
       className="sr-only"
     />
+    {/* Size Image */}
+    <div className="relative aspect-square w-full mb-3 rounded-lg overflow-hidden">
+      <Image
+        src={size.image}
+        alt={`${size.size} size bundle`}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 25vw, 20vw"
+      />
+    </div>
+
     <div className="text-center">
       <p className="font-semibold text-gray-900">{size.size}</p>
-      <p className="text-sm text-gray-500">${size.price.toFixed(2)}</p>
+      <p className="text-sm font-medium text-main-600">
+        ${size.price.toFixed(2)}
+      </p>
     </div>
-    <div className="mt-2 text-xs text-gray-500 text-center">
+
+    <div className="mt-2 space-y-1 text-xs text-gray-500 text-center">
       <p>{size.mainFlowerLimit} main flowers</p>
       <p>{size.smallFlowerLimit} small flowers</p>
       <p>1 animal included</p>
+      <p className="text-xs text-gray-400">
+        {size.size === "SMALL"
+          ? "Perfect for desks"
+          : size.size === "MEDIUM"
+          ? "Great for side tables"
+          : size.size === "LARGE"
+          ? "Beautiful centerpiece"
+          : "Statement piece"}
+      </p>
     </div>
   </label>
 );
@@ -364,17 +469,15 @@ const FlowerSection: React.FC<{
     (f) => f.flower.flowerType === flowerType
   ).length;
 
-  const premiumCount = selectedFlowers.filter((f) => f.flower.isPremium).length;
-
-  const isPremiumLimitReached =
-    premiumCount >= PREMIUM_LIMITS[selectedSize.size];
-
   const maxCount =
     flowerType === FlowerType.SMALL
       ? selectedSize.smallFlowerLimit
       : selectedSize.mainFlowerLimit;
 
   const isAtLimit = selectedCount >= maxCount;
+
+  // Maximum 2 of the same main flower
+  const MAX_SAME_MAIN_FLOWER = 2;
 
   const getCountDisplay = () => {
     if (flowerType === FlowerType.SMALL) {
@@ -386,16 +489,8 @@ const FlowerSection: React.FC<{
     }
 
     return (
-      <div className="flex items-center gap-2">
-        <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
-          {selectedCount}/{maxCount} Main Flowers
-        </div>
-        {selectedSize.size !== "SMALL" && (
-          <div className="text-sm text-purple-600">
-            ({premiumCount}/{PREMIUM_LIMITS[selectedSize.size]} can be signature
-            flowers)
-          </div>
-        )}
+      <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
+        {selectedCount}/{maxCount} Main Flowers
       </div>
     );
   };
@@ -418,47 +513,24 @@ const FlowerSection: React.FC<{
         {filteredFlowers.map((flower) => {
           const count = getFlowerCount(flower);
           const isSoldOut = flower.stock - count <= 0;
-          const isPremium = flower.isPremium;
-          const showPremiumBadge = isPremium && selectedSize.size !== "SMALL";
-          const isDisabled =
-            isSoldOut ||
-            isAtLimit ||
-            (isPremium && isPremiumLimitReached && count === 0);
+          const isMaxSameFlower =
+            flowerType === FlowerType.MAIN && count >= MAX_SAME_MAIN_FLOWER;
+          const isDisabled = isSoldOut || isAtLimit || isMaxSameFlower;
 
           return (
             <div key={flower.id} className="relative group">
               <div
                 className={cn(
                   "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                  showPremiumBadge && "border-purple-200",
-                  isSoldOut
+                  isSoldOut || isMaxSameFlower
                     ? "border-red-200 bg-white/80"
                     : count > 0
-                    ? showPremiumBadge
-                      ? "border-purple-300 bg-purple-50"
-                      : "border-main-300 bg-main-50"
-                    : isDisabled
+                    ? "border-main-300 bg-main-50"
+                    : isAtLimit
                     ? "border-gray-200 bg-gray-50"
-                    : showPremiumBadge
-                    ? "hover:border-purple-200"
                     : "hover:border-main-200"
                 )}
               >
-                {showPremiumBadge && (
-                  <div className="absolute -top-2 right-8 bg-purple-100 rounded-full px-2 py-1 z-10">
-                    <span
-                      className={cn(
-                        "text-xs font-medium",
-                        isPremiumLimitReached && count === 0
-                          ? "text-gray-500"
-                          : "text-purple-700"
-                      )}
-                    >
-                      Signature
-                    </span>
-                  </div>
-                )}
-
                 {/* Item Image */}
                 <div className="relative w-full aspect-square">
                   <Image
@@ -477,20 +549,8 @@ const FlowerSection: React.FC<{
                   </span>
                   {count > 0 && (
                     <div className="flex items-center justify-center gap-2">
-                      <div
-                        className={cn(
-                          "px-2 rounded-full",
-                          showPremiumBadge ? "bg-purple-100" : "bg-main-100"
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            "text-xs font-medium",
-                            showPremiumBadge
-                              ? "text-purple-700"
-                              : "text-main-700"
-                          )}
-                        >
+                      <div className="px-2 rounded-full bg-main-100">
+                        <span className="text-xs font-medium text-main-700">
                           {count} selected
                         </span>
                       </div>
@@ -499,26 +559,19 @@ const FlowerSection: React.FC<{
                 </div>
 
                 {/* Hover Message when limit reached */}
-                {(isAtLimit || (isPremium && isPremiumLimitReached)) &&
-                  count === 0 && (
-                    <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 z-10">
-                      <p className="text-xs text-gray-600 text-center">
-                        {isPremium && isPremiumLimitReached
-                          ? `Maximum ${
-                              PREMIUM_LIMITS[selectedSize.size]
-                            } signature ${
-                              PREMIUM_LIMITS[selectedSize.size] === 1
-                                ? "flower"
-                                : "flowers"
-                            } already selected`
-                          : flowerType === FlowerType.SMALL
-                          ? `Maximum ${maxCount} small flowers allowed for this size`
-                          : selectedSize.size === "EXTRA_LARGE"
-                          ? "Maximum number reached"
-                          : "Increase the size to add more main flowers"}
-                      </p>
-                    </div>
-                  )}
+                {(isAtLimit || isMaxSameFlower) && count === 0 && (
+                  <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 z-10">
+                    <p className="text-xs text-gray-600 text-center">
+                      {isMaxSameFlower
+                        ? "Maximum 2 of the same main flower allowed"
+                        : flowerType === FlowerType.SMALL
+                        ? `Maximum ${maxCount} small flowers allowed for this size`
+                        : selectedSize.size === "EXTRA_LARGE"
+                        ? "Maximum number reached"
+                        : "Increase the size to add more main flowers"}
+                    </p>
+                  </div>
+                )}
 
                 {/* Remove Button */}
                 {count > 0 && (
@@ -536,19 +589,9 @@ const FlowerSection: React.FC<{
                         toast.success(`Removed ${flower.name}`);
                       }
                     }}
-                    className={cn(
-                      "absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 z-20",
-                      showPremiumBadge
-                        ? "bg-purple-100 hover:bg-purple-200"
-                        : "bg-main-100 hover:bg-main-200"
-                    )}
+                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 z-20 bg-main-100 hover:bg-main-200"
                   >
-                    <Trash
-                      className={cn(
-                        "h-5 w-5",
-                        showPremiumBadge ? "text-purple-700" : "text-main-700"
-                      )}
-                    />
+                    <Trash className="h-5 w-5 text-main-700" />
                   </Button>
                 )}
 
@@ -577,16 +620,14 @@ const FlowerSection: React.FC<{
                     Only {flower.stock} left
                   </span>
                 )}
-              </div>
 
-              {/* Premium limit indicator */}
-              {isPremium && isPremiumLimitReached && count === 0 && (
-                <div className="mt-1 text-center">
-                  <span className="text-xs text-gray-500">
-                    Signature limit reached
+                {/* Max same flower indicator */}
+                {isMaxSameFlower && (
+                  <span className="mt-1 text-xs text-gray-500">
+                    Maximum 2 allowed
                   </span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           );
         })}
@@ -973,6 +1014,9 @@ const ExtraAnimalSection: React.FC<{
 
 /////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
 /////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
+/////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
+/////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
+/////////////////// Main Create Page Component/////////////////// /////////////////// ///////////////////
 const CreatePage: React.FC<CreatePageProps> = ({
   colors,
   sizes,
@@ -980,12 +1024,13 @@ const CreatePage: React.FC<CreatePageProps> = ({
   animals,
   hats,
 }) => {
-  // State
+  // Step state
+  const [currentStep, setCurrentStep] = useState<Step>("size");
+
+  // Bundle state
   const [loading, setLoading] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(sizes[0]);
-  const [selectedColor, setSelectedColor] = useState(
-    colors.find((c) => c.stock > 0) || colors[0]
-  );
+  const [selectedSize, setSelectedSize] = useState<Size | undefined>();
+  const [selectedColor, setSelectedColor] = useState<Color | undefined>();
   const [selectedFlowers, setSelectedFlowers] = useState<SelectedFlowerItem[]>(
     []
   );
@@ -993,26 +1038,103 @@ const CreatePage: React.FC<CreatePageProps> = ({
   const [imageLoading, setImageLoading] = useState(false);
   const [hasExtraAnimal, setHasExtraAnimal] = useState(false);
 
+  const router = useRouter();
+
   const { addToCart } = useCartStore();
 
-  // Reset extra animal when size changes
-  useEffect(() => {
+  const canNavigateToStep = (step: Step) => {
+    const stepIndex = STEPS.indexOf(step);
+    const currentIndex = STEPS.indexOf(currentStep);
+
+    // Can always go back
+    if (stepIndex < currentIndex) return true;
+
+    // Can't skip ahead without completing current step
+    if (stepIndex > currentIndex && !canProceedToNextStep()) return false;
+
+    // Check requirements for each step
+    switch (step) {
+      case "size":
+        return true;
+      case "color":
+        return !!selectedSize;
+      case "smallFlowers":
+        return !!selectedSize && !!selectedColor;
+      case "mainFlowers":
+        return (
+          !!selectedSize &&
+          !!selectedColor &&
+          selectedFlowers.filter(
+            (f) => f.flower.flowerType === FlowerType.SMALL
+          ).length === selectedSize.smallFlowerLimit
+        );
+      case "animals":
+        return (
+          !!selectedSize &&
+          !!selectedColor &&
+          selectedFlowers.filter(
+            (f) => f.flower.flowerType === FlowerType.SMALL
+          ).length === selectedSize.smallFlowerLimit &&
+          selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
+            .length === selectedSize.mainFlowerLimit
+        );
+      default:
+        return false;
+    }
+  };
+
+  // New function to get step status
+  const getStepStatus = (step: Step): "complete" | "current" | "upcoming" => {
+    const stepIndex = STEPS.indexOf(step);
+    const currentIndex = STEPS.indexOf(currentStep);
+
+    if (stepIndex < currentIndex && canNavigateToStep(STEPS[stepIndex + 1])) {
+      return "complete";
+    }
+    if (stepIndex === currentIndex) {
+      return "current";
+    }
+    return "upcoming";
+  };
+
+  // Handler for step navigation
+  const handleStepClick = (step: Step) => {
+    if (canNavigateToStep(step)) {
+      setCurrentStep(step);
+    }
+  };
+
+  // Step navigation
+  const goToNextStep = () => {
+    const currentIndex = STEPS.indexOf(currentStep);
+    if (currentIndex < STEPS.length - 1) {
+      setCurrentStep(STEPS[currentIndex + 1]);
+    }
+  };
+
+  const goToPreviousStep = () => {
+    const currentIndex = STEPS.indexOf(currentStep);
+    if (currentIndex > 0) {
+      setCurrentStep(STEPS[currentIndex - 1]);
+    }
+  };
+
+  // Selection handlers with auto-advance
+  const handleSizeSelect = (size: Size) => {
+    setSelectedSize(size);
     setSelectedFlowers([]);
     setSelectedAnimals([]);
     setHasExtraAnimal(false);
-  }, [selectedSize]);
-
-  // Add helper functions for premium flowers
-  const getPremiumFlowerCount = () => {
-    return selectedFlowers.filter((f) => f.flower.isPremium).length;
+    goToNextStep();
   };
 
-  const isPremiumLimitReached = () => {
-    const currentCount = getPremiumFlowerCount();
-    return currentCount >= PREMIUM_LIMITS[selectedSize.size];
+  const handleColorSelect = (color: Color) => {
+    setSelectedColor(color);
+    setImageLoading(true);
+    goToNextStep();
   };
 
-  // Modify handleAddFlower to include premium flower logic
+  // Existing handlers
   const handleAddFlower = (
     flower: Flower,
     e: React.MouseEvent<HTMLButtonElement>
@@ -1025,56 +1147,50 @@ const CreatePage: React.FC<CreatePageProps> = ({
       (f) => f.flower.flowerType === FlowerType.MAIN
     ).length;
 
-    // Check premium flower limits
-    if (flower.isPremium) {
-      const premiumCount = getPremiumFlowerCount();
-      if (premiumCount >= PREMIUM_LIMITS[selectedSize.size]) {
-        toast.error(
-          `Maximum ${PREMIUM_LIMITS[selectedSize.size]} signature ${
-            PREMIUM_LIMITS[selectedSize.size] === 1 ? "flower" : "flowers"
-          } allowed for ${selectedSize.size.toLowerCase()} size`
-        );
-        return;
-      }
-    }
-
+    // Check basic limits
     if (
       flower.flowerType === FlowerType.SMALL &&
-      selectedSmallCount >= selectedSize.smallFlowerLimit
+      selectedSmallCount >= selectedSize!.smallFlowerLimit
     ) {
       toast.error(
-        `Maximum ${selectedSize.smallFlowerLimit} small flowers allowed`
+        `Maximum ${selectedSize!.smallFlowerLimit} small flowers allowed`
       );
       return;
     }
     if (
       flower.flowerType === FlowerType.MAIN &&
-      selectedMainCount >= selectedSize.mainFlowerLimit
+      selectedMainCount >= selectedSize!.mainFlowerLimit
     ) {
       toast.error(
-        `Maximum ${selectedSize.mainFlowerLimit} main flowers allowed`
+        `Maximum ${selectedSize!.mainFlowerLimit} main flowers allowed`
       );
       return;
     }
 
+    // Check if trying to add more than 2 of the same main flower
+    if (flower.flowerType === FlowerType.MAIN) {
+      const sameFlowerCount = selectedFlowers.filter(
+        (f) => f.flower.id === flower.id
+      ).length;
+      if (sameFlowerCount >= 2) {
+        toast.error("Maximum 2 of the same main flower allowed");
+        return;
+      }
+    }
+
     const position = selectedFlowers.length + 1;
     setSelectedFlowers([...selectedFlowers, { flower, position }]);
-    if (flower.isPremium) {
-      toast.success(`Added ${flower.name} (Signature Flower)`);
-    } else {
-      toast.success(`Added ${flower.name}`);
-    }
+    toast.success(`Added ${flower.name}`);
   };
 
-  // Update handleAddAnimal to handle extra animals
   const handleAddAnimal = (
     animal: Animal,
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
     const maxAnimals =
-      selectedSize.baseAnimalLimit +
-      (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0);
+      selectedSize!.baseAnimalLimit +
+      (hasExtraAnimal ? selectedSize!.maxExtraAnimals : 0);
 
     if (selectedAnimals.length >= maxAnimals) {
       toast.error(`Maximum ${maxAnimals} animals allowed`);
@@ -1085,11 +1201,11 @@ const CreatePage: React.FC<CreatePageProps> = ({
     setSelectedAnimals([...selectedAnimals, { animal, position, hat: null }]);
   };
 
-  // Handle toggling extra animal
   const handleToggleExtraAnimal = (value: boolean) => {
-    if (!value && selectedAnimals.length > selectedSize.baseAnimalLimit) {
-      // Remove the extra animal when toggling off
-      setSelectedAnimals((prev) => prev.slice(0, selectedSize.baseAnimalLimit));
+    if (!value && selectedAnimals.length > selectedSize!.baseAnimalLimit) {
+      setSelectedAnimals((prev) =>
+        prev.slice(0, selectedSize!.baseAnimalLimit)
+      );
     }
     setHasExtraAnimal(value);
   };
@@ -1102,204 +1218,142 @@ const CreatePage: React.FC<CreatePageProps> = ({
     );
   };
 
-  // Update price calculation to include extra animal
-  const calculatePrice =
-    selectedSize.price + (hasExtraAnimal ? selectedSize.extraAnimalPrice : 0);
+  const calculatePrice = () => {
+    if (!selectedSize) return 0;
+    return (
+      selectedSize.price + (hasExtraAnimal ? selectedSize.extraAnimalPrice : 0)
+    );
+  };
 
-  // Update the flower and animal sections to include counters
   const getFlowerCount = (flower: Flower) =>
     selectedFlowers.filter((f) => f.flower.id === flower.id).length;
 
   const getAnimalCount = (animal: Animal) =>
     selectedAnimals.filter((a) => a.animal.id === animal.id).length;
 
+  // Cart validation
   const isAddToCartDisabled =
-    loading ||
-    selectedColor.stock === 0 ||
+    !selectedSize ||
+    !selectedColor ||
     selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.SMALL)
       .length !== selectedSize.smallFlowerLimit ||
     selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
       .length !== selectedSize.mainFlowerLimit ||
     selectedAnimals.length !==
       selectedSize.baseAnimalLimit +
-        (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0) ||
-    (hasExtraAnimal &&
-      selectedAnimals.length !==
-        selectedSize.baseAnimalLimit + selectedSize.maxExtraAnimals);
+        (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0);
 
-  // In the main CreatePage component, update the size selector section:
+  // Handle add to cart
+  const handleAddToCart = () => {
+    if (confirm("Add design to cart?")) {
+      setLoading(true);
+      addToCart({
+        size: selectedSize!,
+        color: selectedColor!,
+        flowers: selectedFlowers,
+        animals: selectedAnimals.map((animal) => ({
+          ...animal,
+          hat: animal.hat,
+        })),
+        price: calculatePrice(),
+        quantity: 1,
+        hat: null,
+      });
 
-  return (
-    <div className="py-12 bg-secondary-500">
-      <div className="mx-auto mt-8 max-w-2xl px-1 sm:px-6 lg:max-w-7xl lg:px-8">
-        <Breadcrumb
-          pages={[{ name: "Create", href: "/create" }]}
-          className="mb-4"
-        />
-        <div className="lg:col-span-5 lg:col-start-8 mb-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Create Your Bundle
-            </h1>
+      toast.success("Added to cart");
+      setLoading(false);
+
+      setSelectedFlowers([]);
+      setSelectedAnimals([]);
+      setCurrentStep("size");
+      setSelectedSize(undefined);
+      setSelectedColor(undefined);
+      setHasExtraAnimal(false);
+      setTimeout(() => setLoading(false), 1000);
+      router.push("/checkout");
+    }
+  };
+
+  // Render current step content
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case "size":
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {sizes.map((size) => (
+              <SizeCard
+                key={size.size}
+                size={size}
+                isSelected={selectedSize?.id === size.id}
+                onChange={handleSizeSelect}
+              />
+            ))}
           </div>
-        </div>
+        );
 
-        <div className="lg:grid lg:auto-rows-min lg:grid-cols-12 lg:gap-x-8">
-          {/* Sticky Image Display */}
-          <div className="lg:col-span-5 lg:row-span-3">
-            <div className="lg:sticky lg:top-4">
-              <ImageDisplay
-                selectedColor={selectedColor}
-                selectedFlowers={selectedFlowers}
-                selectedAnimals={selectedAnimals}
-                selectedSize={selectedSize}
-                availableHats={hats.filter((hat) => hat.stock > 0)}
-                imageLoading={imageLoading}
-                totalPrice={calculatePrice} // Add this line
-                setImageLoading={setImageLoading}
-                onRemoveFlower={(position) =>
-                  setSelectedFlowers((prev) =>
-                    prev.filter((f) => f.position !== position)
-                  )
-                }
-                onRemoveAnimal={(position) =>
-                  setSelectedAnimals((prev) =>
-                    prev.filter((a) => a.position !== position)
-                  )
-                }
-                onHatChange={handleHatChange}
-              />
+      case "color":
+        return (
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+              {colors.map((color) => (
+                <ColorCard
+                  key={color.id}
+                  color={color}
+                  isSelected={selectedColor?.id === color.id}
+                  onSelect={handleColorSelect}
+                />
+              ))}
+            </div>
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <p className="text-sm text-blue-700">
+                Please note that due to the handcrafted nature of our products,
+                there might be slight variations in the color shades.
+              </p>
             </div>
           </div>
+        );
 
-          {/* Selection Form */}
-          <div className="lg:col-span-7 mt-8 lg:mt-0 bg-white py-6 px-2 md:px-5 rounded-lg shadow-2xl">
-            {/* Size Selector */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Step 1: Size Selection
-              </h3>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {sizes.map((size) => (
-                  <SizeCard
-                    key={size.size}
-                    size={size}
-                    isSelected={selectedSize.size === size.size}
-                    onChange={setSelectedSize}
-                  />
-                ))}
-              </div>
-            </div>
+      case "smallFlowers":
+        return selectedSize ? (
+          <FlowerSection
+            title="Small Flowers"
+            flowerType={FlowerType.SMALL}
+            flowers={flowers}
+            selectedFlowers={selectedFlowers}
+            selectedSize={selectedSize}
+            getFlowerCount={getFlowerCount}
+            handleAddFlower={handleAddFlower}
+            setSelectedFlowers={setSelectedFlowers}
+          />
+        ) : null;
 
-            {/* Color Selector */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Step 2: Colour Selection
-              </h3>
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">
-                  Color ({selectedColor.name})
-                  {selectedColor.stock === 0 && " - Out of stock"}
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {selectedColor.description}
-                </p>
-                <div className="mt-3 flex items-start gap-2 bg-blue-50 p-3 rounded-lg">
-                  <div className="flex-shrink-0">
-                    <svg
-                      className="h-5 w-5 text-blue-400"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-sm ">
-                    Please note that due to the handcrafted nature of our
-                    products, there might be slight variations in the color
-                    shades of the yarn and ribbon used compared to the images
-                    shown.
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-                {colors.map((color) => (
-                  <label
-                    key={color.name}
-                    className={cn(
-                      "relative flex items-center justify-center rounded-full border py-3 px-3 cursor-pointer",
-                      color.stock === 0 && "opacity-25 cursor-not-allowed",
-                      selectedColor.name === color.name &&
-                        "ring-2 ring-main-500"
-                    )}
-                  >
-                    <input
-                      type="radio"
-                      name="color"
-                      value={color.name}
-                      checked={selectedColor.name === color.name}
-                      onChange={() => {
-                        if (color.stock > 0) {
-                          setSelectedColor(color);
-                          setImageLoading(true);
-                        }
-                      }}
-                      disabled={color.stock === 0}
-                      className="sr-only"
-                    />
-                    <Image
-                      src={color.imageBack}
-                      alt={color.name}
-                      width={60}
-                      height={60}
-                      className="rounded-full object-cover"
-                    />
-                  </label>
-                ))}
-              </div>
-            </div>
+      case "mainFlowers":
+        return selectedSize ? (
+          <FlowerSection
+            title="Main Flowers"
+            flowerType={FlowerType.MAIN}
+            flowers={flowers}
+            selectedFlowers={selectedFlowers}
+            selectedSize={selectedSize}
+            getFlowerCount={getFlowerCount}
+            handleAddFlower={handleAddFlower}
+            setSelectedFlowers={setSelectedFlowers}
+          />
+        ) : null;
 
-            {/* Small Flowers Section */}
-            <div className="mt-8 flex flex-col gap-1">
-              {/* Premium/Signature Flowers Section */}
-              {/* Small Flowers Section */}
-              <FlowerSection
-                title="Step 3: Small Flowers"
-                flowerType={FlowerType.SMALL}
-                flowers={flowers}
-                selectedFlowers={selectedFlowers}
-                selectedSize={selectedSize}
-                getFlowerCount={getFlowerCount}
-                handleAddFlower={handleAddFlower}
-                setSelectedFlowers={setSelectedFlowers}
-              />
-
-              {/* Main Flowers Section */}
-              <FlowerSection
-                title="Step 4: Main Flowers"
-                flowerType={FlowerType.MAIN}
-                flowers={flowers}
-                selectedFlowers={selectedFlowers}
-                selectedSize={selectedSize}
-                getFlowerCount={getFlowerCount}
-                handleAddFlower={handleAddFlower}
-                setSelectedFlowers={setSelectedFlowers}
-              />
-              <AnimalsSection
-                animals={animals}
-                selectedAnimals={selectedAnimals}
-                selectedSize={selectedSize}
-                getAnimalCount={getAnimalCount}
-                handleAddAnimal={handleAddAnimal}
-                setSelectedAnimals={setSelectedAnimals}
-                hasExtraAnimal={hasExtraAnimal}
-              />
-              {/* Add Extra Animal Section */}
+      case "animals":
+        return (
+          <>
+            <AnimalsSection
+              animals={animals}
+              selectedAnimals={selectedAnimals}
+              selectedSize={selectedSize!}
+              getAnimalCount={getAnimalCount}
+              handleAddAnimal={handleAddAnimal}
+              setSelectedAnimals={setSelectedAnimals}
+              hasExtraAnimal={hasExtraAnimal}
+            />
+            {selectedSize && selectedSize.maxExtraAnimals > 0 && (
               <ExtraAnimalSection
                 selectedSize={selectedSize}
                 selectedAnimals={selectedAnimals}
@@ -1310,42 +1364,131 @@ const CreatePage: React.FC<CreatePageProps> = ({
                 hasExtraAnimal={hasExtraAnimal}
                 onToggleExtraAnimal={handleToggleExtraAnimal}
               />
-            </div>
+            )}
+          </>
+        );
+    }
+  };
 
-            {/* Add to Cart Button */}
-            <Button
-              disabled={isAddToCartDisabled}
-              className={cn(
-                "w-full mt-8",
-                loading && "opacity-50 cursor-not-allowed"
-              )}
-              size="lg"
-              onClick={() => {
-                setLoading(true);
-                addToCart({
-                  size: selectedSize,
-                  color: selectedColor,
-                  flowers: selectedFlowers,
-                  animals: selectedAnimals.map((animal) => ({
-                    ...animal,
-                    hat: animal.hat,
-                  })),
-                  price: calculatePrice,
-                  quantity: 1,
-                  hat: null,
-                });
-                toast.success("Added to cart");
-                setSelectedFlowers([]);
-                setSelectedAnimals([]);
-                setTimeout(() => setLoading(false), 1000);
-              }}
-            >
-              {loading
-                ? "Adding to Cart..."
-                : selectedColor.stock === 0
-                ? "Out of Stock"
-                : "Add to Cart"}
-            </Button>
+  // Check if requirements are met to proceed to next step
+  const canProceedToNextStep = () => {
+    if (!selectedSize) return false;
+
+    switch (currentStep) {
+      case "smallFlowers":
+        return (
+          selectedFlowers.filter(
+            (f) => f.flower.flowerType === FlowerType.SMALL
+          ).length === selectedSize.smallFlowerLimit
+        );
+      case "mainFlowers":
+        return (
+          selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
+            .length === selectedSize.mainFlowerLimit
+        );
+      default:
+        return true;
+    }
+  };
+
+  const isFullWidthStep = (step: Step) => {
+    return step === "size" || step === "color";
+  };
+
+  return (
+    <div className="py-12 bg-secondary-500">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:max-w-7xl lg:px-8">
+        {/* Progress Bar */}
+        <StepIndicator
+          currentStep={currentStep}
+          steps={STEPS}
+          onStepClick={handleStepClick}
+          canNavigateToStep={canNavigateToStep}
+          getStepStatus={getStepStatus}
+        />
+
+        {/* Main Content */}
+
+        <div
+          className={cn(
+            isFullWidthStep(currentStep)
+              ? "w-full"
+              : "lg:grid lg:grid-cols-12 lg:gap-x-8"
+          )}
+        >
+          {/* Left Column - Preview */}
+          {!isFullWidthStep(currentStep) && (
+            <div className="lg:col-span-5">
+              <div className="sticky top-4">
+                {selectedSize && (
+                  <ImageDisplay
+                    selectedColor={selectedColor || colors[0]}
+                    selectedFlowers={selectedFlowers}
+                    selectedAnimals={selectedAnimals}
+                    selectedSize={selectedSize}
+                    availableHats={hats.filter((hat) => hat.stock > 0)}
+                    imageLoading={imageLoading}
+                    totalPrice={calculatePrice()}
+                    setImageLoading={setImageLoading}
+                    onRemoveFlower={(position) =>
+                      setSelectedFlowers((prev) =>
+                        prev.filter((f) => f.position !== position)
+                      )
+                    }
+                    onRemoveAnimal={(position) =>
+                      setSelectedAnimals((prev) =>
+                        prev.filter((a) => a.position !== position)
+                      )
+                    }
+                    onHatChange={handleHatChange}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Right Column - Current Step */}
+          <div
+            className={cn(
+              isFullWidthStep(currentStep)
+                ? "w-full"
+                : "lg:col-span-7 mt-8 lg:mt-0"
+            )}
+          >
+            <div className="bg-white rounded-lg shadow-xl p-6">
+              <StepHeader
+                currentStep={currentStep}
+                onBack={goToPreviousStep}
+                isFirstStep={currentStep === "size"}
+                selectedSize={selectedSize}
+                selectedColor={selectedColor}
+              />
+
+              {renderStepContent()}
+
+              {/* Navigation/Action Buttons */}
+              <div className="mt-8 flex justify-end gap-4">
+                {currentStep !== "animals" && (
+                  <Button
+                    size="lg"
+                    onClick={goToNextStep}
+                    disabled={!canProceedToNextStep()}
+                  >
+                    Continue
+                  </Button>
+                )}
+
+                {currentStep === "animals" && (
+                  <Button
+                    size="lg"
+                    disabled={isAddToCartDisabled}
+                    onClick={handleAddToCart}
+                  >
+                    {loading ? "Adding to Cart..." : "Add to Cart"}
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
