@@ -158,10 +158,6 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
     (f) => f.flower.flowerType === FlowerType.SMALL
   );
 
-  useEffect(() => {
-    setImageLoading(true);
-  }, [selectedColor, setImageLoading]);
-
   return (
     <div className="flex gap-6 flex-col pt-6">
       {/* Header with Color Name and Price */}
@@ -181,31 +177,14 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
         <div className="w-1/3 flex flex-col gap-4">
           <h3 className="text-base font-medium">Selected Color</h3>
           <div className="relative aspect-square w-full rounded-lg overflow-hidden">
-            {selectedColor ? (
-              <>
-                <div
-                  className={cn(
-                    "absolute inset-0 flex items-center justify-center bg-white",
-                    !imageLoading && "hidden"
-                  )}
-                >
-                  <Loader className="w-8 h-8 animate-spin" />
-                </div>
-                <Image
-                  key={selectedColor.id}
-                  src={selectedColor.imageBack}
-                  alt={selectedColor.name}
-                  className={cn("object-cover", imageLoading && "opacity-0")}
-                  fill
-                  priority
-                  onLoad={() => setImageLoading(false)}
-                />
-              </>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
-                <span className="text-gray-400">Select a color</span>
-              </div>
-            )}
+            <Image
+              key={selectedColor.id}
+              src={selectedColor.imageBack}
+              alt={selectedColor.name}
+              className={cn("object-cover", imageLoading && "opacity-0")}
+              fill
+              priority
+            />
           </div>
           {/* Color Description */}
           <p className="text-sm text-gray-600">{selectedColor.description}</p>
