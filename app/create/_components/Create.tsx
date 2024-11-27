@@ -1246,33 +1246,37 @@ const CreatePage: React.FC<CreatePageProps> = ({
   // Handle add to cart
   const handleAddToCart = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-    if (confirm("Add design to cart?")) {
-      setLoading(true);
-      addToCart({
-        size: selectedSize!,
-        color: selectedColor!,
-        flowers: selectedFlowers,
-        animals: selectedAnimals.map((animal) => ({
-          ...animal,
-          hat: animal.hat,
-        })),
-        price: calculatePrice(),
-        quantity: 1,
-        hat: null,
-      });
+    setLoading(true);
+    setTimeout(() => {
+      if (confirm("Add design to cart?")) {
+        addToCart({
+          size: selectedSize!,
+          color: selectedColor!,
+          flowers: selectedFlowers,
+          animals: selectedAnimals.map((animal) => ({
+            ...animal,
+            hat: animal.hat,
+          })),
+          price: calculatePrice(),
+          quantity: 1,
+          hat: null,
+        });
 
-      toast.success("Added to cart");
-      setLoading(false);
+        toast.success("Added to cart");
+        setLoading(false);
 
-      setSelectedFlowers([]);
-      setSelectedAnimals([]);
-      setCurrentStep("size");
-      setSelectedSize(undefined);
-      setSelectedColor(undefined);
-      setHasExtraAnimal(false);
-      setTimeout(() => setLoading(false), 1000);
-      router.push("/checkout");
-    }
+        setSelectedFlowers([]);
+        setSelectedAnimals([]);
+        setCurrentStep("size");
+        setSelectedSize(undefined);
+        setSelectedColor(undefined);
+        setHasExtraAnimal(false);
+        setTimeout(() => setLoading(false), 1000);
+        router.push("/checkout");
+      } else {
+        setLoading(false);
+      }
+    }, 300);
   };
 
   // Render current step content
