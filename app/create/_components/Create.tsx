@@ -1114,6 +1114,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
   };
 
   const goToPreviousStep = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     const currentIndex = STEPS.indexOf(currentStep);
     if (currentIndex > 0) {
       setCurrentStep(STEPS[currentIndex - 1]);
