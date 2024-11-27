@@ -1109,7 +1109,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
     window.scrollTo({ top: 0, behavior: "smooth" });
     const currentIndex = STEPS.indexOf(currentStep);
     if (currentIndex < STEPS.length - 1) {
-      setCurrentStep(STEPS[currentIndex + 1]);
+      setTimeout(() => {
+        setCurrentStep(STEPS[currentIndex + 1]);
+      }, 200);
     }
   };
 
