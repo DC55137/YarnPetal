@@ -144,9 +144,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
   selectedAnimals,
   selectedSize,
   availableHats,
-  imageLoading,
   totalPrice,
-  setImageLoading,
   onRemoveFlower,
   onRemoveAnimal,
   onHatChange,
@@ -181,7 +179,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
               key={selectedColor.id}
               src={selectedColor.imageBack}
               alt={selectedColor.name}
-              className={cn("object-cover", imageLoading && "opacity-0")}
+              className={cn("object-cover")}
               fill
               priority
             />
