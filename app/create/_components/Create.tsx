@@ -1245,6 +1245,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
 
   // Handle add to cart
   const handleAddToCart = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (confirm("Add design to cart?")) {
       setLoading(true);
       addToCart({
