@@ -140,6 +140,19 @@ export async function POST(req: Request) {
       <ul>
         <li><strong>Email:</strong> ${order.email}</li>
         <li><strong>Phone:</strong> ${order.phone}</li>
+          ${
+            order.address
+              ? `
+    <li><strong>Address:</strong> ${order.address}
+      ${order.apartment ? `, ${order.apartment}` : ""}
+      ${order.city ? `, ${order.city}` : ""}
+      ${order.region ? `, ${order.region}` : ""}
+      ${order.postalCode ? `, ${order.postalCode}` : ""}
+      ${order.country ? `, ${order.country}` : ""}
+    </li>
+  `
+              : ""
+          }
         ${
           order.address
             ? `
