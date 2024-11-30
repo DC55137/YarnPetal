@@ -15,6 +15,7 @@ type checkoutProps = {
     deliveryMethod: string;
     price: number;
     cart: CartItem[];
+    notes?: string; // Add this
     address?: string;
     apartment?: string;
     city?: string;
@@ -66,6 +67,7 @@ export async function checkout({ formData }: checkoutProps) {
     deliveryMethod,
     price,
     cart,
+    notes, // Add this
     address,
     apartment,
     city,
@@ -131,6 +133,7 @@ export async function checkout({ formData }: checkoutProps) {
       firstName,
       lastName,
       deliveryMethod,
+      notes, // Add this
       total: price,
       address,
       apartment,
@@ -221,6 +224,16 @@ export async function checkout({ formData }: checkoutProps) {
             : ""
         }
       </ul>
+      ${
+        order.notes
+          ? `
+        <h2>Special Notes for Floral Artisan</h2>
+        <p style="padding: 10px; background-color: #f9f9f9; border-left: 4px solid #4f46e5; margin: 10px 0;">
+          ${order.notes}
+        </p>
+        `
+          : ""
+      }
       <h2>Items Purchased</h2>
       <ul>
         ${order.orderItems
@@ -246,6 +259,7 @@ export async function checkout({ formData }: checkoutProps) {
                   } <br />`
                 : ""
             }
+                
             <strong>Quantity:</strong> ${item.quantity} <br />
             <strong>Total Price:</strong> $${item.totalPrice.toFixed(2)} <br />
             <img src="${item.color.imageBack}" alt="${

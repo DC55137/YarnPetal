@@ -118,6 +118,7 @@ model Order {
   email          String
   phone          String
   deliveryMethod String
+  notes          String?     // Add this field for customer notes to the artisan
   user           User?       @relation(fields: [userId], references: [id])
   total          Float
   status         OrderStatus @default(PENDING)

@@ -30,6 +30,7 @@ const mailFormSchema = z.object({
     .string()
     .min(1, "Postal code is required")
     .refine((val) => /^[0-9]+$/.test(val), "Postal code must be numeric"),
+  notes: z.string().optional(), // Add this
 });
 
 type MailFormData = z.infer<typeof mailFormSchema>;
@@ -59,9 +60,12 @@ export default function CheckoutMailForm({
     country: "Australia",
     region: "Queensland",
     postalCode: "",
+    notes: "", // Add this
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target as {
       name: keyof MailFormData;
       value: string;
@@ -160,6 +164,32 @@ export default function CheckoutMailForm({
               selectedDeliveryMethod={selectedDeliveryMethod}
               setSelectedDeliveryMethod={setSelectedDeliveryMethod}
             />
+            <div className="mt-6 sm:col-span-2">
+              <label
+                htmlFor="notes"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Notes for the Floral Artisan
+              </label>
+              <div className="mt-1">
+                <textarea
+                  onChange={handleChange}
+                  name="notes"
+                  id="notes"
+                  rows={4}
+                  placeholder="Special requests or notes for your bouquet's arrangement..."
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                  disabled={loading}
+                />
+                {errors.notes && (
+                  <p className="text-red-500 text-xs italic">{errors.notes}</p>
+                )}
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                Let our Floral Artisan know if you have any specific preferences
+                or requests for your bouquet.
+              </p>
+            </div>
             <h2 className="text-lg mt-4 font-medium text-gray-900">
               Contact information
             </h2>
