@@ -2,6 +2,9 @@ import React from "react";
 import CreatePage from "./_components/Create";
 import prisma from "@/lib/prismadb";
 
+// Opt out of caching for all data requests in the route segment
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   // Fetch all the necessary data for customization
   const colors = await prisma.color.findMany({
