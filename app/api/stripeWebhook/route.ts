@@ -140,6 +140,20 @@ export async function POST(req: Request) {
       <ul>
         <li><strong>Email:</strong> ${order.email}</li>
         <li><strong>Phone:</strong> ${order.phone}</li>
+        
+          ${
+            order.address
+              ? `
+    <li><strong>Address:</strong> ${order.address}
+      ${order.apartment ? `, ${order.apartment}` : ""}
+      ${order.city ? `, ${order.city}` : ""}
+      ${order.region ? `, ${order.region}` : ""}
+      ${order.postalCode ? `, ${order.postalCode}` : ""}
+      ${order.country ? `, ${order.country}` : ""}
+    </li>
+  `
+              : ""
+          }
         ${
           order.address
             ? `
@@ -154,6 +168,16 @@ export async function POST(req: Request) {
             : ""
         }
       </ul>
+       ${
+         order.notes
+           ? `
+      <h2>Notes for Floral Artisan</h2>
+      <div style="margin: 15px 0; padding: 15px; background-color: #f9f9f9; border-left: 4px solid #4f46e5; border-radius: 4px;">
+        <p style="margin: 0; color: #374151;">${order.notes}</p>
+      </div>
+      `
+           : ""
+       }
       <h2>Items Purchased</h2>
       <ul>
         ${order.orderItems

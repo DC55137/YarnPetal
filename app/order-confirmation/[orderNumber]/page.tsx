@@ -85,6 +85,17 @@ export default async function page({
             <dt className="text-gray-900">order number</dt>
             <dd className="mt-2 text-main-600">{order.orderNumber}</dd>
           </dl>
+          {/* Add Notes Section */}
+          {order.notes && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium text-gray-900">
+                Notes for Floral Artisan
+              </h3>
+              <div className="mt-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <p className="text-sm text-gray-600">{order.notes}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <section
