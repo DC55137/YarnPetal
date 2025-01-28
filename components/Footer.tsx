@@ -20,7 +20,7 @@ const TopLine = () => {
   return (
     <div className="grid grid-cols-3 py-10 border-b-2 border-black">
       <div className="sm:col-span-1 col-span-3 sm:justify-start justify-center">
-        <Logo />
+        <Logo className="w-12" />
       </div>
       <NavLinks />
       <SocialMediaLinks />

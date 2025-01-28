@@ -18,15 +18,18 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        shelby: ["Shelby", "sans-serif"],
+      },
       colors: {
         main: {
           50: "#F9EEEC",
           100: "#F3D1CA",
           200: "#F4B1A4",
           300: "#e39586",
-          400: "#EC7E68",
+          400: "#f58b78",
           500: "#D9715D",
-          600: "#C66754",
+          600: "#d7624f",
           700: "#cf4d34",
           800: "#A54633",
           900: "#772413",

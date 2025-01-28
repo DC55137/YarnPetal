@@ -34,7 +34,7 @@ export default function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ">
         <div className="flex justify-between ">
-          <Logo className="w-32 h-16" />
+          <Logo className="w-12 " />
 
           <div className="ml-6 flex items-center gap-4">
             <div className="md:flex gap-2 hidden">

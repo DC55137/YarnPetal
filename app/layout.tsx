@@ -6,6 +6,12 @@ import { Toaster } from "react-hot-toast";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { Analytics } from "@vercel/analytics/react";
+import localFont from "next/font/local";
+
+const shelby = localFont({
+  src: "./fonts/Shelby.otf",
+  variable: "--font-shelby", // This allows us to reference it in CSS
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.yarnpetalsgc.com"),
@@ -39,7 +45,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={cn(inter.className, "bg-secondary-500 min-h-with-footer")}
+        className={cn(
+          inter.className,
+          shelby.className,
+          "bg-secondary-500 min-h-with-footer"
+        )}
       >
         <Toaster />
         <Navbar />
