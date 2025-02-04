@@ -6,7 +6,6 @@ import prisma from "@/lib/prismadb";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
   // Fetch all the necessary data for customization
   const [colors, sizes, flowers, animals, hats] = await Promise.all([
     prisma.color.findMany({ orderBy: { id: "asc" } }),
