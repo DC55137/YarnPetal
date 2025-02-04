@@ -6,36 +6,15 @@ import prisma from "@/lib/prismadb";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
+  await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
   // Fetch all the necessary data for customization
-  const colors = await prisma.color.findMany({
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  const sizes = await prisma.size.findMany({
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  const flowers = await prisma.flower.findMany({
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  const animals = await prisma.animal.findMany({
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  const hats = await prisma.hat.findMany({
-    orderBy: {
-      id: "asc",
-    },
-  });
+  const [colors, sizes, flowers, animals, hats] = await Promise.all([
+    prisma.color.findMany({ orderBy: { id: "asc" } }),
+    prisma.size.findMany({ orderBy: { id: "asc" } }),
+    prisma.flower.findMany({ orderBy: { id: "asc" } }),
+    prisma.animal.findMany({ orderBy: { id: "asc" } }),
+    prisma.hat.findMany({ orderBy: { id: "asc" } }),
+  ]);
 
   return (
     <div className="bg-white">
