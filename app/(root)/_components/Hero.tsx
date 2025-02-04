@@ -46,7 +46,7 @@ export default function Hero() {
 const HeroText = () => {
   return (
     <div className="xl:max-w-4xl md:pr-8 grow-0 relative z-10">
-      <Logo className="mx-auto md:w-[500px] w-[350px] animate-fade-in-up" />
+      <Logo className="mx-auto md:w-[500px] w-[250px] animate-fade-in-up" />
 
       <p className="text-lg md:text-xl text-accent-800 mt-6 mb-8 max-w-md mx-auto opacity-0 animate-fade-in">
         Discover handcrafted yarn bouquets that bring warmth and beauty to every
