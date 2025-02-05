@@ -1,4 +1,4 @@
-import Hero from "./_components/Hero";
+import ValentinesHero from "./_components/HeroValentine";
 import { Features } from "./_components/Features";
 
 import CustomiseBouquet from "./_components/CustomiseBouquet";
@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <>
       <main className="">
-        <Hero />
+        <ValentinesHero />
         {/* <Display /> */}
         <CustomiseBouquet />
         <ImageGallery />
