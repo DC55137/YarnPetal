@@ -160,7 +160,7 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
     <div className="flex gap-6 flex-col pt-6">
       {/* Header with Color Name and Price */}
       <div className="flex justify-between items-center px-4">
-        <h2 className={cn("text-3xl text-main-600", pacifico.className)}>
+        <h2 className={cn("text-3xl text-main-600", "font-handwriting")}>
           {selectedColor.name} Bundle
         </h2>
         <div className="bg-main-50 px-4 py-2 rounded-lg">

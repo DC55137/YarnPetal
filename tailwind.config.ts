@@ -20,7 +20,7 @@ const config = {
     extend: {
       fontFamily: {
         shelby: ["Shelby", "sans-serif"],
-        handwriting: ["Pacifico", "cursive"],
+        handwriting: ["cursive"],
       },
       colors: {
         main: {

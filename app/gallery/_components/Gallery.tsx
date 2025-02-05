@@ -79,7 +79,7 @@ const GalleryPage: React.FC<GalleryPageProps> = ({ images }) => {
         <div className="mb-12 md:mb-16 lg:mb-20 text-center">
           <h1
             className={cn(
-              pacifico.className,
+              "font-handwriting",
               "text-5xl md:text-7xl lg:text-8xl font-bold text-main-400 mb-5 md:mb-8"
             )}
           >

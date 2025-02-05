@@ -68,7 +68,7 @@ const DisplayHeading = () => {
   return (
     <div className="col-span-2 sm:col-span-1 sm:px-10">
       <h4 className="text-secondary-900">Customizable your</h4>
-      <h2 className={cn(pacifico.className, "text-main-600")}>Bundles</h2>
+      <h2 className={cn("font-handwriting", "text-main-600")}>Bundles</h2>
     </div>
   );
 };

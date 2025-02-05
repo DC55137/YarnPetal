@@ -51,7 +51,7 @@ const FeaturesText = ({ header, subHeader }: FeaturesTextProps) => {
   return (
     <div className="md:w-1/2 flex justify-center text-center md:text-left mx-auto">
       <div className="my-auto mx-auto flex flex-col sm:gap-6">
-        <h2 className={cn(pacifico.className, "text-center")}>{header}</h2>
+        <h2 className={cn("font-handwriting", "text-center")}>{header}</h2>
         <h4 className="text-main-800 text-center">{subHeader}</h4>
       </div>
     </div>

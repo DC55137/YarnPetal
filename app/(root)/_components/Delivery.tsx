@@ -16,7 +16,7 @@ export default function Delivery() {
             id="sale-heading"
             className={cn(
               "text-7xl font-bold tracking-tight text-accent-900 md:text-8xl my-8",
-              pacifico.className
+              "font-handwriting"
             )}
           >
             Free Delivery
