@@ -48,7 +48,7 @@ export default function ValentinesHero() {
                 <Stars className="w-8 h-8 text-pink-400 rotate-12" />
               </motion.div>
               <h2 className="text-4xl md:text-5xl font-bold text-pink-600 mb-6 font-handwriting">
-                Valentine's Day Special
+                Valentine&apos;s Day Special
               </h2>
             </div>
 
@@ -74,7 +74,7 @@ export default function ValentinesHero() {
               transition={{ duration: 0.6, delay: 0.4 }}
               className="text-lg text-gray-700 mb-8 max-w-xl"
             >
-              Introducing our exclusive Valentine's Day Heart Flower – a
+              Introducing our exclusive Valentine&apos;s Day Heart Flower – a
               timeless symbol of love crafted with care. Each petal tells a
               story that lasts forever, just like your love.
             </motion.p>
