@@ -1094,7 +1094,7 @@ const SpecialItemsSection: React.FC<{
               key={specialFlower.id}
               className="relative overflow-hidden rounded-lg border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-white p-6"
             >
-              <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+              <div className="absolute top-4 right-4 flex flex-col gap-2 items-end z-50">
                 <div className="bg-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                   1 per bundle
                 </div>

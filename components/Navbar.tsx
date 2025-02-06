@@ -40,7 +40,7 @@ export default function Navbar() {
   return (
     <div
       className={cn(
-        "absolute z-50 w-screen bg-secondary-500"
+        "absolute z-50 w-screen bg-secondary-500 py-2"
         // pathname !== "/" && "bg-secondary-500"
       )}
     >

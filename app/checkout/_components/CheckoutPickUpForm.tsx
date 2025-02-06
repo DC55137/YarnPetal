@@ -74,7 +74,7 @@ export default function CheckoutPickUpForm({
       price: finalTotal,
       cart: cart.map((item) => ({
         ...item,
-        price: item.totalPrice, // Ensure we're using the total price per item
+        price: item.totalPrice,
       })),
     };
 
@@ -91,38 +91,30 @@ export default function CheckoutPickUpForm({
         const userConfirmed = window.confirm(
           "Please confirm that you would like to pay cash on pick up"
         );
+
         if (!userConfirmed) {
           setLoading(false);
           return;
         }
 
-        checkout({ formData })
-          .then((response) => {
-            setErrors({});
-            toast.success("Order placed successfully");
-            window.location.assign(
-              `/order-confirmation/${response.orderNumber}`
-            );
-          })
-          .catch((error) => {
-            toast.error(`Error: ${error.message}`);
-            setLoading(false);
-          });
+        const response = await checkout({ formData });
+
+        if (response.url) {
+          setErrors({});
+          window.location.href = response.url;
+        } else {
+          toast.error("Error processing pick-up order");
+          setLoading(false);
+        }
       } else {
-        checkout({ formData })
-          .then((response) => {
-            if (response.url) {
-              setErrors({});
-              window.location.assign(response.url);
-            } else {
-              toast.error("Error: No URL returned");
-              setLoading(false);
-            }
-          })
-          .catch((error) => {
-            toast.error(`Error from server: ${error.message}`);
-            setLoading(false);
-          });
+        const response = await checkout({ formData });
+        if (response.url) {
+          setErrors({});
+          window.location.href = response.url;
+        } else {
+          toast.error("Error: No URL returned");
+          setLoading(false);
+        }
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -132,8 +124,12 @@ export default function CheckoutPickUpForm({
           errorMessages[key] = newErrors[key]?.[0] ?? "Unexpected error";
         }
         setErrors(errorMessages);
-        setLoading(false);
+      } else {
+        toast.error(
+          `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+        );
       }
+      setLoading(false);
     }
   };
 

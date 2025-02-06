@@ -252,14 +252,15 @@ export async function checkout({ formData }: checkoutProps) {
   });
 
   if (deliveryMethod === "Pick Up (PAY CASH)") {
-    await adjustStock(cart);
-    const resendApiKey = process.env.RESEND_API_KEY;
-    const resend = new Resend(resendApiKey);
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: "daniel.correa55137@gmail.com",
-      subject: `Purchase made: ${order.email}`,
-      html: `
+    try {
+      await adjustStock(cart);
+      const resendApiKey = process.env.RESEND_API_KEY;
+      const resend = new Resend(resendApiKey);
+      await resend.emails.send({
+        from: "onboarding@resend.dev",
+        to: "daniel.correa55137@gmail.com",
+        subject: `Purchase made: ${order.email}`,
+        html: `
       <h1>Purchase Made</h1>
       <p>by ${order.firstName} ${order.lastName},</p>
       <p>We are excited to confirm your order. Below are the details of your purchase:</p>
@@ -373,8 +374,15 @@ export async function checkout({ formData }: checkoutProps) {
           .join("")}
       </ul>
       `,
-    });
-    return { url: "none", orderNumber: order.orderNumber };
+      });
+      return {
+        url: `/order-confirmation/${order.orderNumber}`,
+        orderNumber: order.orderNumber,
+      };
+    } catch (error) {
+      console.error("Error processing pick-up order:", error);
+      throw new Error("Failed to process pick-up order");
+    }
   }
 
   const session = await stripe.checkout.sessions.create({
@@ -388,5 +396,8 @@ export async function checkout({ formData }: checkoutProps) {
     },
   });
 
-  return { url: session.url, orderNumber: order.orderNumber };
+  return {
+    url: session.url || `/order-confirmation/${order.orderNumber}`,
+    orderNumber: order.orderNumber,
+  };
 }
