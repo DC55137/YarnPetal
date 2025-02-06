@@ -1,3 +1,4 @@
+// CartContent.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -150,7 +151,8 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                           Special Flower:
                         </h5>
                         <span className="text-sm text-pink-500">
-                          {item.specialFlower.specialFlower.name}
+                          {item.specialFlower.specialFlower.name} (+$
+                          {item.specialFlowerPrice.toFixed(2)})
                         </span>
                       </div>
                     )}
@@ -187,6 +189,21 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                         </div>
                       </div>
                     )}
+
+                    {/* Price Breakdown */}
+                    <div className="mt-2 space-y-1 text-sm text-gray-500">
+                      <div>Base Price: ${item.basePrice.toFixed(2)}</div>
+                      {item.extraAnimalPrice > 0 && (
+                        <div>
+                          Extra Animal: +${item.extraAnimalPrice.toFixed(2)}
+                        </div>
+                      )}
+                      {item.specialFlowerPrice > 0 && (
+                        <div>
+                          Special Flower: +${item.specialFlowerPrice.toFixed(2)}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Remove Button */}
@@ -202,11 +219,14 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                   </div>
                 </div>
 
-                {/* Price and Quantity */}
+                {/* Total Price and Quantity */}
                 <div className="flex flex-1 items-end justify-between pt-2">
-                  <p className="mt-1 text-lg font-medium text-gray-900">
-                    ${item.price.toFixed(2)}
-                  </p>
+                  <div className="mt-1">
+                    <p className="text-sm text-gray-500">Item Total:</p>
+                    <p className="text-lg font-medium text-gray-900">
+                      ${item.totalPrice.toFixed(2)}
+                    </p>
+                  </div>
 
                   <div className="ml-4">
                     <label htmlFor={`quantity-${index}`} className="sr-only">
