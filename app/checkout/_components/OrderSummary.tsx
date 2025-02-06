@@ -36,78 +36,127 @@ const OrderSummary = ({
   const finalTotal = itemsTotal + selectedDeliveryMethod.price;
 
   return (
-    <>
-      <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
-      <div className="my-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-main-600 font-handwriting">
+        Order Summary
+      </h2>
+
+      <div className="rounded-xl border border-main-100 bg-white shadow-sm overflow-hidden">
         <h3 className="sr-only">Items in your cart</h3>
+
+        {/* Empty Cart State */}
         {cart.length === 0 && (
-          <div className="flex items-center justify-center h-64">
-            <p className="text-lg font-medium text-gray-500">
-              Your cart is empty
-            </p>
+          <div className="flex flex-col items-center justify-center h-64 space-y-4">
+            <div className="text-main-200">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-16 w-16"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+            <p className="text-lg text-gray-500">Your cart is empty</p>
+            <Link
+              href="/create"
+              className="inline-flex items-center px-4 py-2 bg-main-500 text-white text-sm font-medium rounded-full hover:bg-main-600 transition-colors"
+            >
+              Start Creating
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </div>
         )}
+
+        {/* Cart Items */}
         {cart.length > 0 && (
           <>
             <CartContent cart={cart} />
-            <div className="flex justify-start mb-10 ml-4">
-              <Link href="/create">
-                <h1 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-main-500 hover:bg-main-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-main-500">
-                  Add Another Design
-                  <ArrowRight className="ml-2" size={16} />
-                </h1>
+            <div className="px-6 py-4 bg-gradient-to-b from-main-50/50 to-white">
+              <Link
+                href="/create"
+                className="inline-flex items-center px-4 py-2 bg-main-500 text-white text-sm font-medium rounded-full hover:bg-main-600 transition-colors"
+              >
+                Add Another Design
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </div>
           </>
         )}
-        {pickUp && <PickUpLocationMap />}
-        <div className="space-y-4 border-t border-gray-200 px-6 pt-6">
-          {/* Base bundle subtotal */}
-          <div className="flex items-center justify-between text-sm text-gray-500">
+
+        {/* Pickup Location */}
+        {pickUp && (
+          <div className="border-t border-main-100">
+            <PickUpLocationMap />
+          </div>
+        )}
+
+        {/* Price Breakdown */}
+        <div className="space-y-4 border-t border-main-100 px-6 py-6 bg-gradient-to-b from-white to-main-50/30">
+          {/* Base Subtotal */}
+          <div className="flex items-center justify-between text-sm text-gray-600">
             <dt>Base bundles subtotal</dt>
-            <dd>${subtotal.toFixed(2)}</dd>
+            <dd className="font-medium">${subtotal.toFixed(2)}</dd>
           </div>
 
-          {/* Extra animals total if any */}
+          {/* Extra Animals */}
           {extraAnimalTotal > 0 && (
-            <div className="flex items-center justify-between text-sm text-blue-600">
-              <dt>Extra animals</dt>
-              <dd>+${extraAnimalTotal.toFixed(2)}</dd>
+            <div className="flex items-center justify-between text-sm">
+              <dt className="text-blue-600">Extra animals</dt>
+              <dd className="font-medium text-blue-600">
+                +${extraAnimalTotal.toFixed(2)}
+              </dd>
             </div>
           )}
 
-          {/* Special flowers total if any */}
+          {/* Special Flowers */}
           {specialFlowerTotal > 0 && (
-            <div className="flex items-center justify-between text-sm text-pink-600">
-              <dt>Special flowers</dt>
-              <dd>+${specialFlowerTotal.toFixed(2)}</dd>
+            <div className="flex items-center justify-between text-sm">
+              <dt className="text-main-600">Special flowers</dt>
+              <dd className="font-medium text-main-600">
+                +${specialFlowerTotal.toFixed(2)}
+              </dd>
             </div>
           )}
 
-          {/* Items subtotal */}
-          <div className="flex items-center justify-between text-sm font-medium text-gray-900 pt-4 border-t border-gray-200">
-            <dt>Items subtotal</dt>
-            <dd>${itemsTotal.toFixed(2)}</dd>
+          {/* Items Subtotal */}
+          <div className="flex items-center justify-between pt-4 border-t border-main-100">
+            <dt className="text-sm font-medium text-gray-900">
+              Items subtotal
+            </dt>
+            <dd className="text-sm font-medium text-gray-900">
+              ${itemsTotal.toFixed(2)}
+            </dd>
           </div>
 
-          {/* Delivery fee */}
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <dt>
+          {/* Delivery Fee */}
+          <div className="flex items-center justify-between text-sm">
+            <dt className="text-gray-600">
               {selectedDeliveryMethod.id === 2
                 ? "Transaction Fee"
                 : "Shipping Fee"}
             </dt>
-            <dd>+${selectedDeliveryMethod.price.toFixed(2)}</dd>
+            <dd className="font-medium text-gray-600">
+              +${selectedDeliveryMethod.price.toFixed(2)}
+            </dd>
           </div>
 
-          {/* Final total */}
-          <div className="flex mb-4 items-center justify-between border-t border-gray-200 pt-4 text-base font-medium text-gray-900">
-            <dt>Total</dt>
-            <dd>${finalTotal.toFixed(2)}</dd>
+          {/* Final Total */}
+          <div className="flex items-center justify-between pt-4 border-t border-main-100">
+            <dt className="text-lg font-bold text-gray-900">Total</dt>
+            <dd className="text-lg font-bold text-main-600">
+              ${finalTotal.toFixed(2)}
+            </dd>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
@@ -115,31 +164,39 @@ export default OrderSummary;
 
 const PickUpLocationMap = () => {
   return (
-    <div className="w-full flex flex-row px-4 sm:px-6 justify-between">
-      <div className="flex flex-col gap-2 grow-0">
-        <MapPin size={24} />
-        <p className="">Pick Up</p>
-        <p>5 Batchworth Rd, Molendinar QLD 4214</p>
+    <div className="p-6 bg-gradient-to-b from-main-50/50 to-white">
+      <div className="flex items-center justify-between gap-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-main-600">
+            <MapPin className="h-5 w-5" />
+            <h4 className="font-medium">Pick Up Location</h4>
+          </div>
 
-        <Link
-          href={
-            "https://www.google.com/maps/place/5+Batchworth+Rd,+Molendinar+QLD+4214/data=!4m2!3m1!1s0x6b911a992a49e773:0x331eb854cd906a8c?sa=X&ved=1t:242&ictx=111&cshid=1731940642694121"
-          }
-          className="flex items-center gap-2 text-main-500 underline-offset-4 hover:underline"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Get Directions →
-        </Link>
-      </div>
-      <div className="">
-        <Image
-          src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1731940497/YarnPetals/Screenshot_2024-11-19_at_12.19.41_am_fzguub.png"
-          alt="Map"
-          width={200}
-          height={200}
-          className="rounded-lg"
-        />
+          <div className="space-y-1">
+            <p className="text-sm text-gray-600">5 Batchworth Rd</p>
+            <p className="text-sm text-gray-600">Molendinar QLD 4214</p>
+          </div>
+
+          <Link
+            href="https://www.google.com/maps/place/5+Batchworth+Rd,+Molendinar+QLD+4214/data=!4m2!3m1!1s0x6b911a992a49e773:0x331eb854cd906a8c?sa=X&ved=1t:242&ictx=111&cshid=1731940642694121"
+            className="inline-flex items-center gap-2 text-sm text-main-600 hover:text-main-700"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Get Directions
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="relative">
+          <Image
+            src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1731940497/YarnPetals/Screenshot_2024-11-19_at_12.19.41_am_fzguub.png"
+            alt="Map"
+            width={200}
+            height={200}
+            className="rounded-lg ring-1 ring-main-100"
+          />
+        </div>
       </div>
     </div>
   );
