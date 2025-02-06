@@ -166,14 +166,15 @@ model OrderItem {
   extraAnimalHatId  Int?
   extraAnimalHat    Hat?          @relation("ExtraAnimalHat", fields: [extraAnimalHatId], references: [id])
   flowers           FlowerSelection[]
-  specialFlowerId   Int?          // Optional relation to special flower
+  specialFlowerId   Int?          
   specialFlower     SpecialFlower? @relation(fields: [specialFlowerId], references: [id])
   quantity          Int
-  basePrice         Float
-  extraAnimalPrice  Float?
-  totalPrice        Float
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  basePrice         Float         @default(0)
+  extraAnimalPrice  Float         @default(0)  // Changed from Float? to Float with default
+  specialFlowerPrice Float         @default(0)  // Add this field with default
+  totalPrice        Float         @default(0)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 }
 
 model FlowerSelection {

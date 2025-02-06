@@ -2,9 +2,65 @@
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import prismadb from "@/lib/prismadb";
-import { CartItem } from "@/src/stores/cart-store";
 import { generateOrderNumber } from "@/lib/functions";
 import { Resend } from "resend";
+
+// Remove the CartItem import and use our ExtendedCartItem type
+type ExtendedCartItem = {
+  size: {
+    id: number;
+    size: string;
+    price: number;
+    smallFlowerLimit: number;
+    mainFlowerLimit: number;
+    baseAnimalLimit: number;
+    maxExtraAnimals: number;
+    extraAnimalPrice: number;
+    dimensionScale: number;
+    image: string;
+  };
+  color: {
+    id: number;
+    name: string;
+    imageBack: string;
+    imageFront: string;
+  };
+  flowers: Array<{
+    flower: {
+      id: number;
+      name: string;
+      imageSingle: string;
+    };
+    position: number;
+  }>;
+  specialFlower: {
+    specialFlower: {
+      id: number;
+      name: string;
+      imageSingle: string;
+      price: number;
+    };
+    position: number;
+  } | null;
+  animals: Array<{
+    animal: {
+      id: number;
+      name: string;
+      imageUrl: string;
+    };
+    hat: {
+      id: number;
+      name: string;
+      imageUrl: string;
+    } | null;
+    position: number;
+  }>;
+  quantity: number;
+  basePrice: number;
+  extraAnimalPrice: number;
+  specialFlowerPrice: number;
+  totalPrice: number;
+};
 
 type checkoutProps = {
   formData: {
@@ -14,7 +70,7 @@ type checkoutProps = {
     phone: string;
     deliveryMethod: string;
     price: number;
-    cart: CartItem[];
+    cart: ExtendedCartItem[];
     notes?: string;
     address?: string;
     apartment?: string;
@@ -25,7 +81,7 @@ type checkoutProps = {
   };
 };
 
-async function adjustStock(cart: CartItem[]) {
+async function adjustStock(cart: ExtendedCartItem[]) {
   for (const item of cart) {
     // Adjust color stock
     await prismadb.color.update({
