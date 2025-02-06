@@ -121,8 +121,8 @@ export async function POST(req: Request) {
       data: { paid: true },
     });
 
-    // Adjust stock
-    await adjustStock(order.orderItems);
+    // // Adjust stock
+    // await adjustStock(order.orderItems);
 
     // Send confirmation email
     const resendApiKey = process.env.RESEND_API_KEY;
