@@ -98,38 +98,79 @@ const ColorCard: React.FC<{
     onClick={() => color.stock > 0 && onSelect(color)}
     disabled={color.stock === 0}
     className={cn(
-      "relative aspect-square rounded-lg border-2 transition-all",
-      isSelected ? "ring-2 ring-main-500 border-main-500" : "border-gray-200",
-      color.stock === 0
-        ? "opacity-50 cursor-not-allowed"
-        : "hover:border-main-300",
+      "relative p-3 rounded-xl transition-all duration-200",
+      isSelected ? "bg-pink-50" : "bg-white hover:bg-pink-50/50",
       "group"
     )}
   >
-    <div className="relative w-full h-full rounded-lg overflow-hidden">
+    {/* Color Preview */}
+    <div
+      className={cn(
+        "relative aspect-square rounded-lg overflow-hidden",
+        isSelected
+          ? "ring-2 ring-pink-400"
+          : "ring-1 ring-gray-200 group-hover:ring-pink-200"
+      )}
+    >
       <Image
         src={color.imageBack}
         alt={color.name}
         fill
-        className="object-cover"
-      />
-      <div
         className={cn(
-          "absolute inset-0 flex flex-col items-center justify-center bg-white/90 transition-opacity",
-          isSelected ? "opacity-0" : "opacity-0 group-hover:opacity-100"
+          "object-cover transition-transform duration-300",
+          !isSelected && "group-hover:scale-105"
+        )}
+      />
+    </div>
+
+    {/* Color Info */}
+    <div className="mt-3 text-center">
+      <p
+        className={cn(
+          "font-semibold transition-colors duration-200",
+          isSelected ? "text-pink-600" : "text-gray-700"
         )}
       >
-        <span className="text-sm font-medium text-gray-900">{color.name}</span>
-        {color.stock <= 3 && color.stock > 0 && (
-          <span className="text-xs text-orange-500">
-            Only {color.stock} left
-          </span>
-        )}
-        {color.stock === 0 && (
-          <span className="text-xs text-red-500">Out of stock</span>
-        )}
-      </div>
+        {color.name}
+      </p>
+
+      {/* Stock Status */}
+      {color.stock <= 3 && color.stock > 0 && (
+        <p className="mt-1 text-xs font-medium text-orange-600">
+          Only {color.stock} remaining
+        </p>
+      )}
     </div>
+
+    {/* Selected Indicator */}
+    {isSelected && (
+      <div className="absolute top-1 right-1">
+        <div className="bg-pink-100 rounded-full p-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4 text-pink-600"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </div>
+      </div>
+    )}
+
+    {/* Out of Stock Overlay */}
+    {color.stock === 0 && (
+      <div className="absolute inset-0 bg-white/90 backdrop-blur-[2px] rounded-xl flex flex-col items-center justify-center">
+        <div className="bg-red-100/80 px-3 py-1 rounded-full">
+          <span className="text-sm font-medium text-red-600">Out of Stock</span>
+        </div>
+        <p className="mt-2 text-sm text-gray-500">{color.name}</p>
+      </div>
+    )}
   </button>
 );
 
@@ -445,10 +486,10 @@ const SizeCard: React.FC<{
 }> = ({ size, isSelected, onChange }) => (
   <label
     className={cn(
-      "relative flex flex-col p-4 rounded-lg border cursor-pointer transition-all",
+      "relative flex flex-col p-6 rounded-xl cursor-pointer transition-all group",
       isSelected
-        ? "border-main-600 bg-main-50 ring-2 ring-main-500"
-        : "border-gray-200 hover:border-main-300"
+        ? "border-2 border-pink-400 bg-gradient-to-b from-pink-50 to-white ring-2 ring-pink-200"
+        : "border border-pink-100 hover:border-pink-200 hover:shadow-md"
     )}
   >
     <input
@@ -459,38 +500,104 @@ const SizeCard: React.FC<{
       onChange={() => onChange(size)}
       className="sr-only"
     />
+
+    {/* Size Badge */}
+    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+      <div
+        className={cn(
+          "px-4 py-1 rounded-full text-sm font-medium",
+          isSelected
+            ? "bg-pink-500 text-white"
+            : "bg-pink-100 text-pink-600 group-hover:bg-pink-200"
+        )}
+      >
+        {size.size.replace("_", " ")}
+      </div>
+    </div>
+
     {/* Size Image */}
-    <div className="relative aspect-square w-full mb-3 rounded-lg overflow-hidden">
+    <div className="relative aspect-square w-full mb-4 rounded-lg overflow-hidden bg-white p-2">
       <Image
         src={size.image}
         alt={`${size.size} size bundle`}
         fill
-        className="object-contain"
+        className="object-contain transition-transform group-hover:scale-105"
         sizes="(max-width: 768px) 25vw, 20vw"
       />
     </div>
 
-    <div className="text-center">
-      <p className="font-semibold text-gray-900">{size.size}</p>
-      <p className="text-sm font-medium text-main-600">
+    {/* Price and Features */}
+    <div className="text-center mb-4">
+      <p className="text-2xl font-bold text-pink-600 font-handwriting">
         ${size.price.toFixed(2)}
       </p>
     </div>
 
-    <div className="mt-2 space-y-1 text-xs text-gray-500 text-center">
-      <p>{size.mainFlowerLimit} main flowers</p>
-      <p>{size.smallFlowerLimit} small flowers</p>
-      <p>1 animal included</p>
-      <p className="text-xs text-gray-400">
-        {size.size === "SMALL"
-          ? "Perfect for desks"
-          : size.size === "MEDIUM"
-          ? "Great for side tables"
-          : size.size === "LARGE"
-          ? "Beautiful centerpiece"
-          : "Statement piece"}
-      </p>
+    <div className="space-y-3">
+      {/* Features Grid */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="bg-pink-50 p-2 rounded-lg text-center">
+          <p className="text-lg font-semibold text-pink-600">
+            {size.mainFlowerLimit}
+          </p>
+          <p className="text-xs text-gray-600">Main Flowers</p>
+        </div>
+        <div className="bg-pink-50 p-2 rounded-lg text-center">
+          <p className="text-lg font-semibold text-pink-600">
+            {size.smallFlowerLimit}
+          </p>
+          <p className="text-xs text-gray-600">Small Flowers</p>
+        </div>
+      </div>
+
+      {/* Animal Inclusion */}
+      <div className="bg-pink-50 p-2 rounded-lg text-center">
+        <p className="text-sm font-medium text-gray-700">
+          1 Animal Included
+          {size.maxExtraAnimals > 0 && " + Option for Extra"}
+        </p>
+      </div>
+
+      {/* Special Items Availability */}
+      {size.size !== "SMALL" && (
+        <div className="bg-gradient-to-r from-pink-100 to-pink-50 p-2 rounded-lg text-center">
+          <p className="text-sm font-medium text-pink-600">
+            Special Items Available
+          </p>
+        </div>
+      )}
+
+      {/* Size Description */}
+      <div className="text-center pt-2">
+        <p className="text-sm text-gray-600 italic">
+          {size.size === "SMALL"
+            ? "Perfect for desks"
+            : size.size === "MEDIUM"
+            ? "Great for side tables"
+            : size.size === "LARGE"
+            ? "Beautiful centerpiece"
+            : "Statement piece"}
+        </p>
+      </div>
     </div>
+
+    {/* Selected Indicator */}
+    {isSelected && (
+      <div className="absolute -top-2 -right-2 bg-pink-500 text-white rounded-full p-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-4 w-4"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+        >
+          <path
+            fillRule="evenodd"
+            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </div>
+    )}
   </label>
 );
 
@@ -518,12 +625,10 @@ const FlowerSection: React.FC<{
   handleAddFlower,
   setSelectedFlowers,
 }) => {
-  // Filter out premium flowers from display
   const filteredFlowers = flowers.filter(
     (f) => f.flowerType === flowerType && !f.isPremium
   );
 
-  // Count only non-premium flowers for limit checking
   const selectedCount = selectedFlowers.filter(
     (f) => f.flower.flowerType === flowerType && !f.flower.isPremium
   ).length;
@@ -534,48 +639,40 @@ const FlowerSection: React.FC<{
       : selectedSize.mainFlowerLimit;
 
   const isAtLimit = selectedCount >= maxCount;
-
-  // Maximum 2 of the same main flower
   const MAX_SAME_MAIN_FLOWER = 2;
 
-  const getCountDisplay = () => {
-    // Update the display text to clarify these are regular flowers
-    if (flowerType === FlowerType.SMALL) {
-      return (
-        <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
-          {selectedCount}/{maxCount} Small Flowers
-        </div>
-      );
-    }
-
-    return (
-      <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
-        {selectedCount}/{maxCount} Main Flowers
-      </div>
-    );
-  };
-
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <div className="flex items-center gap-2">
-            {getCountDisplay()}
-            {isAtLimit && (
-              <span className="text-sm text-gray-600">Maximum selected</span>
-            )}
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col items-center text-center space-y-3 mb-6">
+        <h3 className="text-2xl font-bold text-pink-600 font-handwriting">
+          {title}
+        </h3>
+        <div className="flex items-center gap-3">
+          <div className="bg-pink-50 px-4 py-2 rounded-xl">
+            <span className="text-lg font-semibold text-pink-600">
+              {selectedCount}
+            </span>
+            <span className="text-sm text-gray-600">
+              {" "}
+              / {maxCount} Selected
+            </span>
           </div>
+          {isAtLimit && (
+            <div className="bg-orange-50 px-3 py-1 rounded-full">
+              <span className="text-xs text-orange-600">Maximum reached</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
+      {/* Flowers Grid */}
+      <div className="grid sm:grid-cols-4 grid-cols-2 gap-4">
         {filteredFlowers.map((flower) => {
           const count = getFlowerCount(flower);
           const isSoldOut = flower.stock - count <= 0;
           const isMaxSameFlower =
             flowerType === FlowerType.MAIN && count >= MAX_SAME_MAIN_FLOWER;
-          // Only consider non-premium flowers for the limit
           const isDisabled =
             isSoldOut || (isAtLimit && !flower.isPremium) || isMaxSameFlower;
 
@@ -583,56 +680,51 @@ const FlowerSection: React.FC<{
             <div key={flower.id} className="relative group">
               <div
                 className={cn(
-                  "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                  isSoldOut || isMaxSameFlower
-                    ? "border-red-200 bg-white/80"
-                    : count > 0
-                    ? "border-main-300 bg-main-50"
-                    : isAtLimit
-                    ? "border-gray-200 bg-gray-50"
-                    : "hover:border-main-200"
+                  "relative rounded-xl p-3 transition-all duration-200",
+                  count > 0
+                    ? "bg-pink-50 ring-2 ring-pink-200"
+                    : "bg-white hover:bg-pink-50/50 ring-1 ring-gray-100",
+                  isDisabled && "opacity-60"
                 )}
               >
-                {/* Rest of the component remains the same */}
-                <div className="relative w-full aspect-square">
+                {/* Flower Image */}
+                <div className="relative aspect-square mb-2">
                   <Image
                     src={flower.imageUrl}
                     alt={flower.name}
-                    className="object-contain object-top rounded-md"
+                    className={cn(
+                      "object-contain object-center transition-transform duration-300",
+                      !isDisabled && !count && "group-hover:scale-105"
+                    )}
                     fill
-                    sizes="70px"
+                    sizes="(max-width: 768px) 50vw, 25vw"
                   />
                 </div>
 
-                <div className="mt-2 space-y-1 text-center">
-                  <span className="text-sm font-medium text-gray-700">
+                {/* Flower Info */}
+                <div className="text-center space-y-1.5">
+                  <p className="text-xs font-medium text-gray-700 truncate px-1">
                     {flower.name}
-                  </span>
+                  </p>
+
                   {count > 0 && (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="px-2 rounded-full bg-main-100">
-                        <span className="text-xs font-medium text-main-700">
-                          {count} selected
-                        </span>
-                      </div>
+                    <div className="bg-pink-100/80 px-2 py-0.5 rounded-full inline-block">
+                      <span className="text-xs font-medium text-pink-600">
+                        {count} selected
+                      </span>
+                    </div>
+                  )}
+
+                  {!isSoldOut && flower.stock <= 3 && (
+                    <div className="bg-orange-50 px-2 py-0.5 rounded-full inline-block">
+                      <span className="text-[10px] font-medium text-orange-600">
+                        Only {flower.stock} left
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {(isAtLimit || isMaxSameFlower) && count === 0 && (
-                  <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 z-10">
-                    <p className="text-xs text-gray-600 text-center">
-                      {isMaxSameFlower
-                        ? "Maximum 2 of the same main flower allowed"
-                        : flowerType === FlowerType.SMALL
-                        ? `Maximum ${maxCount} small flowers allowed for this size`
-                        : selectedSize.size === "EXTRA_LARGE"
-                        ? "Maximum number reached"
-                        : "Increase the size to add more main flowers"}
-                    </p>
-                  </div>
-                )}
-
+                {/* Action Buttons */}
                 {count > 0 && (
                   <Button
                     size="sm"
@@ -648,40 +740,51 @@ const FlowerSection: React.FC<{
                         toast.success(`Removed ${flower.name}`);
                       }
                     }}
-                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 z-20 bg-main-100 hover:bg-main-200"
+                    className="absolute -top-2 -right-2 h-7 w-7 rounded-full p-0 shadow-sm bg-pink-100 hover:bg-pink-200"
                   >
-                    <Trash className="h-5 w-5 text-main-700" />
+                    <Trash className="h-3.5 w-3.5 text-pink-600" />
                   </Button>
                 )}
 
                 <Button
                   size="sm"
                   variant={count > 0 ? "default" : "outline"}
-                  className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0 z-20"
+                  className={cn(
+                    "absolute -top-2 -left-2 h-7 w-7 rounded-full p-0 shadow-sm",
+                    count > 0
+                      ? "bg-pink-500 hover:bg-pink-600"
+                      : "bg-white hover:bg-pink-50"
+                  )}
                   onClick={(e) => handleAddFlower(flower, e)}
                   disabled={isDisabled}
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus className="h-4 w-4" />
                 </Button>
 
+                {/* Status Overlays */}
                 {isSoldOut && (
-                  <div className="absolute inset-0 overflow-hidden rounded-md z-10">
-                    <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-                    <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                      SOLD OUT
+                  <div className="absolute inset-0 rounded-xl overflow-hidden">
+                    <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px]" />
+                    <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 text-center">
+                      <div className="bg-red-100/90 inline-block px-3 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-red-600">
+                          Sold Out
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
-                {!isSoldOut && flower.stock <= 3 && (
-                  <span className="mt-1 text-[10px] text-orange-500 font-medium">
-                    Only {flower.stock} left
-                  </span>
-                )}
 
-                {isMaxSameFlower && (
-                  <span className="mt-1 text-xs text-gray-500">
-                    Maximum 2 allowed
-                  </span>
+                {(isAtLimit || isMaxSameFlower) && count === 0 && (
+                  <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center p-3">
+                    <p className="text-xs text-gray-600 text-center">
+                      {isMaxSameFlower
+                        ? "Maximum 2 of the same main flower allowed"
+                        : flowerType === FlowerType.SMALL
+                        ? `Maximum ${maxCount} small flowers allowed`
+                        : "Increase size for more main flowers"}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -719,31 +822,32 @@ const AnimalsSection: React.FC<{
   const isLimitReached = baseAnimalCount >= selectedSize.baseAnimalLimit;
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-4">
-        <div className="space-y-1">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Step 5: Animals
-          </h3>
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
-                isLimitReached
-                  ? "bg-gray-100 text-gray-700"
-                  : "bg-gray-100 text-gray-700"
-              )}
-            >
-              {baseAnimalCount}/{selectedSize.baseAnimalLimit}
-            </div>
-            {isLimitReached && (
-              <span className="text-sm text-gray-600">Maximum selected</span>
-            )}
+    <div className="space-y-6">
+      {/* Header Section */}
+      <div className="flex flex-col items-center text-center space-y-3 mb-6">
+        <h3 className="text-2xl font-bold text-pink-600 font-handwriting">
+          Choose Your Animals
+        </h3>
+        <div className="flex items-center gap-3">
+          <div className="bg-pink-50 px-4 py-2 rounded-xl">
+            <span className="text-lg font-semibold text-pink-600">
+              {baseAnimalCount}
+            </span>
+            <span className="text-sm text-gray-600">
+              {" "}
+              / {selectedSize.baseAnimalLimit} Selected
+            </span>
           </div>
+          {isLimitReached && (
+            <div className="bg-orange-50 px-3 py-1 rounded-full">
+              <span className="text-xs text-orange-600">Maximum reached</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
+      {/* Animals Grid */}
+      <div className="grid sm:grid-cols-4 grid-cols-2 gap-4">
         {animals.map((animal) => {
           const count = getAnimalCount(animal);
           const isSoldOut = animal.stock === 0;
@@ -755,57 +859,51 @@ const AnimalsSection: React.FC<{
             <div key={animal.id} className="relative group">
               <div
                 className={cn(
-                  "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                  isSoldOut
-                    ? "border-red-200 bg-white/80"
-                    : isSelected
-                    ? "border-main-300 bg-main-50"
-                    : isLimitReached
-                    ? "border-gray-200 bg-gray-50"
-                    : "hover:border-main-200"
+                  "relative rounded-xl p-3 transition-all duration-200",
+                  isSelected
+                    ? "bg-pink-50 ring-2 ring-pink-200"
+                    : "bg-white hover:bg-pink-50/50 ring-1 ring-gray-100",
+                  isSoldOut && "opacity-60"
                 )}
               >
-                {/* Item Image */}
-                <div className="relative w-full aspect-square">
+                {/* Animal Image */}
+                <div className="relative aspect-square mb-2">
                   <Image
                     src={animal.imageUrl}
                     alt={animal.name}
-                    className="object-contain object-top rounded-md"
+                    className={cn(
+                      "object-contain object-center transition-transform duration-300",
+                      !isSoldOut && !isSelected && "group-hover:scale-105"
+                    )}
                     fill
-                    sizes="70px"
+                    sizes="(max-width: 768px) 50vw, 25vw"
                   />
                 </div>
 
-                {/* Item Name and Count */}
-                <div className="mt-2 space-y-1 text-center">
-                  <span className="text-sm font-medium text-gray-700">
+                {/* Animal Info */}
+                <div className="text-center space-y-1.5">
+                  <p className="text-xs font-medium text-gray-700 truncate px-1">
                     {animal.name}
-                  </span>
+                  </p>
+
                   {isSelected && (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className=" px-2 bg-main-100 rounded-full">
-                        <span className="text-xs font-medium text-main-700">
-                          Selected
-                        </span>
-                      </div>
+                    <div className="bg-pink-100/80 px-2 py-0.5 rounded-full inline-block">
+                      <span className="text-xs font-medium text-pink-600">
+                        Selected
+                      </span>
+                    </div>
+                  )}
+
+                  {!isSoldOut && animal.stock <= 3 && (
+                    <div className="bg-orange-50 px-2 py-0.5 rounded-full inline-block">
+                      <span className="text-[10px] font-medium text-orange-600">
+                        Only {animal.stock} left
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* Hover Message when limit reached */}
-                {isLimitReached && !isSelected && (
-                  <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                    <p className="text-xs text-gray-600 text-center">
-                      Maximum {selectedSize.baseAnimalLimit}{" "}
-                      {selectedSize.baseAnimalLimit === 1
-                        ? "animal"
-                        : "animals"}
-                      allowed for this size.
-                    </p>
-                  </div>
-                )}
-
-                {/* Remove Button - Only show when selected */}
+                {/* Action Buttons */}
                 {isSelected && (
                   <Button
                     size="sm"
@@ -823,36 +921,51 @@ const AnimalsSection: React.FC<{
                         toast.success(`Removed ${animal.name}`);
                       }
                     }}
-                    className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                    className="absolute -top-2 -right-2 h-7 w-7 rounded-full p-0 shadow-sm bg-pink-100 hover:bg-pink-200"
                   >
-                    <Trash className="h-5 w-5 text-main-700" />
+                    <Trash className="h-3.5 w-3.5 text-pink-600" />
                   </Button>
                 )}
 
-                {/* Add Button - Always visible but disabled when appropriate */}
                 <Button
                   size="sm"
                   variant={isSelected ? "default" : "outline"}
-                  className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0"
+                  className={cn(
+                    "absolute -top-2 -left-2 h-7 w-7 rounded-full p-0 shadow-sm",
+                    isSelected
+                      ? "bg-pink-500 hover:bg-pink-600"
+                      : "bg-white hover:bg-pink-50"
+                  )}
                   onClick={(e) => handleAddAnimal(animal, e)}
                   disabled={isSoldOut || isLimitReached}
                 >
-                  <Plus className="h-6 w-6" />
+                  <Plus className="h-4 w-4" />
                 </Button>
 
-                {/* Stock Indicators */}
+                {/* Status Overlays */}
                 {isSoldOut && (
-                  <div className="absolute inset-0 overflow-hidden rounded-md">
-                    <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-                    <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                      SOLD OUT
+                  <div className="absolute inset-0 rounded-xl overflow-hidden">
+                    <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px]" />
+                    <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 text-center">
+                      <div className="bg-red-100/90 inline-block px-3 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-red-600">
+                          Sold Out
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}
-                {!isSoldOut && animal.stock <= 3 && (
-                  <span className="mt-1 text-[10px] text-orange-500 font-medium">
-                    Only {animal.stock} left
-                  </span>
+
+                {isLimitReached && !isSelected && (
+                  <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center p-3">
+                    <p className="text-xs text-gray-600 text-center">
+                      Maximum {selectedSize.baseAnimalLimit}{" "}
+                      {selectedSize.baseAnimalLimit === 1
+                        ? "animal"
+                        : "animals"}{" "}
+                      allowed for this size
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
@@ -885,7 +998,6 @@ const ExtraAnimalSection: React.FC<{
   hasExtraAnimal,
   onToggleExtraAnimal,
 }) => {
-  // Only show this section if base animal is selected
   if (selectedAnimals.length < selectedSize.baseAnimalLimit) {
     return null;
   }
@@ -897,39 +1009,49 @@ const ExtraAnimalSection: React.FC<{
   const totalAnimals = selectedAnimals.length;
 
   return (
-    <div className="mt-8">
+    <div className="mt-10">
       {/* Divider with animal count */}
-      <div className="relative border-t border-gray-200 mb-8">
+      <div className="relative border-t border-pink-100 mb-8">
         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4">
-          <div className="text-sm text-gray-500">
-            {totalAnimals}/2 Animals Selected
+          <div className="bg-pink-50 px-3 py-1 rounded-full">
+            <span className="text-sm font-medium text-pink-600">
+              {totalAnimals}/2 Animals Selected
+            </span>
           </div>
         </div>
       </div>
 
       {/* Extra Animal Section */}
-      <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
-        <div className="space-y-4">
+      <div className="bg-gradient-to-b from-pink-50/50 to-white rounded-xl p-6 border border-pink-100">
+        <div className="space-y-6">
           {/* Header */}
           <div className="flex items-start justify-between">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Want to add a second animal?
+                <h3 className="text-xl font-bold text-gray-900 font-handwriting">
+                  Add a Second Animal
                 </h3>
-                <div className="bg-main-100 text-main-700 text-xs font-medium px-2 py-1 rounded-full">
-                  Optional
+                <div className="bg-pink-100 text-pink-600 text-xs font-medium px-3 py-1 rounded-full">
+                  Optional Extra
                 </div>
               </div>
               <p className="text-sm text-gray-600">
                 Make your bundle extra special by adding a second animal for an
-                additional ${selectedSize.extraAnimalPrice.toFixed(2)}
+                additional{" "}
+                <span className="font-medium text-pink-600">
+                  ${selectedSize.extraAnimalPrice.toFixed(2)}
+                </span>
               </p>
             </div>
             <Button
               variant={hasExtraAnimal ? "default" : "outline"}
               onClick={() => onToggleExtraAnimal(!hasExtraAnimal)}
-              className="shrink-0"
+              className={cn(
+                "shrink-0",
+                hasExtraAnimal
+                  ? "bg-pink-500 hover:bg-pink-600"
+                  : "border-pink-200 text-pink-600 hover:bg-pink-50"
+              )}
             >
               {hasExtraAnimal ? "Remove Second Animal" : "Add Second Animal"}
             </Button>
@@ -937,8 +1059,8 @@ const ExtraAnimalSection: React.FC<{
 
           {/* Animal Selection Grid */}
           {hasExtraAnimal && (
-            <div className="pt-4">
-              <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
+            <div className="pt-2">
+              <div className="grid sm:grid-cols-4 grid-cols-2 gap-4">
                 {animals.map((animal) => {
                   const isExtraAnimalSelected = selectedAnimals
                     .slice(selectedSize.baseAnimalLimit)
@@ -954,45 +1076,48 @@ const ExtraAnimalSection: React.FC<{
                     <div key={animal.id} className="relative group">
                       <div
                         className={cn(
-                          "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                          isSoldOut
-                            ? "border-red-200 bg-white/80"
-                            : isExtraAnimalSelected
-                            ? "border-main-300 bg-main-50"
-                            : isLimitReached
-                            ? "border-gray-200 bg-gray-50"
-                            : "hover:border-main-200"
+                          "relative rounded-xl p-3 transition-all duration-200",
+                          isExtraAnimalSelected
+                            ? "bg-pink-50 ring-2 ring-pink-200"
+                            : "bg-white hover:bg-pink-50/50 ring-1 ring-gray-100",
+                          isSoldOut && "opacity-60"
                         )}
                       >
-                        {/* Item Image */}
-                        <div className="relative w-full aspect-square">
+                        {/* Animal Image */}
+                        <div className="relative aspect-square mb-2">
                           <Image
                             src={animal.imageUrl}
                             alt={animal.name}
-                            className="object-contain object-top rounded-md"
+                            className={cn(
+                              "object-contain object-center transition-transform duration-300",
+                              !isSoldOut &&
+                                !isExtraAnimalSelected &&
+                                "group-hover:scale-105"
+                            )}
                             fill
-                            sizes="70px"
+                            sizes="(max-width: 768px) 50vw, 25vw"
                           />
                         </div>
 
-                        {/* Item Name and Selected Status */}
-                        <div className="mt-2 space-y-1 text-center">
-                          <span className="text-sm font-medium text-gray-700">
+                        {/* Animal Info */}
+                        <div className="text-center space-y-1.5">
+                          <p className="text-xs font-medium text-gray-700 truncate px-1">
                             {animal.name}
-                          </span>
+                          </p>
+
                           {isExtraAnimalSelected && (
-                            <div className="flex items-center justify-center gap-2">
-                              <div className="px-2 bg-main-100 rounded-full">
-                                <span className="text-xs font-medium text-main-700">
-                                  Selected
-                                </span>
-                              </div>
+                            <div className="bg-pink-100/80 px-2 py-0.5 rounded-full inline-block">
+                              <span className="text-xs font-medium text-pink-600">
+                                Selected
+                              </span>
                             </div>
                           )}
-                          {/* Stock display */}
+
                           {!isSoldOut && animal.stock <= 3 && (
-                            <div className="text-[10px] text-orange-500 font-medium">
-                              Only {animal.stock} left
+                            <div className="bg-orange-50 px-2 py-0.5 rounded-full inline-block">
+                              <span className="text-[10px] font-medium text-orange-600">
+                                Only {animal.stock} left
+                              </span>
                             </div>
                           )}
                         </div>
@@ -1015,9 +1140,9 @@ const ExtraAnimalSection: React.FC<{
                                 toast.success(`Removed ${animal.name}`);
                               }
                             }}
-                            className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                            className="absolute -top-2 -right-2 h-7 w-7 rounded-full p-0 shadow-sm bg-pink-100 hover:bg-pink-200"
                           >
-                            <Trash className="h-5 w-5 text-main-700" />
+                            <Trash className="h-3.5 w-3.5 text-pink-600" />
                           </Button>
                         )}
 
@@ -1026,20 +1151,37 @@ const ExtraAnimalSection: React.FC<{
                           variant={
                             isExtraAnimalSelected ? "default" : "outline"
                           }
-                          className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0"
+                          className={cn(
+                            "absolute -top-2 -left-2 h-7 w-7 rounded-full p-0 shadow-sm",
+                            isExtraAnimalSelected
+                              ? "bg-pink-500 hover:bg-pink-600"
+                              : "bg-white hover:bg-pink-50"
+                          )}
                           onClick={(e) => handleAddAnimal(animal, e)}
                           disabled={isSoldOut || isLimitReached}
                         >
-                          <Plus className="h-6 w-6" />
+                          <Plus className="h-4 w-4" />
                         </Button>
 
-                        {/* Sold Out Overlay */}
+                        {/* Status Overlays */}
                         {isSoldOut && (
-                          <div className="absolute inset-0 overflow-hidden rounded-md">
-                            <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-                            <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                              SOLD OUT
+                          <div className="absolute inset-0 rounded-xl overflow-hidden">
+                            <div className="absolute inset-0 bg-white/80 backdrop-blur-[1px]" />
+                            <div className="absolute top-1/2 -translate-y-1/2 inset-x-0 text-center">
+                              <div className="bg-red-100/90 inline-block px-3 py-0.5 rounded-full">
+                                <span className="text-xs font-medium text-red-600">
+                                  Sold Out
+                                </span>
+                              </div>
                             </div>
+                          </div>
+                        )}
+
+                        {isSame && !isSoldOut && (
+                          <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center p-3">
+                            <p className="text-xs text-gray-600 text-center">
+                              Cannot select the same animal twice
+                            </p>
                           </div>
                         )}
                       </div>
@@ -1071,6 +1213,89 @@ const SpecialItemsSection: React.FC<{
   handleAddSpecialFlower,
   setSelectedSpecialFlower,
 }) => {
+  if (selectedSize.size === "SMALL") {
+    // Use the first active special flower as an example
+    const exampleFlower = specialFlowers.find((flower) => flower.isActive);
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center space-y-2 mb-8">
+          <h3 className="text-2xl font-bold text-pink-600 font-handwriting">
+            Special Items
+          </h3>
+          <p className="text-gray-600">
+            Special items are exclusively available for Medium, Large, and Extra
+            Large bundles
+          </p>
+        </div>
+
+        {exampleFlower && (
+          <div className="relative overflow-hidden rounded-lg border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-white p-6">
+            <div className="absolute top-4 right-4">
+              <div className="bg-orange-100 text-orange-700 px-4 py-1 rounded-full text-sm font-medium">
+                Not Available for Small Bundle
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="w-full md:w-1/3 relative">
+                <div className="relative aspect-square rounded-lg overflow-hidden bg-white p-4">
+                  <Image
+                    src={exampleFlower.imageUrl}
+                    alt={exampleFlower.name}
+                    fill
+                    className="object-contain opacity-50"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
+                {/* Diagonal line overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-full h-0.5 bg-orange-500 rotate-45 transform origin-center" />
+                </div>
+              </div>
+
+              <div className="w-full md:w-2/3 space-y-4">
+                <h3 className="text-2xl font-bold text-gray-900 font-handwriting">
+                  {exampleFlower.name}
+                </h3>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold text-pink-600 opacity-50">
+                    +${exampleFlower.price.toFixed(2)}
+                  </span>
+                </div>
+
+                <p className="text-gray-600">{exampleFlower.description}</p>
+
+                <div className="flex flex-col gap-2">
+                  <p className="text-sm text-orange-700">
+                    To access special items like this{" "}
+                    {exampleFlower.name.toLowerCase()}, please select a larger
+                    bundle size:
+                  </p>
+                  <div className="flex gap-2">
+                    {["MEDIUM", "LARGE", "EXTRA_LARGE"].map((size) => (
+                      <div
+                        key={size}
+                        className="bg-white px-3 py-1 rounded border border-pink-100 text-sm text-pink-600"
+                      >
+                        {size.replace("_", " ")}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 text-center">
+          Click continue to proceed with your current selection, or go back to
+          select a larger bundle size
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2 mb-8">
