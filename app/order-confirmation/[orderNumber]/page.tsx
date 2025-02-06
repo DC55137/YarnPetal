@@ -23,6 +23,7 @@ export default async function page({
               flower: true,
             },
           },
+          specialFlower: true,
           baseAnimal: true,
           baseAnimalHat: true,
           extraAnimal: true,
@@ -82,10 +83,10 @@ export default async function page({
             </>
           )}
           <dl className="mt-12 text-sm font-medium">
-            <dt className="text-gray-900">order number</dt>
+            <dt className="text-gray-900">Order number</dt>
             <dd className="mt-2 text-main-600">{order.orderNumber}</dd>
           </dl>
-          {/* Add Notes Section */}
+
           {order.notes && (
             <div className="mt-6">
               <h3 className="text-sm font-medium text-gray-900">
@@ -116,16 +117,18 @@ export default async function page({
                   (f) => f.flower.flowerType === FlowerType.MAIN
                 );
 
-                // Safely handle nullable prices
+                // Get all prices
                 const basePrice = item.basePrice || 0;
                 const extraAnimalPrice = item.extraAnimalPrice || 0;
+                const specialFlowerPrice = item.specialFlowerPrice || 0;
                 const totalPrice =
-                  item.totalPrice || basePrice + extraAnimalPrice;
+                  item.totalPrice ||
+                  basePrice + extraAnimalPrice + specialFlowerPrice;
+                const itemTotal = totalPrice * item.quantity;
 
                 return (
                   <li key={index} className="flex px-4 py-6 relative">
                     <div className="flex-shrink-0 space-y-4">
-                      {/* Color Preview */}
                       <div className="relative w-24 aspect-square rounded-lg overflow-hidden">
                         <Image
                           src={item.color.imageBack}
@@ -136,9 +139,7 @@ export default async function page({
                         />
                       </div>
 
-                      {/* Selected Items Preview */}
                       <div className="grid grid-cols-4 gap-1 max-w-[96px]">
-                        {/* Small Flowers */}
                         {smallFlowers.map((flower, idx) => (
                           <div
                             key={`small-${idx}`}
@@ -154,7 +155,6 @@ export default async function page({
                           </div>
                         ))}
 
-                        {/* Main Flowers */}
                         {mainFlowers.map((flower, idx) => (
                           <div
                             key={`main-${idx}`}
@@ -170,7 +170,19 @@ export default async function page({
                           </div>
                         ))}
 
-                        {/* Base Animal */}
+                        {item.specialFlower && (
+                          <div className="relative aspect-square">
+                            <div className="absolute inset-0 border-2 border-pink-400 rounded-sm"></div>
+                            <Image
+                              src={item.specialFlower.imageSingle}
+                              alt={item.specialFlower.name}
+                              className="object-contain"
+                              fill
+                              sizes="24px"
+                            />
+                          </div>
+                        )}
+
                         {item.baseAnimal && (
                           <div className="relative aspect-square">
                             <Image
@@ -194,9 +206,9 @@ export default async function page({
                           </div>
                         )}
 
-                        {/* Extra Animal */}
                         {item.extraAnimal && (
                           <div className="relative aspect-square">
+                            <div className="absolute inset-0 border-2 border-blue-400 rounded-sm"></div>
                             <Image
                               src={item.extraAnimal.imageUrl}
                               alt={item.extraAnimal.name}
@@ -227,7 +239,6 @@ export default async function page({
                             {item.color.name} Bundle ({item.size.size})
                           </h4>
 
-                          {/* Flowers */}
                           {item.flowers.length > 0 && (
                             <div className="mt-2">
                               <h5 className="text-sm font-medium text-gray-600">
@@ -246,7 +257,17 @@ export default async function page({
                             </div>
                           )}
 
-                          {/* Base Animal */}
+                          {item.specialFlower && (
+                            <div className="mt-2">
+                              <h5 className="text-sm font-medium text-pink-600">
+                                Special Flower:
+                              </h5>
+                              <span className="text-sm text-gray-500">
+                                {item.specialFlower.name}
+                              </span>
+                            </div>
+                          )}
+
                           {item.baseAnimal && (
                             <div className="mt-2">
                               <h5 className="text-sm font-medium text-gray-600">
@@ -260,10 +281,9 @@ export default async function page({
                             </div>
                           )}
 
-                          {/* Extra Animal */}
                           {item.extraAnimal && (
                             <div className="mt-2">
-                              <h5 className="text-sm font-medium text-gray-600">
+                              <h5 className="text-sm font-medium text-blue-600">
                                 Extra Animal:
                               </h5>
                               <span className="text-sm text-gray-500">
@@ -276,19 +296,35 @@ export default async function page({
                         </div>
                       </div>
 
-                      <div className="flex flex-1 items-end justify-between pt-2">
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-500">
+                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <h5 className="text-sm font-medium text-gray-900 mb-2">
+                          Price Breakdown
+                        </h5>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-gray-600">
                             Base Price: ${basePrice.toFixed(2)}
                           </p>
                           {extraAnimalPrice > 0 && (
-                            <p className="text-sm text-gray-500">
-                              Extra Animal: ${extraAnimalPrice.toFixed(2)}
+                            <p className="text-blue-600">
+                              Extra Animal: +${extraAnimalPrice.toFixed(2)}
                             </p>
                           )}
-                          <p className="text-lg font-medium text-gray-900">
-                            Total: ${totalPrice.toFixed(2)} x{item.quantity}
-                          </p>
+                          {specialFlowerPrice > 0 && (
+                            <p className="text-pink-600">
+                              Special Flower: +${specialFlowerPrice.toFixed(2)}
+                            </p>
+                          )}
+                          <div className="pt-2 mt-2 border-t border-gray-200">
+                            <p className="text-gray-900 font-medium">
+                              Price per item: ${totalPrice.toFixed(2)}
+                            </p>
+                            <p className="text-gray-900 font-medium">
+                              Quantity: {item.quantity}
+                            </p>
+                            <p className="text-gray-900 font-medium mt-2">
+                              Item Total: ${itemTotal.toFixed(2)}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -298,10 +334,8 @@ export default async function page({
             </ul>
           </div>
 
-          {/* Order Summary */}
-          <div className="">
-            <h3 className="sr-only">Summary</h3>
-            <dl className="space-y-6 border-t border-gray-200 pt-10 text-sm">
+          <div className="mt-10 border-t border-gray-200 pt-6">
+            <dl className="space-y-4 text-sm">
               <div className="flex justify-between">
                 <dt className="font-medium text-gray-900">Subtotal</dt>
                 <dd className="text-gray-700">
@@ -322,16 +356,10 @@ export default async function page({
                   ${deliveryMethod?.price.toFixed(2)}
                 </dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="font-medium text-gray-900">Total</dt>
-                <dd className="text-gray-900">
-                  $
-                  {(
-                    order.orderItems.reduce(
-                      (acc, item) => acc + item.quantity * item.totalPrice,
-                      0
-                    ) + deliveryMethod!.price
-                  ).toFixed(2)}
+              <div className="flex justify-between border-t border-gray-200 pt-4">
+                <dt className="text-base font-medium text-gray-900">Total</dt>
+                <dd className="text-base font-medium text-gray-900">
+                  ${order.total.toFixed(2)}
                 </dd>
               </div>
             </dl>
