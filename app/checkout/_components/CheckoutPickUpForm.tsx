@@ -14,7 +14,7 @@ const pickUpFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 digits long"),
-  notes: z.string().optional(), // Add this
+  notes: z.string().optional(),
 });
 
 type PickUpFormData = z.infer<typeof pickUpFormSchema>;
@@ -35,7 +35,7 @@ export default function CheckoutPickUpForm({
     lastName: "",
     email: "",
     phone: "",
-    notes: "", // Add this
+    notes: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -51,31 +51,42 @@ export default function CheckoutPickUpForm({
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const calculateTotals = () => {
+    const itemsTotal = cart.reduce((total, item) => {
+      return total + item.totalPrice * item.quantity;
+    }, 0);
+
+    return {
+      itemsTotal,
+      finalTotal: itemsTotal + selectedDeliveryMethod.price,
+    };
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // Calculate the cart subtotal
-    const cartSubtotal = cart.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
-    // Add delivery fee
-    const totalPrice = cartSubtotal + selectedDeliveryMethod.price;
+
+    const { finalTotal } = calculateTotals();
 
     const formData = {
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
-      price: totalPrice, // Send the total price including delivery fee
-      cart: cart,
+      price: finalTotal,
+      cart: cart.map((item) => ({
+        ...item,
+        price: item.totalPrice, // Ensure we're using the total price per item
+      })),
     };
 
     try {
       pickUpFormSchema.parse(form);
+
       if (cart.length === 0) {
         toast.error("Cart is empty");
         setLoading(false);
         return;
       }
+
       if (selectedDeliveryMethod.id === 1) {
         const userConfirmed = window.confirm(
           "Please confirm that you would like to pay cash on pick up"
@@ -84,6 +95,7 @@ export default function CheckoutPickUpForm({
           setLoading(false);
           return;
         }
+
         checkout({ formData })
           .then((response) => {
             setErrors({});
@@ -164,6 +176,7 @@ export default function CheckoutPickUpForm({
                 or requests for your bouquet.
               </p>
             </div>
+
             <h2 className="text-lg mt-4 font-medium text-gray-900">
               Contact information
             </h2>
@@ -217,6 +230,7 @@ export default function CheckoutPickUpForm({
                   )}
                 </div>
               </div>
+
               <div className="mt-4 sm:col-span-2">
                 <label
                   htmlFor="email-address"
@@ -241,6 +255,7 @@ export default function CheckoutPickUpForm({
                   )}
                 </div>
               </div>
+
               <div className="mt-1 sm:col-span-2">
                 <label
                   htmlFor="phone"
@@ -266,6 +281,7 @@ export default function CheckoutPickUpForm({
                 </div>
               </div>
             </div>
+
             <div>
               <h2 className="text-lg mt-4 font-medium text-gray-900 my-4">
                 Pick up confirmation
@@ -277,6 +293,7 @@ export default function CheckoutPickUpForm({
               </p>
             </div>
           </div>
+
           <div className="mt-10 lg:mt-0">
             <OrderSummary
               cart={cart}
@@ -293,7 +310,7 @@ export default function CheckoutPickUpForm({
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <Loader size={20} className="animate-spin " />
+                    <Loader size={20} className="animate-spin" />
                     <span className="ml-2">Loading...</span>
                   </div>
                 ) : (

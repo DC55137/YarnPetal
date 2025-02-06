@@ -22,7 +22,6 @@ export type SelectedSpecialFlowerItem = {
   position: number;
 };
 
-// Extended interfaces
 interface AnimalWithHat extends SelectedAnimalItem {
   hat: Hat | null;
 }
@@ -32,24 +31,25 @@ export type SelectedAnimalItem = {
   position: number;
 };
 
-// Type for cart item
+// Updated CartItem interface with clearer price breakdown
 export interface CartItem {
   size: Size;
   color: Color;
   flowers: SelectedFlowerItem[];
-  specialFlower: SelectedSpecialFlowerItem | null; // Changed from premiumFlowers array
+  specialFlower: SelectedSpecialFlowerItem | null;
   animals: AnimalWithHat[];
-  price: number;
+  basePrice: number; // Price of the bundle size only
+  extraAnimalPrice: number; // Price for extra animals
+  specialFlowerPrice: number; // Price for special flower
+  totalPrice: number; // Sum of all prices
   quantity: number;
   hat: Hat | null;
 }
 
-// Cart state type
 export type CartState = {
   cart: CartItem[];
 };
 
-// Helper function to compare selected items
 const areSelectedItemsEqual = (
   items1: SelectedFlowerItem[] | SelectedAnimalItem[],
   items2: SelectedFlowerItem[] | SelectedAnimalItem[]
@@ -77,11 +77,22 @@ const areCartItemsEqual = (item1: CartItem, item2: CartItem): boolean => {
     item1.color.id === item2.color.id &&
     item1.hat?.id === item2.hat?.id &&
     areSelectedItemsEqual(item1.flowers, item2.flowers) &&
-    !item1.specialFlower === !item2.specialFlower && // Check if both have or don't have special flower
+    !item1.specialFlower === !item2.specialFlower &&
     item1.specialFlower?.specialFlower.id ===
-      item2.specialFlower?.specialFlower.id && // Check special flower ID if present
+      item2.specialFlower?.specialFlower.id &&
     areSelectedItemsEqual(item1.animals, item2.animals)
   );
+};
+
+// Separate price calculation functions for clarity
+const calculateBasePrice = (size: Size): number => {
+  return size.price;
+};
+
+const calculateExtraAnimalPrice = (item: CartItem): number => {
+  return item.animals.length > item.size.baseAnimalLimit
+    ? item.size.extraAnimalPrice
+    : 0;
 };
 
 const calculateSpecialFlowerPrice = (
@@ -90,20 +101,30 @@ const calculateSpecialFlowerPrice = (
   return specialFlower ? specialFlower.specialFlower.price : 0;
 };
 
-const calculateBasePrice = (item: CartItem): number => {
-  const basePrice = item.size.price;
-  const extraAnimalPrice =
-    item.animals.length > item.size.baseAnimalLimit
-      ? item.size.extraAnimalPrice
-      : 0;
-  return basePrice + extraAnimalPrice;
+const calculateTotalPrice = (
+  basePrice: number,
+  extraAnimalPrice: number,
+  specialFlowerPrice: number
+): number => {
+  return basePrice + extraAnimalPrice + specialFlowerPrice;
 };
 
 export type CartActions = {
   setCart: (cart: CartItem[]) => void;
-  addToCart: (item: CartItem) => void;
+  addToCart: (
+    item: Omit<
+      CartItem,
+      "basePrice" | "extraAnimalPrice" | "specialFlowerPrice" | "totalPrice"
+    >
+  ) => void;
   removeFromCart: (itemToRemove: CartItem) => void;
-  updateCartItem: (oldItem: CartItem, newItem: CartItem) => void;
+  updateCartItem: (
+    oldItem: CartItem,
+    newItem: Omit<
+      CartItem,
+      "basePrice" | "extraAnimalPrice" | "specialFlowerPrice" | "totalPrice"
+    >
+  ) => void;
   changeQuantity: (item: CartItem, quantity: number) => void;
   clearCart: () => void;
 };
@@ -117,13 +138,27 @@ export const useCartStore = create<CartStore>()(
 
       setCart: (cart) => set({ cart }),
 
-      addToCart: (newItem: CartItem) => {
+      addToCart: (newItem) => {
         set((state) => {
+          const basePrice = calculateBasePrice(newItem.size);
+          const extraAnimalPrice = calculateExtraAnimalPrice(
+            newItem as CartItem
+          );
+          const specialFlowerPrice = calculateSpecialFlowerPrice(
+            newItem.specialFlower
+          );
+          const totalPrice = calculateTotalPrice(
+            basePrice,
+            extraAnimalPrice,
+            specialFlowerPrice
+          );
+
           const itemToAdd = {
             ...newItem,
-            price:
-              calculateBasePrice(newItem) +
-              calculateSpecialFlowerPrice(newItem.specialFlower),
+            basePrice,
+            extraAnimalPrice,
+            specialFlowerPrice,
+            totalPrice,
           };
 
           const existingItemIndex = state.cart.findIndex((item) =>
@@ -131,7 +166,6 @@ export const useCartStore = create<CartStore>()(
           );
 
           if (existingItemIndex !== -1) {
-            // Update quantity if item exists
             const updatedCart = [...state.cart];
             updatedCart[existingItemIndex] = {
               ...updatedCart[existingItemIndex],
@@ -139,7 +173,6 @@ export const useCartStore = create<CartStore>()(
             };
             return { cart: updatedCart };
           } else {
-            // Add new item
             return { cart: [...state.cart, { ...itemToAdd, quantity: 1 }] };
           }
         });
@@ -163,12 +196,35 @@ export const useCartStore = create<CartStore>()(
         }));
       },
 
-      updateCartItem: (oldItem: CartItem, newItem: CartItem) => {
-        set((state) => ({
-          cart: state.cart.map((item) =>
-            areCartItemsEqual(item, oldItem) ? newItem : item
-          ),
-        }));
+      updateCartItem: (oldItem: CartItem, newItem) => {
+        set((state) => {
+          const basePrice = calculateBasePrice(newItem.size);
+          const extraAnimalPrice = calculateExtraAnimalPrice(
+            newItem as CartItem
+          );
+          const specialFlowerPrice = calculateSpecialFlowerPrice(
+            newItem.specialFlower
+          );
+          const totalPrice = calculateTotalPrice(
+            basePrice,
+            extraAnimalPrice,
+            specialFlowerPrice
+          );
+
+          const updatedItem = {
+            ...newItem,
+            basePrice,
+            extraAnimalPrice,
+            specialFlowerPrice,
+            totalPrice,
+          };
+
+          return {
+            cart: state.cart.map((item) =>
+              areCartItemsEqual(item, oldItem) ? updatedItem : item
+            ),
+          };
+        });
       },
 
       clearCart: () => set({ cart: [] }),

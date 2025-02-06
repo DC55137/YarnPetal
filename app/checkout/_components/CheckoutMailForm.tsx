@@ -1,4 +1,6 @@
-// Code: CheckoutMailForm component
+// This component is responsible for rendering the mail form for the checkout page
+// @/checkout/_components/CheckoutMailForm.tsx
+
 "use client";
 
 import React, { useState } from "react";
@@ -30,7 +32,7 @@ const mailFormSchema = z.object({
     .string()
     .min(1, "Postal code is required")
     .refine((val) => /^[0-9]+$/.test(val), "Postal code must be numeric"),
-  notes: z.string().optional(), // Add this
+  notes: z.string().optional(),
 });
 
 type MailFormData = z.infer<typeof mailFormSchema>;
@@ -47,8 +49,8 @@ export default function CheckoutMailForm({
   cart,
 }: CheckoutMailFormProps) {
   const [loading, setLoading] = useState(false);
-
   const isAustraliaWide = selectedDeliveryMethod.id === 4;
+
   const [form, setForm] = useState<MailFormData>({
     firstName: "",
     lastName: "",
@@ -60,9 +62,11 @@ export default function CheckoutMailForm({
     country: "Australia",
     region: "Queensland",
     postalCode: "",
-    notes: "", // Add this
+    notes: "",
   });
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -71,6 +75,17 @@ export default function CheckoutMailForm({
       value: string;
     };
     setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const calculateTotals = () => {
+    const itemsTotal = cart.reduce((total, item) => {
+      return total + item.totalPrice * item.quantity;
+    }, 0);
+
+    return {
+      itemsTotal,
+      finalTotal: itemsTotal + selectedDeliveryMethod.price,
+    };
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -97,20 +112,16 @@ export default function CheckoutMailForm({
       return;
     }
 
-    // Calculate cart subtotal
-    const cartSubtotal = cart.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
-
-    // Calculate total price including delivery fee
-    const totalPrice = cartSubtotal + selectedDeliveryMethod.price;
+    const { finalTotal } = calculateTotals();
 
     const formData = {
       ...form,
       deliveryMethod: selectedDeliveryMethod.title,
-      price: totalPrice, // Send the total price including delivery fee
-      cart: cart,
+      price: finalTotal,
+      cart: cart.map((item) => ({
+        ...item,
+        price: item.totalPrice, // Ensure we're using the total price per item
+      })),
     };
 
     try {
@@ -118,13 +129,12 @@ export default function CheckoutMailForm({
       checkout({ formData })
         .then((response) => {
           if (response.url) {
-            // Check if url is cancelled=true
             if (response.url.includes("cancelled=true")) {
               toast.error("Payment canceled");
               setLoading(false);
               return;
             } else {
-              setErrors({}); // Clear all errors on successful submission
+              setErrors({});
               window.location.assign(response.url);
             }
           } else {
@@ -158,8 +168,6 @@ export default function CheckoutMailForm({
         <h2 className="sr-only">Checkout</h2>
         <div className="lg:grid lg:grid-cols-2 lg:gap-x-12 xl:gap-x-16">
           <div>
-            {" "}
-            {/* This div should contain everything that isn't OrderSummary */}
             <DeliveryOptions
               selectedDeliveryMethod={selectedDeliveryMethod}
               setSelectedDeliveryMethod={setSelectedDeliveryMethod}
@@ -194,6 +202,7 @@ export default function CheckoutMailForm({
               Contact information
             </h2>
             <div className="mt-6 grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
+              {/* Contact Information Fields */}
               <div className="col-span-1">
                 <label
                   htmlFor="first-name"
@@ -209,6 +218,7 @@ export default function CheckoutMailForm({
                     name="firstName"
                     autoComplete="given-name"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.firstName && (
                     <p className="text-red-500 text-xs italic">
@@ -233,6 +243,7 @@ export default function CheckoutMailForm({
                     name="lastName"
                     autoComplete="family-name"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.lastName && (
                     <p className="text-red-500 text-xs italic">
@@ -241,6 +252,7 @@ export default function CheckoutMailForm({
                   )}
                 </div>
               </div>
+
               <div className="mt-4 sm:col-span-2">
                 <label
                   htmlFor="email-address"
@@ -256,6 +268,7 @@ export default function CheckoutMailForm({
                     name="email"
                     autoComplete="email"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.email && (
                     <p className="text-red-500 text-xs italic">
@@ -264,6 +277,7 @@ export default function CheckoutMailForm({
                   )}
                 </div>
               </div>
+
               <div className="mt-1 sm:col-span-2">
                 <label
                   htmlFor="phone"
@@ -279,6 +293,7 @@ export default function CheckoutMailForm({
                     id="phone"
                     autoComplete="tel"
                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                    disabled={loading}
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-xs italic">
@@ -287,6 +302,7 @@ export default function CheckoutMailForm({
                   )}
                 </div>
 
+                {/* Shipping Information Section */}
                 <div className="mt-10 border-t border-gray-200 pt-10">
                   <h2 className="text-lg font-medium text-gray-900">
                     Shipping Information
@@ -307,6 +323,7 @@ export default function CheckoutMailForm({
                           id="address"
                           autoComplete="street-address"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                          disabled={loading}
                         />
                         {errors.address && (
                           <p className="text-red-500 text-xs italic">
@@ -330,6 +347,7 @@ export default function CheckoutMailForm({
                           name="apartment"
                           id="apartment"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                          disabled={loading}
                         />
                         {errors.apartment && (
                           <p className="text-red-500 text-xs italic">
@@ -354,6 +372,7 @@ export default function CheckoutMailForm({
                           id="city"
                           autoComplete="address-level2"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                          disabled={loading}
                         />
                         {errors.city && (
                           <p className="text-red-500 text-xs italic">
@@ -362,6 +381,7 @@ export default function CheckoutMailForm({
                         )}
                       </div>
                     </div>
+
                     <div className="col-span-1">
                       <label
                         htmlFor="country"
@@ -377,15 +397,16 @@ export default function CheckoutMailForm({
                           autoComplete="country-name"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
                         >
-                          {errors.country && (
-                            <p className="text-red-500 text-xs italic">
-                              {errors.country}
-                            </p>
-                          )}
                           <option>Australia</option>
                         </select>
+                        {errors.country && (
+                          <p className="text-red-500 text-xs italic">
+                            {errors.country}
+                          </p>
+                        )}
                       </div>
                     </div>
+
                     <div>
                       <label
                         htmlFor="region"
@@ -403,6 +424,7 @@ export default function CheckoutMailForm({
                           id="region"
                           autoComplete="address-level1"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                          disabled={loading}
                         />
                         {errors.region && (
                           <p className="text-red-500 text-xs italic">
@@ -411,6 +433,7 @@ export default function CheckoutMailForm({
                         )}
                       </div>
                     </div>
+
                     <div>
                       <label
                         htmlFor="postal-code"
@@ -426,6 +449,7 @@ export default function CheckoutMailForm({
                           id="postal-code"
                           autoComplete="postal-code"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
+                          disabled={loading}
                         />
                         {errors.postalCode && (
                           <p className="text-red-500 text-xs italic">
@@ -439,6 +463,7 @@ export default function CheckoutMailForm({
               </div>
             </div>
           </div>
+
           <div className="mt-10 lg:mt-0">
             <OrderSummary
               cart={cart}
@@ -454,7 +479,7 @@ export default function CheckoutMailForm({
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <Loader size={20} className="animate-spin " />
+                    <Loader size={20} className="animate-spin" />
                     <span className="ml-2">Loading...</span>
                   </div>
                 ) : (

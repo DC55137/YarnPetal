@@ -16,10 +16,29 @@ const OrderSummary = ({
   selectedDeliveryMethod,
   pickUp = false,
 }: OrderSummaryProps) => {
+  // Calculate cart totals
+  const subtotal = cart.reduce(
+    (total, item) => total + item.basePrice * item.quantity,
+    0
+  );
+  const extraAnimalTotal = cart.reduce(
+    (total, item) => total + item.extraAnimalPrice * item.quantity,
+    0
+  );
+  const specialFlowerTotal = cart.reduce(
+    (total, item) => total + item.specialFlowerPrice * item.quantity,
+    0
+  );
+  const itemsTotal = cart.reduce(
+    (total, item) => total + item.totalPrice * item.quantity,
+    0
+  );
+  const finalTotal = itemsTotal + selectedDeliveryMethod.price;
+
   return (
     <>
       <h2 className="text-lg font-medium text-gray-900">Order summary</h2>
-      <div className="mt-4 rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="my-4 rounded-lg border border-gray-200 bg-white shadow-sm">
         <h3 className="sr-only">Items in your cart</h3>
         {cart.length === 0 && (
           <div className="flex items-center justify-center h-64">
@@ -42,31 +61,49 @@ const OrderSummary = ({
           </>
         )}
         {pickUp && <PickUpLocationMap />}
-        <div className="space-y-6 py-6 text-sm font-medium text-gray-500 px-6">
-          <div className="flex items-center justify-between border-t border-gray-200 pt-6 text-gray-900">
-            <dt className="text-base">
+        <div className="space-y-4 border-t border-gray-200 px-6 pt-6">
+          {/* Base bundle subtotal */}
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <dt>Base bundles subtotal</dt>
+            <dd>${subtotal.toFixed(2)}</dd>
+          </div>
+
+          {/* Extra animals total if any */}
+          {extraAnimalTotal > 0 && (
+            <div className="flex items-center justify-between text-sm text-blue-600">
+              <dt>Extra animals</dt>
+              <dd>+${extraAnimalTotal.toFixed(2)}</dd>
+            </div>
+          )}
+
+          {/* Special flowers total if any */}
+          {specialFlowerTotal > 0 && (
+            <div className="flex items-center justify-between text-sm text-pink-600">
+              <dt>Special flowers</dt>
+              <dd>+${specialFlowerTotal.toFixed(2)}</dd>
+            </div>
+          )}
+
+          {/* Items subtotal */}
+          <div className="flex items-center justify-between text-sm font-medium text-gray-900 pt-4 border-t border-gray-200">
+            <dt>Items subtotal</dt>
+            <dd>${itemsTotal.toFixed(2)}</dd>
+          </div>
+
+          {/* Delivery fee */}
+          <div className="flex items-center justify-between text-sm text-gray-500">
+            <dt>
               {selectedDeliveryMethod.id === 2
                 ? "Transaction Fee"
                 : "Shipping Fee"}
             </dt>
-            <dd className="text-base">
-              ${selectedDeliveryMethod.price.toFixed(2)}
-            </dd>
+            <dd>+${selectedDeliveryMethod.price.toFixed(2)}</dd>
           </div>
-        </div>
-        <div className="space-y-6 py-6 text-sm font-medium text-gray-500 px-6">
-          <div className="flex items-center justify-between text-gray-900">
-            <dt className="text-base">Total</dt>
-            <dd className="text-base">
-              $
-              {(
-                cart.reduce((acc, item) => {
-                  const basePrice = item.price * item.quantity;
 
-                  return acc + basePrice;
-                }, 0) + selectedDeliveryMethod.price
-              ).toFixed(2)}
-            </dd>
+          {/* Final total */}
+          <div className="flex mb-4 items-center justify-between border-t border-gray-200 pt-4 text-base font-medium text-gray-900">
+            <dt>Total</dt>
+            <dd>${finalTotal.toFixed(2)}</dd>
           </div>
         </div>
       </div>

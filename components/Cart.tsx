@@ -35,25 +35,18 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
     (f) => f.flower.flowerType === FlowerType.MAIN
   );
 
-  // Calculate additional costs
-  const hasExtraAnimal = item.animals.length > item.size.baseAnimalLimit;
-  const extraAnimalCost = hasExtraAnimal ? item.size.extraAnimalPrice : 0;
-  const specialFlowerCost = item.specialFlower
-    ? item.specialFlower.specialFlower.price
-    : 0;
+  // Calculate per-item prices
+  const itemBasePrice = item.basePrice;
+  const itemTotalPrice = item.totalPrice;
 
-  // Calculate animal hat costs
-  const animalHatsCost = item.animals.reduce((total, animal) => {
-    return total + (animal.hat?.price || 0);
-  }, 0);
+  // Calculate total prices with quantity
+  const totalBasePrice = itemBasePrice * item.quantity;
+  const totalExtraAnimalPrice = item.extraAnimalPrice * item.quantity;
+  const totalSpecialFlowerPrice = item.specialFlowerPrice * item.quantity;
+  const finalTotalPrice = itemTotalPrice * item.quantity;
 
-  // Calculate total add-ons cost
-  const addOnsCost =
-    (extraAnimalCost + animalHatsCost + specialFlowerCost) * item.quantity;
-
-  // Calculate base price and total
-  const basePrice = item.size.price * item.quantity;
-  const totalPrice = basePrice + addOnsCost;
+  // Calculate total add-ons
+  const totalAddOns = totalExtraAnimalPrice + totalSpecialFlowerPrice;
 
   return (
     <div className="py-6">
@@ -98,14 +91,16 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
               )}
               {item.animals.length > 0 && (
                 <>
-                  , {item.size.baseAnimalLimit} base animal
-                  {hasExtraAnimal && ` + 1 extra animal`}
+                  , {item.animals.length} animal
+                  {item.animals.length > 1 ? "s" : ""}
+                  {item.animals.length > item.size.baseAnimalLimit && (
+                    <span className="text-blue-600 font-medium">
+                      {" "}
+                      (including extra animal)
+                    </span>
+                  )}
                 </>
               )}
-              {item.animals.some((a) => a.hat) &&
-                ` with ${item.animals.filter((a) => a.hat).length} hat${
-                  item.animals.filter((a) => a.hat).length > 1 ? "s" : ""
-                }`}
             </p>
           </div>
 
@@ -140,7 +135,6 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
                   />
                 </div>
               ))}
-              {/* Special flower */}
               {item.specialFlower && (
                 <div className="relative w-8 h-8 flex-shrink-0">
                   <div className="absolute inset-0 border-2 border-pink-400 rounded"></div>
@@ -170,45 +164,49 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
             </div>
           </div>
 
-          {/* Price and Quantity Controls */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() =>
-                  onUpdateQuantity(item, Math.max(1, item.quantity - 1))
-                }
-                disabled={item.quantity <= 1}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <span className="text-sm w-8 text-center">{item.quantity}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => onUpdateQuantity(item, item.quantity + 1)}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">
-                ${totalPrice.toFixed(2)}
-              </p>
-              {addOnsCost > 0 && (
-                <p className="text-xs text-gray-500">
-                  Includes ${addOnsCost.toFixed(2)} in add-ons
-                  {specialFlowerCost > 0 && (
-                    <span className="text-pink-600">
-                      {" "}
-                      (${specialFlowerCost.toFixed(2)} special flower)
-                    </span>
-                  )}
+          {/* Price Breakdown and Quantity Controls */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() =>
+                    onUpdateQuantity(item, Math.max(1, item.quantity - 1))
+                  }
+                  disabled={item.quantity <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="text-sm w-8 text-center">{item.quantity}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => onUpdateQuantity(item, item.quantity + 1)}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium text-gray-900">
+                  ${finalTotalPrice.toFixed(2)}
                 </p>
-              )}
+                <div className="text-xs text-gray-500 space-y-0.5">
+                  <p>Base bundle: ${totalBasePrice.toFixed(2)}</p>
+                  {totalExtraAnimalPrice > 0 && (
+                    <p className="text-blue-600">
+                      Extra animal: +${totalExtraAnimalPrice.toFixed(2)}
+                    </p>
+                  )}
+                  {totalSpecialFlowerPrice > 0 && (
+                    <p className="text-pink-600">
+                      Special flower: +${totalSpecialFlowerPrice.toFixed(2)}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -241,41 +239,39 @@ export default function Cart() {
     document.getElementById("sheet-content")?.classList.add("open");
   };
 
-  // Loading state component
-  const LoadingCart = () => (
-    <button
-      type="button"
-      className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 hover:cursor-pointer"
-    >
-      <span className="absolute -inset-1.5" />
-      <span className="sr-only">View cart</span>
-      <ShoppingBag className="h-6 w-6" aria-hidden="true" />
-    </button>
-  );
-
   if (!isClient || !cartStore) {
-    return <LoadingCart />;
+    return (
+      <button
+        type="button"
+        className="relative rounded-full p-1 text-main-800 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-main-500 focus:ring-offset-2 hover:cursor-pointer"
+      >
+        <span className="absolute -inset-1.5" />
+        <span className="sr-only">View cart</span>
+        <ShoppingBag className="h-6 w-6" aria-hidden="true" />
+      </button>
+    );
   }
-  console.log("cartStore", cartStore);
 
   const { cart, changeQuantity, removeFromCart } = cartStore;
   const cartCount = cart.length;
-  // Update cart total calculation to include extra animals and hats
-  const cartTotal = cart.reduce((total, item) => {
-    const basePrice = item.size.price * item.quantity;
-    const hasExtraAnimal = item.animals.length > item.size.baseAnimalLimit;
-    const extraAnimalCost = hasExtraAnimal ? item.size.extraAnimalPrice : 0;
-    const animalHatsCost = item.animals.reduce((hatTotal, animal) => {
-      return hatTotal + (animal.hat?.price || 0);
-    }, 0);
-    const specialFlowerCost = item.specialFlower
-      ? item.specialFlower.specialFlower.price
-      : 0;
-    const addOnsCost =
-      (extraAnimalCost + animalHatsCost + specialFlowerCost) * item.quantity;
 
-    return total + basePrice + addOnsCost;
-  }, 0);
+  // Calculate cart totals
+  const cartSubtotal = cart.reduce(
+    (total, item) => total + item.basePrice * item.quantity,
+    0
+  );
+  const extraAnimalTotal = cart.reduce(
+    (total, item) => total + item.extraAnimalPrice * item.quantity,
+    0
+  );
+  const specialFlowerTotal = cart.reduce(
+    (total, item) => total + item.specialFlowerPrice * item.quantity,
+    0
+  );
+  const cartTotal = cart.reduce(
+    (total, item) => total + item.totalPrice * item.quantity,
+    0
+  );
 
   return (
     <div {...handlers}>
@@ -318,10 +314,26 @@ export default function Cart() {
                     ))}
                   </div>
 
-                  <div className="space-y-4 mt-6 border-t border-gray-200">
-                    <div className="flex items-center justify-between pt-6 text-base font-medium text-gray-900">
-                      <dt>Total</dt>
-                      <dd>${cartTotal.toFixed(2)}</dd>
+                  <div className="space-y-3 mt-6 border-t border-gray-200 pt-6">
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Base bundles subtotal</span>
+                      <span>${cartSubtotal.toFixed(2)}</span>
+                    </div>
+                    {extraAnimalTotal > 0 && (
+                      <div className="flex justify-between text-sm text-blue-600">
+                        <span>Extra animals</span>
+                        <span>+${extraAnimalTotal.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {specialFlowerTotal > 0 && (
+                      <div className="flex justify-between text-sm text-pink-600">
+                        <span>Special flowers</span>
+                        <span>+${specialFlowerTotal.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-base font-medium text-gray-900 pt-3 border-t border-gray-200">
+                      <span>Total</span>
+                      <span>${cartTotal.toFixed(2)}</span>
                     </div>
                   </div>
 

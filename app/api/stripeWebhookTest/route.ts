@@ -189,6 +189,8 @@ export async function POST(req: Request) {
               .map((f) => f.flower.name)
               .join(", ");
 
+            const itemTotal = item.totalPrice * item.quantity;
+
             return `
             <li style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
               <h3 style="margin: 0 0 10px 0;">${item.color.name} Bundle (${
@@ -214,7 +216,7 @@ export async function POST(req: Request) {
               ${
                 item.specialFlower
                   ? `
-                <strong>Special Flower:</strong> ${item.specialFlower.name}<br />
+                <strong style="color: #db2777;">Special Flower:</strong> ${item.specialFlower.name}<br />
               `
                   : ""
               }
@@ -235,7 +237,9 @@ export async function POST(req: Request) {
               ${
                 item.extraAnimal
                   ? `
-                <strong>Extra Animal:</strong> ${item.extraAnimal.name}
+                <strong style="color: #2563eb;">Extra Animal:</strong> ${
+                  item.extraAnimal.name
+                }
                 ${
                   item.extraAnimalHat
                     ? ` with ${item.extraAnimalHat.name} hat`
@@ -245,19 +249,37 @@ export async function POST(req: Request) {
                   : ""
               }
               
+              <div style="margin-top: 10px; padding: 10px; background-color: #f8fafc; border-radius: 4px;">
+                <div style="margin-bottom: 8px;">
+                  <strong>Price Breakdown (per item):</strong>
+                </div>
+                <div style="padding-left: 10px;">
+                  <div>Base Price: $${item.basePrice.toFixed(2)}</div>
+                  ${
+                    item.extraAnimalPrice > 0
+                      ? `<div style="color: #2563eb;">Extra Animal: +$${item.extraAnimalPrice.toFixed(
+                          2
+                        )}</div>`
+                      : ""
+                  }
+                  ${
+                    item.specialFlowerPrice > 0
+                      ? `<div style="color: #db2777;">Special Flower: +$${item.specialFlowerPrice.toFixed(
+                          2
+                        )}</div>`
+                      : ""
+                  }
+                  <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid #e2e8f0;">
+                    <strong>Price per item:</strong> $${item.totalPrice.toFixed(
+                      2
+                    )}
+                  </div>
+                </div>
+              </div>
+              
               <div style="margin-top: 10px;">
                 <strong>Quantity:</strong> ${item.quantity}<br />
-                <strong>Base Price:</strong> $${item.basePrice.toFixed(2)}<br />
-                ${
-                  item.extraAnimalPrice
-                    ? `<strong>Extra Animal Price:</strong> $${item.extraAnimalPrice.toFixed(
-                        2
-                      )}<br />`
-                    : ""
-                }
-                <strong>Total Price:</strong> $${item.totalPrice.toFixed(
-                  2
-                )}<br />
+                <strong>Total for this item:</strong> $${itemTotal.toFixed(2)}
               </div>
               
               <div style="margin-top: 10px;">
@@ -270,6 +292,22 @@ export async function POST(req: Request) {
           })
           .join("")}
       </ul>
+      <div style="margin-top: 20px; padding: 15px; background-color: #f8fafc; border-radius: 4px;">
+        <h3 style="margin: 0 0 10px 0;">Order Total Breakdown</h3>
+        <div>
+          <strong>Items Subtotal:</strong> $${(
+            order.total - parseFloat(order.deliveryMethod.split("$")[1])
+          ).toFixed(2)}
+        </div>
+        <div>
+          <strong>Delivery Fee:</strong> $${parseFloat(
+            order.deliveryMethod.split("$")[1]
+          ).toFixed(2)}
+        </div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
+          <strong>Final Total:</strong> $${order.total.toFixed(2)}
+        </div>
+      </div>
       <p style="color: #666; font-size: 14px; margin-top: 20px;">
         Thank you for your purchase! If you have any questions about your order, please don't hesitate to contact us.
       </p>

@@ -84,7 +84,7 @@ export async function checkout({ formData }: checkoutProps) {
     postalCode,
   } = formData;
 
-  // Create line items for Stripe
+  // Create line items for Stripe with detailed price breakdown
   const cartItems: Stripe.Checkout.SessionCreateParams.LineItem[] = cart.map(
     (item) => ({
       quantity: item.quantity,
@@ -92,19 +92,25 @@ export async function checkout({ formData }: checkoutProps) {
         currency: "aud",
         product_data: {
           name: `${item.color.name} Bundle - ${item.size.size}`,
-          description: `Flowers: ${item.flowers
-            .map((f) => f.flower.name)
-            .join(", ")}${
-            item.specialFlower
-              ? `, Special: ${item.specialFlower.specialFlower.name}`
+          description: `Base Price: $${item.basePrice.toFixed(2)}${
+            item.extraAnimalPrice > 0
+              ? `\nExtra Animal: +$${item.extraAnimalPrice.toFixed(2)}`
               : ""
-          }\nAnimals: ${item.animals
+          }${
+            item.specialFlower
+              ? `\nSpecial Flower (${
+                  item.specialFlower.specialFlower.name
+                }): +$${item.specialFlowerPrice.toFixed(2)}`
+              : ""
+          }\n\nFlowers: ${item.flowers
+            .map((f) => f.flower.name)
+            .join(", ")}\nAnimals: ${item.animals
             .map(
               (a) => `${a.animal.name}${a.hat ? ` with ${a.hat.name} hat` : ""}`
             )
             .join(", ")}`,
         },
-        unit_amount: Math.round(item.price * 100),
+        unit_amount: Math.round(item.totalPrice * 100),
       },
     })
   );
@@ -121,20 +127,12 @@ export async function checkout({ formData }: checkoutProps) {
       unit_amount:
         Math.round(
           price -
-            cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
+            cart.reduce((acc, item) => acc + item.totalPrice * item.quantity, 0)
         ) * 100,
     },
   };
 
   const line_items = [...cartItems, deliveryLineItem];
-
-  // Calculate extra animal price if applicable
-  const getExtraAnimalPrice = (item: CartItem) => {
-    if (item.animals.length > item.size.baseAnimalLimit) {
-      return item.size.extraAnimalPrice;
-    }
-    return 0;
-  };
 
   // Save order details in the database
   const order = await prismadb.order.create({
@@ -158,9 +156,10 @@ export async function checkout({ formData }: checkoutProps) {
           colorId: item.color.id,
           sizeId: item.size.id,
           quantity: item.quantity,
-          basePrice: item.price - getExtraAnimalPrice(item),
-          extraAnimalPrice: getExtraAnimalPrice(item),
-          totalPrice: item.price,
+          basePrice: item.basePrice,
+          extraAnimalPrice: item.extraAnimalPrice,
+          specialFlowerPrice: item.specialFlowerPrice || 0,
+          totalPrice: item.totalPrice,
           specialFlowerId: item.specialFlower?.specialFlower.id || null,
           flowers: {
             create: item.flowers.map((flower) => ({
@@ -251,15 +250,36 @@ export async function checkout({ formData }: checkoutProps) {
         ${order.orderItems
           .map(
             (item) => `
-          <li>
-            <strong>Color:</strong> ${item.color.name} <br />
-            <strong>Size:</strong> ${item.size.size} <br />
+          <li style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 5px;">
+            <h3 style="margin: 0 0 10px 0;">${item.color.name} Bundle (${
+              item.size.size
+            })</h3>
+            
+            <div style="margin-bottom: 10px;">
+              <strong>Base Price:</strong> $${item.basePrice.toFixed(2)}<br />
+              ${
+                item.extraAnimalPrice > 0
+                  ? `<strong style="color: #2563eb;">Extra Animal:</strong> +$${item.extraAnimalPrice.toFixed(
+                      2
+                    )}<br />`
+                  : ""
+              }
+              ${
+                item.specialFlowerPrice > 0
+                  ? `<strong style="color: #db2777;">Special Flower:</strong> +$${item.specialFlowerPrice.toFixed(
+                      2
+                    )}<br />`
+                  : ""
+              }
+              <strong>Total per item:</strong> $${item.totalPrice.toFixed(2)}
+            </div>
+
             <strong>Flowers:</strong> ${item.flowers
               .map((f) => f.flower.name)
               .join(", ")} <br />
             ${
               item.specialFlower
-                ? `<strong>Special Flower:</strong> ${item.specialFlower.name} <br />`
+                ? `<strong style="color: #db2777;">Special Flower:</strong> ${item.specialFlower.name} <br />`
                 : ""
             }
             <strong>Base Animal:</strong> ${
@@ -269,18 +289,28 @@ export async function checkout({ formData }: checkoutProps) {
             } <br />
             ${
               item.extraAnimal
-                ? `<strong>Extra Animal:</strong> ${item.extraAnimal.name}${
+                ? `<strong style="color: #2563eb;">Extra Animal:</strong> ${
+                    item.extraAnimal.name
+                  }${
                     item.extraAnimalHat
                       ? ` with ${item.extraAnimalHat.name}`
                       : ""
                   } <br />`
                 : ""
             }
-            <strong>Quantity:</strong> ${item.quantity} <br />
-            <strong>Total Price:</strong> $${item.totalPrice.toFixed(2)} <br />
-            <img src="${item.color.imageBack}" alt="${
+            
+            <div style="margin-top: 10px;">
+              <strong>Quantity:</strong> ${item.quantity}<br />
+              <strong>Item Total:</strong> $${(
+                item.totalPrice * item.quantity
+              ).toFixed(2)}
+            </div>
+            
+            <div style="margin-top: 10px;">
+              <img src="${item.color.imageBack}" alt="${
               item.color.name
-            }" width="100" />
+            }" width="100" style="border-radius: 5px;" />
+            </div>
           </li>
         `
           )
