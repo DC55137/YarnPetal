@@ -1,12 +1,24 @@
 "use client";
 
-import { Animal, Color, Flower, Hat, Size } from "@prisma/client";
+import {
+  Animal,
+  Color,
+  Flower,
+  Hat,
+  Size,
+  SpecialFlower,
+} from "@prisma/client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 // Types for selected items
 export type SelectedFlowerItem = {
   flower: Flower;
+  position: number;
+};
+
+export type SelectedSpecialFlowerItem = {
+  specialFlower: SpecialFlower;
   position: number;
 };
 
@@ -25,10 +37,11 @@ export interface CartItem {
   size: Size;
   color: Color;
   flowers: SelectedFlowerItem[];
-  animals: AnimalWithHat[]; // Updated to include hat information
+  specialFlower: SelectedSpecialFlowerItem | null; // Changed from premiumFlowers array
+  animals: AnimalWithHat[];
   price: number;
   quantity: number;
-  hat: Hat | null; // Make this optional or remove it if you no longer need it
+  hat: Hat | null;
 }
 
 // Cart state type
@@ -58,15 +71,32 @@ const areSelectedItemsEqual = (
   });
 };
 
-// Helper function to check if two cart items are the same
 const areCartItemsEqual = (item1: CartItem, item2: CartItem): boolean => {
   return (
     item1.size.id === item2.size.id &&
     item1.color.id === item2.color.id &&
     item1.hat?.id === item2.hat?.id &&
     areSelectedItemsEqual(item1.flowers, item2.flowers) &&
+    !item1.specialFlower === !item2.specialFlower && // Check if both have or don't have special flower
+    item1.specialFlower?.specialFlower.id ===
+      item2.specialFlower?.specialFlower.id && // Check special flower ID if present
     areSelectedItemsEqual(item1.animals, item2.animals)
   );
+};
+
+const calculateSpecialFlowerPrice = (
+  specialFlower: SelectedSpecialFlowerItem | null
+): number => {
+  return specialFlower ? specialFlower.specialFlower.price : 0;
+};
+
+const calculateBasePrice = (item: CartItem): number => {
+  const basePrice = item.size.price;
+  const extraAnimalPrice =
+    item.animals.length > item.size.baseAnimalLimit
+      ? item.size.extraAnimalPrice
+      : 0;
+  return basePrice + extraAnimalPrice;
 };
 
 export type CartActions = {
@@ -89,8 +119,15 @@ export const useCartStore = create<CartStore>()(
 
       addToCart: (newItem: CartItem) => {
         set((state) => {
+          const itemToAdd = {
+            ...newItem,
+            price:
+              calculateBasePrice(newItem) +
+              calculateSpecialFlowerPrice(newItem.specialFlower),
+          };
+
           const existingItemIndex = state.cart.findIndex((item) =>
-            areCartItemsEqual(item, newItem)
+            areCartItemsEqual(item, itemToAdd)
           );
 
           if (existingItemIndex !== -1) {
@@ -103,7 +140,7 @@ export const useCartStore = create<CartStore>()(
             return { cart: updatedCart };
           } else {
             // Add new item
-            return { cart: [...state.cart, { ...newItem, quantity: 1 }] };
+            return { cart: [...state.cart, { ...itemToAdd, quantity: 1 }] };
           }
         });
       },

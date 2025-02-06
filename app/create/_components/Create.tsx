@@ -1,28 +1,47 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, Loader, Plus, Trash } from "lucide-react";
-import { pacifico } from "@/app/fonts";
+
 import toast from "react-hot-toast";
-import { redirect } from "next/navigation";
+
 import { useRouter } from "next/navigation";
 
-import { useCartStore, SelectedFlowerItem } from "@/src/stores/cart-store";
-import { Animal, Hat, Size, Flower, FlowerType, Color } from "@prisma/client";
+import {
+  useCartStore,
+  SelectedFlowerItem,
+  SelectedSpecialFlowerItem,
+} from "@/src/stores/cart-store";
+
+import {
+  Animal,
+  Hat,
+  Size,
+  Flower,
+  FlowerType,
+  Color,
+  SpecialFlower,
+} from "@prisma/client";
 import { AnimalWithHat, CreatePageProps, ImageDisplayProps } from "@/lib/types";
 import StepIndicator from "./StepIndicator";
-import { revalidatePath } from "next/cache";
 
 // Define step types
-type Step = "size" | "color" | "smallFlowers" | "mainFlowers" | "animals";
+type Step =
+  | "size"
+  | "color"
+  | "smallFlowers"
+  | "mainFlowers"
+  | "specialItems"
+  | "animals";
 
 const STEPS: Step[] = [
   "size",
   "color",
   "smallFlowers",
   "mainFlowers",
+  "specialItems",
   "animals",
 ];
 
@@ -31,6 +50,7 @@ const STEP_TITLES: Record<Step, string> = {
   color: "Select Your Color",
   smallFlowers: "Add Small Flowers",
   mainFlowers: "Add Main Flowers",
+  specialItems: "Add Special Items",
   animals: "Choose Your Animals",
 };
 
@@ -137,18 +157,64 @@ const ImagePlaceholder: React.FC<{
   </div>
 );
 
+// SpecialFlowerDisplay Component
+const SpecialFlowerDisplay = ({
+  selectedSpecialFlower,
+  onRemoveSpecialFlower,
+}: {
+  selectedSpecialFlower: SelectedSpecialFlowerItem | null;
+  onRemoveSpecialFlower: () => void;
+}) => {
+  if (!selectedSpecialFlower) return null;
+
+  return (
+    <div>
+      <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+        Special Items
+        <span className="px-2 py-0.5 bg-pink-100 text-pink-700 rounded-full text-xs font-medium">
+          Limited Edition
+        </span>
+      </h3>
+      <div className="grid grid-cols-4 gap-3">
+        <div className="relative">
+          <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-pink-200 bg-white p-2">
+            <Image
+              src={selectedSpecialFlower.specialFlower.imageSingle}
+              alt={selectedSpecialFlower.specialFlower.name}
+              className="object-contain"
+              fill
+              sizes="(max-width: 768px) 25vw, 20vw"
+            />
+          </div>
+          <Button
+            size="sm"
+            variant="destructive"
+            className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
+            onClick={onRemoveSpecialFlower}
+          >
+            <Trash className="h-3 w-3" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Image Display Component
 const ImageDisplay: React.FC<ImageDisplayProps> = ({
   selectedColor,
   selectedFlowers,
+  selectedSpecialFlower, // Add this prop
   selectedAnimals,
   selectedSize,
   availableHats,
   totalPrice,
   onRemoveFlower,
+  onRemoveSpecialFlower, // Add this prop
   onRemoveAnimal,
   onHatChange,
 }) => {
+  // Update flower filtering - remove isPremium checks
   const mainFlowers = selectedFlowers.filter(
     (f) => f.flower.flowerType === FlowerType.MAIN
   );
@@ -184,12 +250,19 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
               priority
             />
           </div>
-          {/* Color Description */}
           <p className="text-sm text-gray-600">{selectedColor.description}</p>
         </div>
 
         {/* Selected Items Display */}
         <div className="w-2/3 space-y-6">
+          {/* Special Items Section */}
+          {selectedSpecialFlower && (
+            <SpecialFlowerDisplay
+              selectedSpecialFlower={selectedSpecialFlower}
+              onRemoveSpecialFlower={onRemoveSpecialFlower}
+            />
+          )}
+
           {/* Small Flowers Section */}
           <div>
             <h3 className="text-sm font-medium mb-3">Small Flowers</h3>
@@ -354,6 +427,11 @@ const ImageDisplay: React.FC<ImageDisplayProps> = ({
             Main Items: {mainFlowers.length}/{selectedSize.mainFlowerLimit}
           </span>
         </div>
+        {selectedSpecialFlower && (
+          <div className="mt-2 text-sm text-pink-600 font-medium">
+            + {selectedSpecialFlower.specialFlower.name}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -440,10 +518,14 @@ const FlowerSection: React.FC<{
   handleAddFlower,
   setSelectedFlowers,
 }) => {
-  const filteredFlowers = flowers.filter((f) => f.flowerType === flowerType);
+  // Filter out premium flowers from display
+  const filteredFlowers = flowers.filter(
+    (f) => f.flowerType === flowerType && !f.isPremium
+  );
 
+  // Count only non-premium flowers for limit checking
   const selectedCount = selectedFlowers.filter(
-    (f) => f.flower.flowerType === flowerType
+    (f) => f.flower.flowerType === flowerType && !f.flower.isPremium
   ).length;
 
   const maxCount =
@@ -457,6 +539,7 @@ const FlowerSection: React.FC<{
   const MAX_SAME_MAIN_FLOWER = 2;
 
   const getCountDisplay = () => {
+    // Update the display text to clarify these are regular flowers
     if (flowerType === FlowerType.SMALL) {
       return (
         <div className="h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium bg-gray-100 text-gray-700">
@@ -492,7 +575,9 @@ const FlowerSection: React.FC<{
           const isSoldOut = flower.stock - count <= 0;
           const isMaxSameFlower =
             flowerType === FlowerType.MAIN && count >= MAX_SAME_MAIN_FLOWER;
-          const isDisabled = isSoldOut || isAtLimit || isMaxSameFlower;
+          // Only consider non-premium flowers for the limit
+          const isDisabled =
+            isSoldOut || (isAtLimit && !flower.isPremium) || isMaxSameFlower;
 
           return (
             <div key={flower.id} className="relative group">
@@ -508,7 +593,7 @@ const FlowerSection: React.FC<{
                     : "hover:border-main-200"
                 )}
               >
-                {/* Item Image */}
+                {/* Rest of the component remains the same */}
                 <div className="relative w-full aspect-square">
                   <Image
                     src={flower.imageUrl}
@@ -519,7 +604,6 @@ const FlowerSection: React.FC<{
                   />
                 </div>
 
-                {/* Item Name and Count */}
                 <div className="mt-2 space-y-1 text-center">
                   <span className="text-sm font-medium text-gray-700">
                     {flower.name}
@@ -535,7 +619,6 @@ const FlowerSection: React.FC<{
                   )}
                 </div>
 
-                {/* Hover Message when limit reached */}
                 {(isAtLimit || isMaxSameFlower) && count === 0 && (
                   <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 z-10">
                     <p className="text-xs text-gray-600 text-center">
@@ -550,7 +633,6 @@ const FlowerSection: React.FC<{
                   </div>
                 )}
 
-                {/* Remove Button */}
                 {count > 0 && (
                   <Button
                     size="sm"
@@ -572,7 +654,6 @@ const FlowerSection: React.FC<{
                   </Button>
                 )}
 
-                {/* Add Button */}
                 <Button
                   size="sm"
                   variant={count > 0 ? "default" : "outline"}
@@ -583,7 +664,6 @@ const FlowerSection: React.FC<{
                   <Plus className="h-6 w-6" />
                 </Button>
 
-                {/* Stock Indicators */}
                 {isSoldOut && (
                   <div className="absolute inset-0 overflow-hidden rounded-md z-10">
                     <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
@@ -598,7 +678,6 @@ const FlowerSection: React.FC<{
                   </span>
                 )}
 
-                {/* Max same flower indicator */}
                 {isMaxSameFlower && (
                   <span className="mt-1 text-xs text-gray-500">
                     Maximum 2 allowed
@@ -815,176 +894,288 @@ const ExtraAnimalSection: React.FC<{
     selectedSize.baseAnimalLimit
   ).length;
   const isLimitReached = extraAnimalCount >= selectedSize.maxExtraAnimals;
+  const totalAnimals = selectedAnimals.length;
 
   return (
-    <div className="mt-8 border-t pt-8">
-      <div className="flex items-center justify-between mb-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Add an Extra Animal?
-            </h3>
-            <div className="text-sm font-normal text-gray-500">
-              (+${selectedSize.extraAnimalPrice.toFixed(2)})
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              You can add one additional animal to your bundle
-            </p>
-            <Button
-              variant={hasExtraAnimal ? "default" : "outline"}
-              onClick={() => onToggleExtraAnimal(!hasExtraAnimal)}
-              className="ml-4"
-            >
-              {hasExtraAnimal ? "Remove Extra Animal" : "Add Extra Animal"}
-            </Button>
+    <div className="mt-8">
+      {/* Divider with animal count */}
+      <div className="relative border-t border-gray-200 mb-8">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-4">
+          <div className="text-sm text-gray-500">
+            {totalAnimals}/2 Animals Selected
           </div>
         </div>
       </div>
 
-      {hasExtraAnimal && (
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-4">
-            <div
-              className={cn(
-                "h-6 px-2 rounded-full flex items-center justify-center text-sm font-medium",
-                isLimitReached
-                  ? "bg-gray-100 text-gray-700"
-                  : "bg-gray-100 text-gray-700"
-              )}
-            >
-              {extraAnimalCount}/{selectedSize.maxExtraAnimals}
+      {/* Extra Animal Section */}
+      <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+        <div className="space-y-4">
+          {/* Header */}
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Want to add a second animal?
+                </h3>
+                <div className="bg-main-100 text-main-700 text-xs font-medium px-2 py-1 rounded-full">
+                  Optional
+                </div>
+              </div>
+              <p className="text-sm text-gray-600">
+                Make your bundle extra special by adding a second animal for an
+                additional ${selectedSize.extraAnimalPrice.toFixed(2)}
+              </p>
             </div>
-            {isLimitReached && (
-              <span className="text-sm text-gray-600">Maximum selected</span>
-            )}
+            <Button
+              variant={hasExtraAnimal ? "default" : "outline"}
+              onClick={() => onToggleExtraAnimal(!hasExtraAnimal)}
+              className="shrink-0"
+            >
+              {hasExtraAnimal ? "Remove Second Animal" : "Add Second Animal"}
+            </Button>
           </div>
 
-          <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
-            {animals.map((animal) => {
-              const isExtraAnimalSelected = selectedAnimals
-                .slice(selectedSize.baseAnimalLimit)
-                .some((a) => a.animal.id === animal.id);
-              const isSame =
-                selectedAnimals && selectedAnimals[0].animal.id === animal.id;
-              let isSoldOut;
-              if (isSame) {
-                isSoldOut = animal.stock === 1;
-              } else {
-                isSoldOut = animal.stock === 0;
-              }
+          {/* Animal Selection Grid */}
+          {hasExtraAnimal && (
+            <div className="pt-4">
+              <div className="grid sm:grid-cols-4 grid-cols-3 sm:gap-5 gap-4">
+                {animals.map((animal) => {
+                  const isExtraAnimalSelected = selectedAnimals
+                    .slice(selectedSize.baseAnimalLimit)
+                    .some((a) => a.animal.id === animal.id);
+                  const isSame =
+                    selectedAnimals &&
+                    selectedAnimals[0]?.animal.id === animal.id;
+                  const isSoldOut = isSame
+                    ? animal.stock === 1
+                    : animal.stock === 0;
 
-              return (
-                <div key={animal.id} className="relative group">
-                  <div
-                    className={cn(
-                      "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
-                      isSoldOut
-                        ? "border-red-200 bg-white/80"
-                        : isExtraAnimalSelected
-                        ? "border-main-300 bg-main-50"
-                        : isLimitReached
-                        ? "border-gray-200 bg-gray-50"
-                        : "hover:border-main-200"
-                    )}
-                  >
-                    {/* Item Image */}
-                    <div className="relative w-full aspect-square">
-                      <Image
-                        src={animal.imageUrl}
-                        alt={animal.name}
-                        className="object-contain object-top rounded-md"
-                        fill
-                        sizes="70px"
-                      />
-                    </div>
-
-                    {/* Item Name and Selected Status */}
-                    <div className="mt-2 space-y-1 text-center">
-                      <span className="text-sm font-medium text-gray-700">
-                        {animal.name}
-                      </span>
-                      {isExtraAnimalSelected && (
-                        <div className="flex items-center justify-center gap-2">
-                          <div className=" px-2 bg-main-100 rounded-full">
-                            <span className="text-xs font-medium text-main-700">
-                              Selected
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Hover Message when limit reached */}
-                    {isLimitReached && !isExtraAnimalSelected && (
-                      <div className="absolute inset-0 bg-white/90 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
-                        <p className="text-xs text-gray-600 text-center">
-                          Maximum {selectedSize.maxExtraAnimals} extra{" "}
-                          {selectedSize.maxExtraAnimals === 1
-                            ? "animal"
-                            : "animals"}
-                          allowed for this size.
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Remove Button - Only show when selected */}
-                    {isExtraAnimalSelected && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          const extraAnimal = selectedAnimals
-                            .slice(selectedSize.baseAnimalLimit)
-                            .find((a) => a.animal.id === animal.id);
-                          if (extraAnimal) {
-                            setSelectedAnimals((prev) =>
-                              prev.filter(
-                                (a) => a.position !== extraAnimal.position
-                              )
-                            );
-                            toast.success(`Removed extra ${animal.name}`);
-                          }
-                        }}
-                        className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                  return (
+                    <div key={animal.id} className="relative group">
+                      <div
+                        className={cn(
+                          "relative flex flex-col items-center justify-center rounded-md border p-2 transition-all",
+                          isSoldOut
+                            ? "border-red-200 bg-white/80"
+                            : isExtraAnimalSelected
+                            ? "border-main-300 bg-main-50"
+                            : isLimitReached
+                            ? "border-gray-200 bg-gray-50"
+                            : "hover:border-main-200"
+                        )}
                       >
-                        <Trash className="h-5 w-5 text-main-700" />
-                      </Button>
-                    )}
-
-                    {/* Add Button - Always visible but disabled when appropriate */}
-                    <Button
-                      size="sm"
-                      variant={isExtraAnimalSelected ? "default" : "outline"}
-                      className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0"
-                      onClick={(e) => handleAddAnimal(animal, e)}
-                      disabled={isSoldOut || isLimitReached}
-                    >
-                      <Plus className="h-6 w-6" />
-                    </Button>
-
-                    {/* Stock Indicators */}
-                    {isSoldOut && (
-                      <div className="absolute inset-0 overflow-hidden rounded-md">
-                        <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
-                        <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
-                          SOLD OUT
+                        {/* Item Image */}
+                        <div className="relative w-full aspect-square">
+                          <Image
+                            src={animal.imageUrl}
+                            alt={animal.name}
+                            className="object-contain object-top rounded-md"
+                            fill
+                            sizes="70px"
+                          />
                         </div>
+
+                        {/* Item Name and Selected Status */}
+                        <div className="mt-2 space-y-1 text-center">
+                          <span className="text-sm font-medium text-gray-700">
+                            {animal.name}
+                          </span>
+                          {isExtraAnimalSelected && (
+                            <div className="flex items-center justify-center gap-2">
+                              <div className="px-2 bg-main-100 rounded-full">
+                                <span className="text-xs font-medium text-main-700">
+                                  Selected
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                          {/* Stock display */}
+                          {!isSoldOut && animal.stock <= 3 && (
+                            <div className="text-[10px] text-orange-500 font-medium">
+                              Only {animal.stock} left
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        {isExtraAnimalSelected && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const extraAnimal = selectedAnimals
+                                .slice(selectedSize.baseAnimalLimit)
+                                .find((a) => a.animal.id === animal.id);
+                              if (extraAnimal) {
+                                setSelectedAnimals((prev) =>
+                                  prev.filter(
+                                    (a) => a.position !== extraAnimal.position
+                                  )
+                                );
+                                toast.success(`Removed ${animal.name}`);
+                              }
+                            }}
+                            className="absolute -top-2 -right-2 h-8 w-8 rounded-full p-0 bg-main-100 hover:bg-main-200"
+                          >
+                            <Trash className="h-5 w-5 text-main-700" />
+                          </Button>
+                        )}
+
+                        <Button
+                          size="sm"
+                          variant={
+                            isExtraAnimalSelected ? "default" : "outline"
+                          }
+                          className="absolute -top-2 -left-2 h-8 w-8 rounded-full p-0"
+                          onClick={(e) => handleAddAnimal(animal, e)}
+                          disabled={isSoldOut || isLimitReached}
+                        >
+                          <Plus className="h-6 w-6" />
+                        </Button>
+
+                        {/* Sold Out Overlay */}
+                        {isSoldOut && (
+                          <div className="absolute inset-0 overflow-hidden rounded-md">
+                            <div className="absolute top-0 right-0 left-0 bottom-0 bg-white/60" />
+                            <div className="absolute top-[40%] right-[-35%] left-[-35%] h-6 bg-red-500 text-white text-xs font-bold flex items-center justify-center rotate-[45deg]">
+                              SOLD OUT
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {!isSoldOut && animal.stock <= 3 && (
-                      <span className="mt-1 text-[10px] text-orange-500 font-medium">
-                        Only {animal.stock} left
-                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SpecialItemsSection: React.FC<{
+  selectedSize: Size;
+  selectedSpecialFlower: SelectedSpecialFlowerItem | null;
+  specialFlowers: SpecialFlower[];
+  handleAddSpecialFlower: (
+    specialFlower: SpecialFlower,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => void;
+  setSelectedSpecialFlower: (flower: SelectedSpecialFlowerItem | null) => void;
+}> = ({
+  selectedSize,
+  selectedSpecialFlower,
+  specialFlowers,
+  handleAddSpecialFlower,
+  setSelectedSpecialFlower,
+}) => {
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2 mb-8">
+        <h3 className="text-2xl font-bold text-pink-600 font-handwriting">
+          Special Items
+        </h3>
+        <p className="text-gray-600">
+          Add these limited edition items to make your arrangement extra special
+        </p>
+      </div>
+
+      {specialFlowers
+        .filter((flower) => flower.isActive)
+        .map((specialFlower) => {
+          const isSelected =
+            selectedSpecialFlower?.specialFlower.id === specialFlower.id;
+          const remainingStock = specialFlower.stock - (isSelected ? 1 : 0);
+
+          return (
+            <div
+              key={specialFlower.id}
+              className="relative overflow-hidden rounded-lg border-2 border-pink-200 bg-gradient-to-r from-pink-50 to-white p-6"
+            >
+              <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
+                <div className="bg-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+                  1 per bundle
+                </div>
+                <div
+                  className={cn(
+                    "px-4 py-1 rounded-full text-sm font-medium",
+                    remainingStock <= 3
+                      ? "bg-orange-100 text-orange-700"
+                      : "bg-green-100 text-green-700"
+                  )}
+                >
+                  {remainingStock} available
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                <div className="w-full md:w-1/3">
+                  <div className="relative aspect-square rounded-lg overflow-hidden bg-white p-4">
+                    <Image
+                      src={specialFlower.imageUrl}
+                      alt={specialFlower.name}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full md:w-2/3 space-y-4">
+                  <h3 className="text-2xl font-bold text-gray-900 font-handwriting">
+                    {specialFlower.name}
+                  </h3>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-semibold text-pink-600">
+                      +${specialFlower.price.toFixed(2)}
+                    </span>
+                  </div>
+
+                  <p className="text-gray-600">{specialFlower.description}</p>
+
+                  <div className="flex items-center gap-4">
+                    {!isSelected ? (
+                      <Button
+                        onClick={(e) =>
+                          handleAddSpecialFlower(specialFlower, e)
+                        }
+                        disabled={remainingStock === 0}
+                        className="bg-pink-500 hover:bg-pink-600"
+                      >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Add to Bundle
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => setSelectedSpecialFlower(null)}
+                        variant="outline"
+                        className="border-pink-500 text-pink-500 hover:bg-pink-50"
+                      >
+                        <Trash className="w-5 h-5 mr-2" />
+                        Remove from Bundle
+                      </Button>
                     )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+              </div>
+
+              {remainingStock === 0 && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <div className="bg-red-500 text-white px-6 py-2 rounded-full text-lg font-medium">
+                    Sold Out
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+      <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-600 text-center">
+        Click continue to proceed with your selection
+      </div>
     </div>
   );
 };
@@ -1000,6 +1191,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
   flowers,
   animals,
   hats,
+  specialFlowers, // Add this prop
 }) => {
   // Step state
   const [currentStep, setCurrentStep] = useState<Step>("size");
@@ -1014,6 +1206,8 @@ const CreatePage: React.FC<CreatePageProps> = ({
   const [selectedAnimals, setSelectedAnimals] = useState<AnimalWithHat[]>([]);
   const [imageLoading, setImageLoading] = useState(false);
   const [hasExtraAnimal, setHasExtraAnimal] = useState(false);
+  const [selectedSpecialFlower, setSelectedSpecialFlower] =
+    useState<SelectedSpecialFlowerItem | null>(null);
 
   const router = useRouter();
 
@@ -1050,10 +1244,13 @@ const CreatePage: React.FC<CreatePageProps> = ({
           !!selectedSize &&
           !!selectedColor &&
           selectedFlowers.filter(
-            (f) => f.flower.flowerType === FlowerType.SMALL
+            (f) =>
+              f.flower.flowerType === FlowerType.SMALL && !f.flower.isPremium
           ).length === selectedSize.smallFlowerLimit &&
-          selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
-            .length === selectedSize.mainFlowerLimit
+          selectedFlowers.filter(
+            (f) =>
+              f.flower.flowerType === FlowerType.MAIN && !f.flower.isPremium
+          ).length === selectedSize.mainFlowerLimit
         );
       default:
         return false;
@@ -1115,21 +1312,38 @@ const CreatePage: React.FC<CreatePageProps> = ({
     goToNextStep();
   };
 
+  // Add handler for special flower
+  const handleAddSpecialFlower = (
+    specialFlower: SpecialFlower,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    if (selectedSpecialFlower) {
+      toast.error("Only one special item allowed per bundle");
+      return;
+    }
+    setSelectedSpecialFlower({ specialFlower, position: 0 });
+    toast.success(`Added ${specialFlower.name} to your bundle`);
+  };
+
   // Existing handlers
   const handleAddFlower = (
     flower: Flower,
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
+
+    // Only count non-premium flowers for limit checking
     const selectedSmallCount = selectedFlowers.filter(
-      (f) => f.flower.flowerType === FlowerType.SMALL
+      (f) => f.flower.flowerType === FlowerType.SMALL && !f.flower.isPremium
     ).length;
     const selectedMainCount = selectedFlowers.filter(
-      (f) => f.flower.flowerType === FlowerType.MAIN
+      (f) => f.flower.flowerType === FlowerType.MAIN && !f.flower.isPremium
     ).length;
 
-    // Check basic limits
+    // Check basic limits - skip limit check for premium flowers
     if (
+      !flower.isPremium &&
       flower.flowerType === FlowerType.SMALL &&
       selectedSmallCount >= selectedSize!.smallFlowerLimit
     ) {
@@ -1139,6 +1353,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
       return;
     }
     if (
+      !flower.isPremium &&
       flower.flowerType === FlowerType.MAIN &&
       selectedMainCount >= selectedSize!.mainFlowerLimit
     ) {
@@ -1149,7 +1364,8 @@ const CreatePage: React.FC<CreatePageProps> = ({
     }
 
     // Check if trying to add more than 2 of the same main flower
-    if (flower.flowerType === FlowerType.MAIN) {
+    // Only apply this check to non-premium flowers
+    if (!flower.isPremium && flower.flowerType === FlowerType.MAIN) {
       const sameFlowerCount = selectedFlowers.filter(
         (f) => f.flower.id === flower.id
       ).length;
@@ -1159,9 +1375,31 @@ const CreatePage: React.FC<CreatePageProps> = ({
       }
     }
 
+    // For premium flowers, only allow one
+    if (flower.isPremium) {
+      const premiumCount = selectedFlowers.filter(
+        (f) => f.flower.isPremium
+      ).length;
+      if (premiumCount >= 1) {
+        toast.error("Only one special flower allowed per bundle");
+        return;
+      }
+    }
+
     const position = selectedFlowers.length + 1;
     setSelectedFlowers([...selectedFlowers, { flower, position }]);
     toast.success(`Added ${flower.name}`);
+  };
+
+  const handlePremiumFlower = (
+    flower: Flower,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault();
+    setSelectedFlowers([...selectedFlowers, { flower, position: 0 }]);
+    toast.success(
+      `Added ${flower.name} to your bundle. Click continue to proceed with your selection`
+    );
   };
 
   const handleAddAnimal = (
@@ -1199,11 +1437,16 @@ const CreatePage: React.FC<CreatePageProps> = ({
     );
   };
 
+  // Update price calculation to include special flower
   const calculatePrice = () => {
     if (!selectedSize) return 0;
-    return (
-      selectedSize.price + (hasExtraAnimal ? selectedSize.extraAnimalPrice : 0)
-    );
+    const basePrice = selectedSize.price;
+    const extraAnimalPrice = hasExtraAnimal ? selectedSize.extraAnimalPrice : 0;
+    const specialFlowerPrice = selectedSpecialFlower
+      ? selectedSpecialFlower.specialFlower.price
+      : 0;
+
+    return basePrice + extraAnimalPrice + specialFlowerPrice;
   };
 
   const getFlowerCount = (flower: Flower) =>
@@ -1213,18 +1456,50 @@ const CreatePage: React.FC<CreatePageProps> = ({
     selectedAnimals.filter((a) => a.animal.id === animal.id).length;
 
   // Cart validation
-  const isAddToCartDisabled =
-    !selectedSize ||
-    !selectedColor ||
-    selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.SMALL)
-      .length !== selectedSize.smallFlowerLimit ||
-    selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
-      .length !== selectedSize.mainFlowerLimit ||
-    selectedAnimals.length !==
-      selectedSize.baseAnimalLimit +
-        (hasExtraAnimal ? selectedSize.maxExtraAnimals : 0);
+  const isAddToCartDisabled = () => {
+    const smallFlowerCount = selectedFlowers.filter(
+      (f) => f.flower.flowerType === FlowerType.SMALL
+    ).length;
 
+    const mainFlowerCount = selectedFlowers.filter(
+      (f) => f.flower.flowerType === FlowerType.MAIN
+    ).length;
+
+    const animalCount = selectedAnimals.length;
+    const requiredAnimalCount =
+      selectedSize!.baseAnimalLimit +
+      (hasExtraAnimal ? selectedSize!.maxExtraAnimals : 0);
+
+    // Change this line
+    const hasSizeAndColor = Boolean(selectedSize) && Boolean(selectedColor);
+    const hasCorrectSmallFlowers =
+      smallFlowerCount === selectedSize!.smallFlowerLimit;
+    const hasCorrectMainFlowers =
+      mainFlowerCount === selectedSize!.mainFlowerLimit;
+    const hasCorrectAnimals = animalCount === requiredAnimalCount;
+
+    console.log({
+      hasSizeAndColor,
+      selectedSize: Boolean(selectedSize),
+      selectedColor: Boolean(selectedColor),
+      hasCorrectSmallFlowers,
+      hasCorrectMainFlowers,
+      hasCorrectAnimals,
+      smallFlowerCount,
+      mainFlowerCount,
+      animalCount,
+      requiredAnimalCount,
+    });
+
+    return !(
+      hasSizeAndColor &&
+      hasCorrectSmallFlowers &&
+      hasCorrectMainFlowers &&
+      hasCorrectAnimals
+    );
+  };
   // Handle add to cart
+  // Update cart handling
   const handleAddToCart = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     setLoading(true);
@@ -1234,6 +1509,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
           size: selectedSize!,
           color: selectedColor!,
           flowers: selectedFlowers,
+          specialFlower: selectedSpecialFlower,
           animals: selectedAnimals.map((animal) => ({
             ...animal,
             hat: animal.hat,
@@ -1246,8 +1522,10 @@ const CreatePage: React.FC<CreatePageProps> = ({
         toast.success("Added to cart");
         setLoading(false);
 
+        // Reset state
         setSelectedFlowers([]);
         setSelectedAnimals([]);
+        setSelectedSpecialFlower(null);
         setCurrentStep("size");
         setSelectedSize(undefined);
         setSelectedColor(undefined);
@@ -1327,6 +1605,19 @@ const CreatePage: React.FC<CreatePageProps> = ({
           />
         ) : null;
 
+      case "specialItems":
+        return (
+          <>
+            <SpecialItemsSection
+              selectedSize={selectedSize!}
+              selectedSpecialFlower={selectedSpecialFlower}
+              specialFlowers={specialFlowers}
+              handleAddSpecialFlower={handleAddSpecialFlower}
+              setSelectedSpecialFlower={setSelectedSpecialFlower}
+            />
+          </>
+        );
+
       case "animals":
         return (
           <>
@@ -1361,17 +1652,25 @@ const CreatePage: React.FC<CreatePageProps> = ({
     if (!selectedSize) return false;
 
     switch (currentStep) {
+      case "size":
+        return !!selectedSize;
+      case "color":
+        return !!selectedColor;
       case "smallFlowers":
         return (
           selectedFlowers.filter(
-            (f) => f.flower.flowerType === FlowerType.SMALL
+            (f) =>
+              f.flower.flowerType === FlowerType.SMALL && !f.flower.isPremium
           ).length === selectedSize.smallFlowerLimit
         );
       case "mainFlowers":
         return (
-          selectedFlowers.filter((f) => f.flower.flowerType === FlowerType.MAIN)
-            .length === selectedSize.mainFlowerLimit
+          selectedFlowers.filter(
+            (f) =>
+              f.flower.flowerType === FlowerType.MAIN && !f.flower.isPremium
+          ).length === selectedSize.mainFlowerLimit
         );
+
       default:
         return true;
     }
@@ -1427,6 +1726,9 @@ const CreatePage: React.FC<CreatePageProps> = ({
                       )
                     }
                     onHatChange={handleHatChange}
+                    // Add these props:
+                    selectedSpecialFlower={selectedSpecialFlower}
+                    onRemoveSpecialFlower={() => setSelectedSpecialFlower(null)}
                   />
                 )}
               </div>
@@ -1467,7 +1769,7 @@ const CreatePage: React.FC<CreatePageProps> = ({
                 {currentStep === "animals" && (
                   <Button
                     size="lg"
-                    disabled={isAddToCartDisabled}
+                    disabled={isAddToCartDisabled()}
                     onClick={handleAddToCart}
                   >
                     {loading ? "Adding to Cart..." : "Add to Cart"}

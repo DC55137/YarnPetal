@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 
 // Define step types
-type Step = "size" | "color" | "smallFlowers" | "mainFlowers" | "animals";
+type Step =
+  | "size"
+  | "color"
+  | "smallFlowers"
+  | "mainFlowers"
+  | "specialItems"
+  | "animals";
 
 type StepIndicatorProps = {
   currentStep: Step;
@@ -32,6 +38,8 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
         return "Small Flowers";
       case "mainFlowers":
         return "Main Flowers";
+      case "specialItems":
+        return "Special Items";
       case "animals":
         return "Animals";
     }

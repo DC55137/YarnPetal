@@ -92,6 +92,20 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                       </div>
                     ))}
 
+                  {/* Special Flower */}
+                  {item.specialFlower && (
+                    <div className="relative aspect-square">
+                      <div className="absolute inset-0 border-2 border-pink-400 rounded"></div>
+                      <Image
+                        src={item.specialFlower.specialFlower.imageSingle}
+                        alt={item.specialFlower.specialFlower.name}
+                        className="object-contain"
+                        fill
+                        sizes="24px"
+                      />
+                    </div>
+                  )}
+
                   {/* Animals with Hats */}
                   {item.animals.map((animal, idx) => (
                     <div
@@ -128,6 +142,18 @@ export const CartContent = ({ cart }: { cart: CartItem[] }) => {
                     <h4 className="text-xl font-medium text-gray-700">
                       {item.color.name} Bundle ({item.size.size})
                     </h4>
+
+                    {/* Special Flower */}
+                    {item.specialFlower && (
+                      <div className="mt-1">
+                        <h5 className="text-sm font-medium text-pink-600">
+                          Special Flower:
+                        </h5>
+                        <span className="text-sm text-pink-500">
+                          {item.specialFlower.specialFlower.name}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Flowers */}
                     {item.flowers.length > 0 && (

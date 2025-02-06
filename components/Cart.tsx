@@ -15,7 +15,6 @@ import useStore from "@/src/useStore";
 import { ShoppingBag, Minus, Plus, Trash } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { FlowerType } from "@prisma/client";
 
 interface CartItemDisplayProps {
@@ -39,6 +38,9 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
   // Calculate additional costs
   const hasExtraAnimal = item.animals.length > item.size.baseAnimalLimit;
   const extraAnimalCost = hasExtraAnimal ? item.size.extraAnimalPrice : 0;
+  const specialFlowerCost = item.specialFlower
+    ? item.specialFlower.specialFlower.price
+    : 0;
 
   // Calculate animal hat costs
   const animalHatsCost = item.animals.reduce((total, animal) => {
@@ -46,7 +48,8 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
   }, 0);
 
   // Calculate total add-ons cost
-  const addOnsCost = (extraAnimalCost + animalHatsCost) * item.quantity;
+  const addOnsCost =
+    (extraAnimalCost + animalHatsCost + specialFlowerCost) * item.quantity;
 
   // Calculate base price and total
   const basePrice = item.size.price * item.quantity;
@@ -83,11 +86,16 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
           </div>
 
           {/* Contents Summary */}
-
           <div className="mt-1 text-sm text-gray-500">
             <p>
               {smallFlowers.length} small flowers, {mainFlowers.length} main
               flowers
+              {item.specialFlower && (
+                <span className="text-pink-600 font-medium">
+                  {" "}
+                  + 1 special flower
+                </span>
+              )}
               {item.animals.length > 0 && (
                 <>
                   , {item.size.baseAnimalLimit} base animal
@@ -132,6 +140,19 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
                   />
                 </div>
               ))}
+              {/* Special flower */}
+              {item.specialFlower && (
+                <div className="relative w-8 h-8 flex-shrink-0">
+                  <div className="absolute inset-0 border-2 border-pink-400 rounded"></div>
+                  <Image
+                    src={item.specialFlower.specialFlower.imageSingle}
+                    alt={item.specialFlower.specialFlower.name}
+                    className="rounded object-cover object-top"
+                    fill
+                    sizes="32px"
+                  />
+                </div>
+              )}
               {item.animals.map((animal, idx) => (
                 <div
                   key={`animal-${idx}`}
@@ -180,6 +201,12 @@ const CartItemDisplay: React.FC<CartItemDisplayProps> = ({
               {addOnsCost > 0 && (
                 <p className="text-xs text-gray-500">
                   Includes ${addOnsCost.toFixed(2)} in add-ons
+                  {specialFlowerCost > 0 && (
+                    <span className="text-pink-600">
+                      {" "}
+                      (${specialFlowerCost.toFixed(2)} special flower)
+                    </span>
+                  )}
                 </p>
               )}
             </div>
@@ -229,6 +256,7 @@ export default function Cart() {
   if (!isClient || !cartStore) {
     return <LoadingCart />;
   }
+  console.log("cartStore", cartStore);
 
   const { cart, changeQuantity, removeFromCart } = cartStore;
   const cartCount = cart.length;
@@ -240,7 +268,11 @@ export default function Cart() {
     const animalHatsCost = item.animals.reduce((hatTotal, animal) => {
       return hatTotal + (animal.hat?.price || 0);
     }, 0);
-    const addOnsCost = (extraAnimalCost + animalHatsCost) * item.quantity;
+    const specialFlowerCost = item.specialFlower
+      ? item.specialFlower.specialFlower.price
+      : 0;
+    const addOnsCost =
+      (extraAnimalCost + animalHatsCost + specialFlowerCost) * item.quantity;
 
     return total + basePrice + addOnsCost;
   }, 0);

@@ -7,10 +7,17 @@ import {
   Flower,
   FlowerType,
   BundleSize,
+  SpecialFlower,
 } from "@prisma/client";
 
 export interface SelectedFlowerItem {
   flower: Flower;
+  position: number;
+}
+
+// Add selected special flower type
+export interface SelectedSpecialFlowerItem {
+  specialFlower: SpecialFlower;
   position: number;
 }
 
@@ -24,12 +31,14 @@ export interface AnimalWithHat extends SelectedAnimalItem {
   hat: Hat | null;
 }
 
+// Update CreatePageProps to include specialFlowers
 export interface CreatePageProps {
   colors: Color[];
   sizes: Size[];
   flowers: Flower[];
   animals: Animal[];
   hats: Hat[];
+  specialFlowers: SpecialFlower[]; // Add this line
 }
 
 export interface ImageDisplayProps {
@@ -44,6 +53,8 @@ export interface ImageDisplayProps {
   onRemoveFlower: (position: number) => void;
   onRemoveAnimal: (position: number) => void;
   onHatChange: (position: number, hat: Hat | null) => void;
+  selectedSpecialFlower: SelectedSpecialFlowerItem | null; // Replace premiumFlowers with this
+  onRemoveSpecialFlower: () => void; // Add this line
 }
 
 // Common types for all items (flowers and animals)
@@ -101,10 +112,12 @@ interface CommonSectionProps<T extends ItemWithStock> {
   onHatChange?: (position: number, hat: Hat | null) => void;
 }
 
+// Update CartItem interface
 export interface CartItem {
   size: Size;
   color: Color;
   flowers: SelectedFlowerItem[];
+  specialFlower: SelectedSpecialFlowerItem | null; // Replace premiumFlowers with this
   animals: AnimalWithHat[];
   price: number;
   quantity: number;

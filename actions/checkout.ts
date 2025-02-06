@@ -15,7 +15,7 @@ type checkoutProps = {
     deliveryMethod: string;
     price: number;
     cart: CartItem[];
-    notes?: string; // Add this
+    notes?: string;
     address?: string;
     apartment?: string;
     city?: string;
@@ -37,6 +37,14 @@ async function adjustStock(cart: CartItem[]) {
     for (const flower of item.flowers) {
       await prismadb.flower.update({
         where: { id: flower.flower.id },
+        data: { stock: { decrement: item.quantity } },
+      });
+    }
+
+    // Adjust special flower stock if present
+    if (item.specialFlower) {
+      await prismadb.specialFlower.update({
+        where: { id: item.specialFlower.specialFlower.id },
         data: { stock: { decrement: item.quantity } },
       });
     }
@@ -67,7 +75,7 @@ export async function checkout({ formData }: checkoutProps) {
     deliveryMethod,
     price,
     cart,
-    notes, // Add this
+    notes,
     address,
     apartment,
     city,
@@ -86,7 +94,11 @@ export async function checkout({ formData }: checkoutProps) {
           name: `${item.color.name} Bundle - ${item.size.size}`,
           description: `Flowers: ${item.flowers
             .map((f) => f.flower.name)
-            .join(", ")}\nAnimals: ${item.animals
+            .join(", ")}${
+            item.specialFlower
+              ? `, Special: ${item.specialFlower.specialFlower.name}`
+              : ""
+          }\nAnimals: ${item.animals
             .map(
               (a) => `${a.animal.name}${a.hat ? ` with ${a.hat.name} hat` : ""}`
             )
@@ -133,7 +145,7 @@ export async function checkout({ formData }: checkoutProps) {
       firstName,
       lastName,
       deliveryMethod,
-      notes, // Add this
+      notes,
       total: price,
       address,
       apartment,
@@ -146,9 +158,10 @@ export async function checkout({ formData }: checkoutProps) {
           colorId: item.color.id,
           sizeId: item.size.id,
           quantity: item.quantity,
-          basePrice: item.price - getExtraAnimalPrice(item), // Base price without extra animal
-          extraAnimalPrice: getExtraAnimalPrice(item), // Price for extra animal if added
-          totalPrice: item.price, // Total price including extras
+          basePrice: item.price - getExtraAnimalPrice(item),
+          extraAnimalPrice: getExtraAnimalPrice(item),
+          totalPrice: item.price,
+          specialFlowerId: item.specialFlower?.specialFlower.id || null,
           flowers: {
             create: item.flowers.map((flower) => ({
               flowerId: flower.flower.id,
@@ -156,10 +169,8 @@ export async function checkout({ formData }: checkoutProps) {
               position: flower.position,
             })),
           },
-          // Handle base animal and its hat
           baseAnimalId: item.animals[0]?.animal.id || null,
           baseAnimalHatId: item.animals[0]?.hat?.id || null,
-          // Handle extra animal and its hat if present
           extraAnimalId: item.animals[1]?.animal.id || null,
           extraAnimalHatId: item.animals[1]?.hat?.id || null,
         })),
@@ -175,6 +186,7 @@ export async function checkout({ formData }: checkoutProps) {
               flower: true,
             },
           },
+          specialFlower: true,
           baseAnimal: true,
           baseAnimalHat: true,
           extraAnimal: true,
@@ -245,6 +257,11 @@ export async function checkout({ formData }: checkoutProps) {
             <strong>Flowers:</strong> ${item.flowers
               .map((f) => f.flower.name)
               .join(", ")} <br />
+            ${
+              item.specialFlower
+                ? `<strong>Special Flower:</strong> ${item.specialFlower.name} <br />`
+                : ""
+            }
             <strong>Base Animal:</strong> ${
               item.baseAnimal ? item.baseAnimal.name : "None"
             }${
@@ -259,7 +276,6 @@ export async function checkout({ formData }: checkoutProps) {
                   } <br />`
                 : ""
             }
-                
             <strong>Quantity:</strong> ${item.quantity} <br />
             <strong>Total Price:</strong> $${item.totalPrice.toFixed(2)} <br />
             <img src="${item.color.imageBack}" alt="${

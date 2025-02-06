@@ -60,10 +60,11 @@ const OrderSummary = ({
             <dd className="text-base">
               $
               {(
-                cart.reduce(
-                  (acc, item) => acc + item.price * item.quantity,
-                  0
-                ) + selectedDeliveryMethod.price
+                cart.reduce((acc, item) => {
+                  const basePrice = item.price * item.quantity;
+
+                  return acc + basePrice;
+                }, 0) + selectedDeliveryMethod.price
               ).toFixed(2)}
             </dd>
           </div>

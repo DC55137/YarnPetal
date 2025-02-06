@@ -79,6 +79,20 @@ model Flower {
   orderItems   FlowerSelection[]
 }
 
+model SpecialFlower {
+  id           Int         @id @default(autoincrement())
+  name         String      @unique
+  description  String
+  price        Float
+  stock        Int
+  imageUrl     String
+  imageSingle  String
+  isActive     Boolean     @default(true)  // To easily enable/disable items
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  orderItems   OrderItem[]
+}
+
 model Animal {
   id               Int         @id @default(autoincrement())
   name             String      @unique
@@ -134,29 +148,32 @@ model Order {
   postalCode    String?
 }
 
+// Update OrderItem model with direct special flower relation
 model OrderItem {
-  id             Int              @id @default(autoincrement())
-  orderId        Int
-  order          Order            @relation(fields: [orderId], references: [id])
-  colorId        Int
-  color          Color            @relation(fields: [colorId], references: [id])
-  sizeId         Int
-  size           Size             @relation(fields: [sizeId], references: [id])
-  baseAnimalId   Int?            // The included animal
-  baseAnimal     Animal?          @relation("BaseAnimal", fields: [baseAnimalId], references: [id])
-  baseAnimalHatId Int?           // Hat for the base animal
-  baseAnimalHat  Hat?            @relation("BaseAnimalHat", fields: [baseAnimalHatId], references: [id])
-  extraAnimalId  Int?            // The additional animal (if added)
-  extraAnimal    Animal?         @relation("ExtraAnimal", fields: [extraAnimalId], references: [id])
-  extraAnimalHatId Int?          // Hat for the extra animal
-  extraAnimalHat Hat?           @relation("ExtraAnimalHat", fields: [extraAnimalHatId], references: [id])
-  flowers        FlowerSelection[]
-  quantity       Int
-  basePrice      Float           // Price before extra animal
-  extraAnimalPrice Float?        // Price for extra animal if added
-  totalPrice     Float           // Total price including extras
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id                Int           @id @default(autoincrement())
+  orderId           Int
+  order             Order         @relation(fields: [orderId], references: [id])
+  colorId           Int
+  color             Color         @relation(fields: [colorId], references: [id])
+  sizeId            Int
+  size              Size          @relation(fields: [sizeId], references: [id])
+  baseAnimalId      Int?
+  baseAnimal        Animal?       @relation("BaseAnimal", fields: [baseAnimalId], references: [id])
+  baseAnimalHatId   Int?
+  baseAnimalHat     Hat?          @relation("BaseAnimalHat", fields: [baseAnimalHatId], references: [id])
+  extraAnimalId     Int?
+  extraAnimal       Animal?       @relation("ExtraAnimal", fields: [extraAnimalId], references: [id])
+  extraAnimalHatId  Int?
+  extraAnimalHat    Hat?          @relation("ExtraAnimalHat", fields: [extraAnimalHatId], references: [id])
+  flowers           FlowerSelection[]
+  specialFlowerId   Int?          // Optional relation to special flower
+  specialFlower     SpecialFlower? @relation(fields: [specialFlowerId], references: [id])
+  quantity          Int
+  basePrice         Float
+  extraAnimalPrice  Float?
+  totalPrice        Float
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 }
 
 model FlowerSelection {
