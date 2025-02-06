@@ -1514,7 +1514,6 @@ const CreatePage: React.FC<CreatePageProps> = ({
             ...animal,
             hat: animal.hat,
           })),
-          price: calculatePrice(),
           quantity: 1,
           hat: null,
         });
