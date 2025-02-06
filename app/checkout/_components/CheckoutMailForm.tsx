@@ -424,7 +424,6 @@ export default function CheckoutMailForm({
                           id="region"
                           autoComplete="address-level1"
                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-main-500 focus:ring-main-500 sm:text-sm"
-                          disabled={loading}
                         />
                         {errors.region && (
                           <p className="text-red-500 text-xs italic">
