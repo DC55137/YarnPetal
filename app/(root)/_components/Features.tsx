@@ -5,8 +5,10 @@ import React from "react";
 
 export function Features() {
   return (
-    <div className="bg-accent-400 w-full flex flex-col gap-20 md:gap-0 pb-20">
-      <div className="container">
+    <div className="relative bg-accent-400 w-full flex flex-col gap-20 md:gap-0 pb-20">
+      <div className="absolute inset-0 bg-accent-500" />
+      <div className="absolute inset-0 bg-[url('/noise.jpg')] opacity-5" />
+      <div className="relative container">
         <div className=" flex flex-col md:flex-row gap-2 mt-10 md:mt-0">
           <FeaturesText
             header="Free Hat"

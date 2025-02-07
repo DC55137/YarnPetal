@@ -5,41 +5,28 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { Loader } from "lucide-react";
+import { Loader, ChevronRight, Sparkles } from "lucide-react";
 
 const animalList = [
-  {
-    src: "/Slides/2_Bacon.webp",
-    alt: "Bacon",
-  },
-  {
-    src: "/Slides/8_Ted.webp",
-    alt: "Ted",
-  },
-  {
-    src: "/Slides/12_Cat.webp",
-    alt: "Cat",
-  },
-  {
-    src: "/Slides/4_Bunny.webp",
-    alt: "Bunny",
-  },
+  { src: "/Slides/2_Bacon.webp", alt: "Bacon" },
+  { src: "/Slides/8_Ted.webp", alt: "Ted" },
+  { src: "/Slides/12_Cat.webp", alt: "Cat" },
+  { src: "/Slides/4_Bunny.webp", alt: "Bunny" },
 ];
 
 const bouquetList = [
-  {
-    srcFront: "/Slides/PinkFront.webp",
-    srcBack: "/Slides/PinkBlank.webp",
-  },
-  {
-    srcFront: "/Slides/PurpleFront.webp",
-    srcBack: "/Slides/PurpleBlank.webp",
-  },
+  { srcFront: "/Slides/PinkFront.webp", srcBack: "/Slides/PinkBlank.webp" },
+  { srcFront: "/Slides/PurpleFront.webp", srcBack: "/Slides/PurpleBlank.webp" },
   {
     srcFront: "/Slides/PinkPurpleFront.webp",
     srcBack: "/Slides/PinkPurpleBlank.webp",
   },
 ];
+
+type AnimalPosition = {
+  bottom: string;
+  right: string;
+};
 
 export default function CustomiseBouquet() {
   const [currentAnimalIndex, setCurrentAnimalIndex] = useState(0);
@@ -47,6 +34,18 @@ export default function CustomiseBouquet() {
   const [isSliding, setIsSliding] = useState(false);
   const [isBouquetSliding, setIsBouquetSliding] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const preloadImages = async () => {
@@ -79,149 +78,140 @@ export default function CustomiseBouquet() {
         );
         setIsBouquetSliding(false);
         setIsSliding(false);
-      }, 1000); // Duration of slide-out animation
-
-      // if ((currentAnimalIndex + 1) % 2 === 0) {
-      //   setIsBouquetSliding(true);
-      //   setTimeout(() => {
-      //     setCurrentBouquetIndex((prevIndex) =>
-      //       prevIndex === bouquetList.length - 1 ? 0 : prevIndex + 1
-      //     );
-      //     setIsBouquetSliding(false);
-      //   }, 1000); // Duration of bouquet slide-out animation
-      // }
-    }, 3000); // Change slide every 3 seconds
+      }, 1000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [currentAnimalIndex]);
 
-  const getRightPosition = (bouquetIndex: number) => {
-    switch (bouquetIndex) {
-      case 0:
-        return "calc(40% - 50px)";
-      case 1:
-        return "calc(40% - 20px)";
-      case 2:
-        return "calc(40% - 15px)";
-      default:
-        return "calc(40% - 50px)";
+  const getAnimalPosition = (bouquetIndex: number): AnimalPosition => {
+    if (isMobile) {
+      switch (bouquetIndex) {
+        case 0:
+          return { bottom: "75%", right: "32%" };
+        case 1:
+          return { bottom: "72%", right: "35%" };
+        case 2:
+          return { bottom: "66%", right: "35%" };
+        default:
+          return { bottom: "72%", right: "33%" };
+      }
     }
-  };
 
-  const getBottomPosition = (bouquetIndex: number) => {
-    switch (bouquetIndex) {
-      case 0:
-        return "74%";
-      case 1:
-        return "76%";
-      case 2:
-        return "70%";
-      default:
-        return "73%";
-    }
+    // Desktop positions
+    return { bottom: "72%", right: "30%" };
   };
 
   if (!imagesLoaded) {
     return (
-      <div className="bg-accent-400 h-[800px] overflow-hidden">
-        <div className="grid grid-cols-2 w-full p-10 container">
-          <DisplayHeading />
-          <DisplayInfo />
-        </div>
+      <div className="min-h-[800px] bg-gradient-to-b from-accent-400 via-accent-400 to-accent-500 overflow-hidden">
         <div className="h-full flex items-center justify-center">
-          <Loader className="animate-spin" />
+          <Loader className="animate-spin text-main-600" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-accent-400 py-4">
-      <div className="custom-bouquet-container mx-auto p-4 md:p-8">
-        <div className="grid grid-cols-2 w-full p-10 container">
-          <DisplayHeading />
-          <DisplayInfo />
-        </div>
-        <div className="relative h-[400px] md:h-[600px] lg:h-[800px] overflow-hidden sm:overflow-visible isolate">
-          {bouquetList.map((bouquet, index) => (
-            <Image
-              key={index}
-              src={bouquet.srcBack}
-              alt="Bouquet Back"
-              fill={true}
-              priority
-              className={`absolute z-10 transition-transform object-contain duration-1000 ease-in-out ${
-                index === currentBouquetIndex
-                  ? isBouquetSliding
-                    ? "slide-out"
-                    : "slide-in"
-                  : "hidden"
-              }`}
-            />
-          ))}
-          {animalList.map((animal, index) => (
-            <Image
-              key={index}
-              src={animal.src}
-              alt={animal.alt}
-              width={400}
-              height={400}
-              priority
-              className={`absolute z-20 w-24 sm:w-40 md:w-44 lg:w-56 transition-transform duration-1000 ease-in-out ${
-                index === currentAnimalIndex
-                  ? isSliding
-                    ? "slide-out"
-                    : "slide-in"
-                  : "hidden"
-              }`}
-              style={{
-                bottom: getBottomPosition(currentBouquetIndex),
-                right: getRightPosition(currentBouquetIndex),
-              }}
-            />
-          ))}
-          {bouquetList.map((bouquet, index) => (
-            <Image
-              key={index}
-              src={bouquet.srcFront}
-              alt="Bouquet Front"
-              fill={true}
-              priority
-              className={`absolute z-30 transition-transform object-contain duration-1000 ease-in-out ${
-                index === currentBouquetIndex
-                  ? isBouquetSliding
-                    ? "slide-out"
-                    : "slide-in"
-                  : "hidden"
-              }`}
-            />
-          ))}
+    <div className="relative overflow-hidden bg-gradient-to-b from-accent-400 via-accent-400 to-accent-500">
+      {/* Decorative elements */}
+      <div className="absolute top-10 left-10 animate-blob">
+        <div className="w-72 h-72 rounded-full bg-main-200 opacity-20 blur-xl" />
+      </div>
+      <div className="absolute bottom-10 right-10 animate-blob animation-delay-2000">
+        <div className="w-72 h-72 rounded-full bg-accent-300 opacity-20 blur-xl" />
+      </div>
+
+      <div className="container mx-auto px-4 py-16 relative z-10">
+        <div className="grid md:grid-cols-2 gap-12 items-center mb-12">
+          <div className="space-y-7">
+            <div className="inline-block">
+              <span className="text-main-600 font-handwriting text-4xl md:text-5xl lg:text-6xl relative">
+                Customise Your Bundle
+                <Sparkles className="absolute -top-6 -right-8 text-main-500 w-8 h-8 animate-bounce" />
+              </span>
+            </div>
+            <p className="text-lg text-slate-700 max-w-lg leading-8">
+              Create your perfect moment with our customizable bundles. Mix and
+              match your favorite bouquets with adorable companions to craft a
+              truly unique gift that speaks from the heart.
+            </p>
+            <div className="pt-4">
+              <Link href="/create" className="group relative inline-block">
+                <div className="absolute -inset-1 bg-gradient-to-r from-main-400 to-main-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+                <Button className="relative px-8 py-6 text-lg bg-main-500 hover:bg-main-600 transition-colors duration-300 flex items-center gap-2 group-hover:gap-4">
+                  Create Your Bundle
+                  <ChevronRight className="w-5 h-5 transition-all duration-300" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <div className="relative h-[500px] md:h-[600px] isolate px-4">
+            <div className="absolute inset-0 bg-gradient-to-t from-accent-500/40 via-transparent to-transparent z-40" />
+            {bouquetList.map((bouquet, index) => (
+              <Image
+                key={`back-${index}`}
+                src={bouquet.srcBack}
+                alt="Bouquet Back"
+                fill
+                priority
+                className={cn(
+                  "absolute z-10 transition-transform duration-1000 ease-in-out object-contain",
+                  index === currentBouquetIndex
+                    ? isBouquetSliding
+                      ? "slide-out"
+                      : "slide-in"
+                    : "hidden"
+                )}
+              />
+            ))}
+            {animalList.map((animal, index) => {
+              const position = getAnimalPosition(currentBouquetIndex);
+              return (
+                <Image
+                  key={`animal-${index}`}
+                  src={animal.src}
+                  alt={animal.alt}
+                  width={400}
+                  height={400}
+                  priority
+                  className={cn(
+                    "absolute z-20 transition-transform duration-1000 ease-in-out",
+                    "w-28 md:w-32 lg:w-44",
+                    index === currentAnimalIndex
+                      ? isSliding
+                        ? "slide-out"
+                        : "slide-in"
+                      : "hidden"
+                  )}
+                  style={{
+                    bottom: position.bottom,
+                    right: position.right,
+                  }}
+                />
+              );
+            })}
+            {bouquetList.map((bouquet, index) => (
+              <Image
+                key={`front-${index}`}
+                src={bouquet.srcFront}
+                alt="Bouquet Front"
+                fill
+                priority
+                className={cn(
+                  "absolute z-30 transition-transform duration-1000 ease-in-out object-contain",
+                  index === currentBouquetIndex
+                    ? isBouquetSliding
+                      ? "slide-out"
+                      : "slide-in"
+                    : "hidden"
+                )}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-const DisplayHeading = () => {
-  return (
-    <div className="col-span-2 md:col-span-1 md:px-10">
-      <h4 className="text-secondary-900">Customizable your</h4>
-      <h2 className={cn("font-handwriting", "text-main-600")}>Bundles</h2>
-    </div>
-  );
-};
-
-const DisplayInfo = () => {
-  return (
-    <div className="col-span-2 md:col-span-1 md:px-10">
-      <p className="mb-10 text-lg text-balance">
-        Choose from our range of bouquets and animals to create your own unique
-        bundle. Perfect for gifting or to treat yourself. Each bundle can be
-        customized to match your style. Shop now!
-      </p>
-      <Link href="/create">
-        <Button>Shop Bundles</Button>
-      </Link>
-    </div>
-  );
-};
