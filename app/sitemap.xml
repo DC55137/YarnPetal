@@ -13,13 +13,7 @@
     <priority>0.1</priority>
   </url>
   <url>
-    <loc>https://www.yarnpetalsgc.com/bundles</loc>
-    <lastmod>2024-06-07T15:02:24.021Z</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.yarnpetalsgc.com/bundles/[bundle]</loc>
+    <loc>https://www.yarnpetalsgc.com/create</loc>
     <lastmod>2024-06-07T15:02:24.021Z</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
