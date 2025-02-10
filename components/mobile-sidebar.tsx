@@ -7,7 +7,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 import { generateNavigation } from "@/lib/functions";
-import Logo from "@/components/Logo";
+import Logo from "@/components/LogoLong";
 
 const MobileSidebar = ({}: {}) => {
   const pathname = usePathname();
@@ -25,7 +25,7 @@ const MobileSidebar = ({}: {}) => {
       </SheetTrigger>
       <SheetContent side="left" className="p-0 bg-white">
         <div className="flex flex-col justify-between h-full pb-10 mt-10">
-          <Link href="/" className="mx-auto mb-20">
+          <Link href="/" className="mx-auto px-10 ">
             <span className="sr-only">Steps English Academy</span>
             <Logo />
           </Link>
@@ -44,7 +44,7 @@ const MobileSidebar = ({}: {}) => {
               </Link>
             ))}
           </div>
-          <div></div>
+          <div className="h-56"></div>
         </div>
       </SheetContent>
     </Sheet>

@@ -1,10 +1,16 @@
-// @/app/root/_components/HeroValentine.tsx
-
 "use client";
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Heart, Stars } from "lucide-react";
+import {
+  Check,
+  Clock,
+  Heart,
+  Palette,
+  PawPrint,
+  Sparkles,
+  Stars,
+} from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function ValentinesHero() {
@@ -15,97 +21,119 @@ export default function ValentinesHero() {
       <div className="absolute inset-0 bg-[url('/noise.jpg')] opacity-5" />
 
       {/* Main content container */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-24">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 pt-10">
         <div className="flex flex-col lg:flex-row items-start justify-between gap-16">
           {/* Left content section */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
-            className="lg:w-5/12 z-10"
+            className="lg:w-5/12 z-10 pt-20"
           >
-            {/* Logo section */}
+            {/* Main heading */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="flex justify-start mb-12"
+              className="mb-8"
             >
-              <Image
-                src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1738737751/YarnPetals/LongLogo_gd6oqa.png"
-                alt="Yarn Petals Logo"
-                width={600}
-                height={100}
-                className="mx-auto"
-              />
+              <h1 className="text-4xl md:text-5xl font-bold text-main-600 leading-tight">
+                Create Your
+                <span className="font-handwriting text-main-500 ml-2">
+                  Perfect
+                </span>
+                <br />
+                Bouquet Today
+              </h1>
+              <p className="mt-4 text-lg text-gray-600">
+                Personalize every detail in three simple steps
+              </p>
             </motion.div>
 
-            <div className="relative">
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="absolute -right-4 -top-6"
-              >
-                <Stars className="w-8 h-8 text-pink-400 rotate-12" />
-              </motion.div>
-              <h2 className="text-4xl md:text-5xl font-bold text-pink-600 mb-6 font-handwriting">
-                Valentine&apos;s Day Special
-              </h2>
-            </div>
-
-            {/* Heart Flower Preview */}
+            {/* Customization steps */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-              animate={{ opacity: 1, scale: 1, rotate: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="w-12 h-12 mb-4 transform hover:rotate-12 transition-transform duration-300"
-            >
-              <Image
-                src="https://res.cloudinary.com/dddxwdp7v/image/upload/v1738739178/YarnPetals/HeartFlower_jgblwc.png"
-                alt="Valentine's Heart Flower"
-                width={150}
-                height={150}
-                className="w-full h-full object-contain drop-shadow-lg"
-              />
-            </motion.div>
-
-            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-lg text-gray-700 mb-8 max-w-xl"
+              transition={{ delay: 0.2 }}
+              className="space-y-6 mb-8"
             >
-              Introducing our exclusive Valentine&apos;s Day Heart Flower – a
-              timeless symbol of love crafted with care. Each petal tells a
-              story that lasts forever, just like your love.
-            </motion.p>
+              {[
+                {
+                  step: 1,
+                  title: "Pick Your Colors",
+                  description:
+                    "Start with your favorite colors or match your theme",
+                  icon: Palette,
+                },
+                {
+                  step: 2,
+                  title: "Choose Your Flowers",
+                  description: "Select from roses, daisies, sunflowers & more",
+                  icon: Heart,
+                },
+                {
+                  step: 3,
+                  title: "Add a Special Friend",
+                  description:
+                    "Make it unique with an adorable animal addition",
+                  icon: PawPrint,
+                },
+              ].map((item) => (
+                <div
+                  key={item.step}
+                  className="flex items-start gap-4 group bg-white/60 backdrop-blur-sm p-4 rounded-lg border border-secondary-200"
+                >
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-main-100 text-main-600 flex items-center justify-center font-bold">
+                    {item.step}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-main-600 flex items-center gap-2">
+                      {item.title}
+                      <item.icon className="w-4 h-4 text-main-400" />
+                    </h4>
+                    <p className="text-gray-600 text-sm">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
 
+            {/* CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="relative mb-6 flex"
+              className="relative mb-6"
             >
               <a href="/create" className="group relative inline-block">
-                <div className="absolute -inset-1 bg-gradient-to-r from-pink-400 to-pink-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-                <Button className="relative px-8 py-6 text-lg bg-pink-500 hover:bg-pink-600 transition-colors duration-200 flex items-center gap-2 group-hover:gap-4">
+                <div className="absolute -inset-1 bg-gradient-to-r from-main-400 to-main-600 rounded-lg blur opacity-30 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+                <Button className="relative px-8 py-6 text-lg bg-main-500 hover:bg-main-600 text-white transition-all duration-200 flex items-center gap-3 group-hover:gap-5">
                   Start Creating
-                  <Heart className="w-5 h-5 transition-all duration-200" />
+                  <motion.div
+                    animate={{
+                      x: [0, 5, 0],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      repeatType: "reverse",
+                    }}
+                  >
+                    <Palette className="w-5 h-5" />
+                  </motion.div>
                 </Button>
               </a>
             </motion.div>
 
-            <motion.p
+            {/* Features tags */}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="text-sm text-gray-600 italic mt-16 flex items-center gap-2"
+              className="text-sm text-gray-600 flex items-center gap-2"
             >
-              <Heart className="w-4 h-4 text-pink-400" />
-              Limited edition - Order now to reserve yours before they&apos;re
-              gone!
-            </motion.p>
+              <Stars className="w-4 h-4 text-main-400" />
+              Handcrafted with love - Lasting forever
+            </motion.div>
           </motion.div>
 
           {/* Right section with scattered images */}

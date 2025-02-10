@@ -5,7 +5,7 @@ import Cart from "./Cart";
 import MobileSidebar from "./mobile-sidebar";
 import { cn } from "@/lib/utils";
 import { generateNavigation } from "@/lib/functions";
-import Logo from "@/components/Logo";
+import Logo from "@/components/LogoLong";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -40,13 +40,13 @@ export default function Navbar() {
   return (
     <div
       className={cn(
-        "absolute z-50 w-screen bg-secondary-500 py-2"
+        "absolute z-50 w-screen bg-secondary-500 "
         // pathname !== "/" && "bg-secondary-500"
       )}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ">
         <div className="flex justify-between ">
-          <Logo className="w-12" />
+          <Logo className="w-32" />
 
           <div className="ml-6 flex items-center gap-4">
             <div className="md:flex gap-2 hidden">
