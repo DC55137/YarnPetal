@@ -1,3 +1,5 @@
+// @/app/root/_components/HeroValentine.tsx
+
 "use client";
 
 import Image from "next/image";

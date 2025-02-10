@@ -15,7 +15,7 @@ export const PATH_PAGE = {
   root: "/",
   create: "/create",
   bundles: "/bundles",
-  about: "/abouts",
+  about: "/about",
   contact: "/contact",
   checkout: "/checkout",
   gallery: "/gallery",
