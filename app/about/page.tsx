@@ -30,7 +30,7 @@ const floatingAnimation = {
   transition: {
     duration: 4,
     repeat: Infinity,
-    repeatType: "reverse",
+    repeatType: "reverse" as const, // Type assertion to fix TypeScript error
   },
 };
 
